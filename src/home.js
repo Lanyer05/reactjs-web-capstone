@@ -70,7 +70,7 @@ function Home() {
 
      
       <div className="content">
-        <h1 className="card-view">Welcome to the Dashboard</h1>
+        <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
       </div>
     </div>

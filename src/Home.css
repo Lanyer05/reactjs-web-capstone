@@ -127,6 +127,7 @@
     margin-bottom: 20px;
     transition: width 0.5s ease-in;
     margin-bottom: 20px;
+    letter-spacing: 2px;
   }
   
   h1 {
@@ -259,6 +260,14 @@
   width: 90%; 
   max-height: 90%; 
   overflow-y: auto; 
+  opacity: 0; 
+  transition: opacity 0.3s ease;
+  display: none;
+}
+
+.floating-form.visible {
+  opacity: 1;
+  display: block;
 }
 
 .floating-form .form-container {
@@ -347,8 +356,8 @@
 
 .rewards-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  grid-gap: 20px;
+  grid-template-columns: repeat( 3, minmax(250px, 1fr));
+  grid-gap: 30px;
 }
 
 .reward-item {
@@ -378,8 +387,9 @@
   cursor: pointer; 
 }
 
+
 .delete-button:hover {
-  background-color: #dad7cd; 
+  background-color: #b1afab; 
 }
 
 .delete-button:focus {
@@ -397,4 +407,60 @@
 
 .reward-item.selected {
   background-color: #34673d; 
+}
+
+.update-button {
+  background-color: #dad7cd; 
+  color: white; 
+  border: none; 
+  padding: 8px 16px;
+  border-radius: 4px; 
+  font-size: 16px; 
+  cursor: pointer;
+  margin-left: 20px; 
+}
+
+
+.update-button:hover {
+  background-color: #b1afab; 
+}
+
+.update-button:focus {
+  outline: none; 
+}
+
+.update-form {
+  margin-right: 10px;
+}
+
+.btn {
+  cursor: pointer;
+  padding: 5px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+.btn-primary {
+  background-color: #b1afab; 
+}
+
+.btn-secondary {
+  background-color: #6c757d; 
+}
+
+.btn:hover {
+  background-color: #c5c5c5; 
+}
+
+.form-group{
+  margin-top: 10px;
+}
+
+.loading {
+  justify-content: center;
 }

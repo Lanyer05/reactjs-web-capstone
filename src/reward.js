@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
 import "./Home.css";
@@ -13,23 +13,45 @@ function Reward() {
   const handleTrigger = () => setIsOpen(!isOpen);
   const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const navigate = useNavigate();
-
   const [rewardName, setRewardName] = useState("");
   const [points, setPoints] = useState("");
   const [rewardsList, setRewardsList] = useState([]);
   const [loading, setLoading] = useState(true); 
   const [selectedRewardId, setSelectedRewardId] = useState(null); 
-
   const rewardsCollectionRef = firestore.collection("rewards");
+  const formContainerRef = useRef(null);
+  const [showDeleteButtonId, setShowDeleteButtonId] = useState(null);
+  const [updatedRewardName, setUpdatedRewardName] = useState("");
+  const [updatedRewardPoints, setUpdatedRewardPoints] = useState("");
+  const [updatingRewardId, setUpdatingRewardId] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutsideForm = (event) => {
+      if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
+        if (showAddForm) {
+          setShowAddForm(false);
+        }
+        if (updatingRewardId !== null) {
+          setUpdatingRewardId(null);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClickOutsideForm);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutsideForm);
+    };
+  }, [showAddForm, updatingRewardId]);
 
   useEffect(() => {
     let isMounted = true;
-
+  
     const fetchRewards = async () => {
       try {
         const rewardsSnapshot = await rewardsCollectionRef.get();
         const rewardsData = rewardsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
+  
         if (isMounted) {
           setRewardsList(rewardsData);
           setLoading(false);
@@ -39,13 +61,13 @@ function Reward() {
         setLoading(false);
       }
     };
-
+  
     fetchRewards();
-
+  
     return () => {
       isMounted = false; 
     };
-  }, );
+  }, [rewardsCollectionRef]);
 
   const handleAddReward = async () => {
     if (!rewardName || !points) {
@@ -97,23 +119,60 @@ function Reward() {
     }
   };
 
- 
   const handleRewardClick = (id) => {
     setSelectedRewardId((prevId) => (prevId === id ? null : id));
   };
+
+  const handleRevealDeleteButton = (id) => {
+    setShowDeleteButtonId((prevId) => (prevId === id ? null : id));
+  };
+
+  const handleUpdateReward = async (id) => {
+    if (!updatedRewardName || !updatedRewardPoints) {
+      toast.error('Please fill in both Reward and Points.', { autoClose: 1500, hideProgressBar: true });
+      return;
+    }
+
+    try {
+      await rewardsCollectionRef.doc(id).update({
+        rewardName: updatedRewardName,
+        points: updatedRewardPoints,
+      });
+
+      const updatedRewardsList = rewardsList.map((reward) => {
+        if (reward.id === id) {
+          return {
+            ...reward, 
+            rewardName: updatedRewardName,
+            points: updatedRewardPoints,
+          };
+        }
+        return reward;
+      });
+
+      setRewardsList(updatedRewardsList);
+      setSelectedRewardId(id); // Change the status of the reward item to selected after updating
+      setUpdatingRewardId(null);
+      toast.success('Reward updated successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error("Error updating reward:", error);
+      toast.error('Failed to update reward.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
 
   return (
     <div className="home-container">
       <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
      
       <div className="content">
-        <h1 className="card-view">Welcome to the Reward Page</h1>
-        {showAddForm ? (
-          <div className="floating-form">
+        <h1 className="card-view">WELCOME TO THE REWARD PAGE</h1>
+        <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
           <div className="form-container">
             <div className="form-group">
-              <label htmlFor="rewardName">Reward Name:</label>
+              <label htmlFor="rewardName">Reward:</label>
               <input
+                placeholder="Enter Reward"
                 type="text"
                 id="rewardName"
                 value={rewardName}
@@ -124,13 +183,14 @@ function Reward() {
             <div className="form-group">
               <label htmlFor="points">Points:</label>
               <input
+                placeholder="Enter Points"
                 type="number"
                 id="points"
                 value={points}
                 onChange={(e) => setPoints(e.target.value)}
                 className="form-control"
               />
-            </div> {emptyFieldWarning && <p className="warning-text"></p>}
+            </div> 
             <button onClick={handleAddReward} className="btn btn-primary">
               Add Reward
             </button>
@@ -139,16 +199,20 @@ function Reward() {
             </button>
           </div>
         </div>
-        ) : (
-          <div className="floating-button-container">
+        <div className="floating-button-container">
+          {showAddForm ? (
+            <button onClick={() => setShowAddForm(false)} className="floating-add-button">
+              -
+            </button>
+          ) : (
             <button onClick={() => setShowAddForm(true)} className="floating-add-button">
               +
             </button>
-          </div>
-        )}
+          )}
+        </div>
        
-       {loading ? (
-          <p>Loading...</p>
+        {loading ? (
+          <p className="loading">Loading...</p>
         ) : (
           <div className="rewards-container">
             <h2>Rewards List</h2>
@@ -158,15 +222,56 @@ function Reward() {
                   key={reward.id}
                   className={`reward-item ${selectedRewardId === reward.id ? 'selected' : ''}`}
                   onClick={() => handleRewardClick(reward.id)}
+                  onMouseEnter={() => handleRevealDeleteButton(reward.id)}
+                  onMouseLeave={() => handleRevealDeleteButton(null)}
                 >
                   <h3>{reward.rewardName}</h3>
                   <p>Points: {reward.points}</p>
                   {selectedRewardId === reward.id && (
-                    <button
-                    onClick={() => handleDeleteReward(reward.id)}
-                    className="delete-button">
+                    <>
+                      <button
+                        onClick={() => handleDeleteReward(reward.id)}
+                        className={`delete-button ${showDeleteButtonId === reward.id ? 'visible' : ''}`}
+                      >
                         Delete
-                    </button>
+                      </button>
+                      <button
+                        onClick={() => setUpdatingRewardId(reward.id)}
+                        className={`update-button ${showDeleteButtonId === reward.id ? 'visible' : ''}`}
+                      >
+                        Update
+                      </button>
+                    </>
+                  )}
+                  {updatingRewardId === reward.id && (
+                    <div className="update-form" onClick={(e) => e.stopPropagation()}>
+                      <div className="form-group">
+                        <input
+                          type="text"
+                          id="updatedRewardName"
+                          placeholder="Updated Reward"
+                          value={updatedRewardName}
+                          onChange={(e) => setUpdatedRewardName(e.target.value)}
+                          className="form-control"
+                        />
+                      </div>
+                      <div className="form-group">                       
+                        <input
+                          type="number"
+                          id="updatedRewardPoints"
+                          placeholder="Updated Points"
+                          value={updatedRewardPoints}
+                          onChange={(e) => setUpdatedRewardPoints(e.target.value)}
+                          className="form-control"
+                        />
+                      </div>
+                      <button onClick={() => handleUpdateReward(reward.id)} className="btn btn-primary">
+                        Update
+                      </button>
+                      <button onClick={() => setUpdatingRewardId(null)} className="btn btn-secondary">
+                        Cancel
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
