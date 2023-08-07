@@ -9,6 +9,14 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {
@@ -25,6 +33,7 @@ const Register = () => {
       const { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
       console.log('Registration successful!', user);
       showRegistrationSuccessToast();
+      handleLogout(); // Logout the user after registration
     } catch (error) {
       console.error('Registration failed:', error.message);
       if (error.code === 'auth/email-already-in-use') {
@@ -97,7 +106,11 @@ const Register = () => {
             REGISTER
           </button>
           <p className="forgot-password">
-            Already have an account? <Link className="forgot-password" to="/login">Login here</Link>.
+            Already have an account?{' '}
+            <Link className="forgot-password" to="/login">
+              Login here
+            </Link>
+            .
           </p>
         </div>
       </form>

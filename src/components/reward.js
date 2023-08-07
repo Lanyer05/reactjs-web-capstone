@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import firebase from './config/firebase';
+import firebase from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
-import "./Home.css";
-import Sidebar from "./sidebar";
+import "../Home.css";
+import Sidebar from "../sidebar";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { firestore } from "./config/firebase";
+import { firestore } from "../config/firebase";
 
 function Reward() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,9 +36,7 @@ function Reward() {
         }
       }
     };
-
     document.addEventListener("click", handleClickOutsideForm);
-
     return () => {
       document.removeEventListener("click", handleClickOutsideForm);
     };
@@ -46,12 +44,10 @@ function Reward() {
 
   useEffect(() => {
     let isMounted = true;
-  
     const fetchRewards = async () => {
       try {
         const rewardsSnapshot = await rewardsCollectionRef.get();
         const rewardsData = rewardsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
         if (isMounted) {
           setRewardsList(rewardsData);
           setLoading(false);
@@ -61,13 +57,23 @@ function Reward() {
         setLoading(false);
       }
     };
-  
-    fetchRewards();
-  
+    fetchRewards(); 
     return () => {
       isMounted = false; 
     };
   }, [rewardsCollectionRef]);
+
+  useEffect(() => {
+    const checkLoggedInUser = async () => {
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
+        navigate('/login');
+      }
+    };
+
+    checkLoggedInUser();
+  }, [navigate]);
 
   const handleAddReward = async () => {
     if (!rewardName || !points) {
@@ -75,17 +81,14 @@ function Reward() {
       toast.error('Please fill in both Reward and Points.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-
     const newReward = {
       rewardName: rewardName,
       points: points
     };
-
     try {
       await rewardsCollectionRef.add(newReward);
       const rewardsSnapshot = await rewardsCollectionRef.get();
       const updatedRewardsData = rewardsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
       setRewardsList(updatedRewardsData);
       setRewardName("");
       setPoints("");
@@ -132,7 +135,6 @@ function Reward() {
       toast.error('Please fill in both Reward and Points.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-
     try {
       await rewardsCollectionRef.doc(id).update({
         rewardName: updatedRewardName,
@@ -223,8 +225,7 @@ function Reward() {
                   className={`reward-item ${selectedRewardId === reward.id ? 'selected' : ''}`}
                   onClick={() => handleRewardClick(reward.id)}
                   onMouseEnter={() => handleRevealDeleteButton(reward.id)}
-                  onMouseLeave={() => handleRevealDeleteButton(null)}
-                >
+                  onMouseLeave={() => handleRevealDeleteButton(null)}>
                   <h3>{reward.rewardName}</h3>
                   <p>Points: {reward.points}</p>
                   {selectedRewardId === reward.id && (
