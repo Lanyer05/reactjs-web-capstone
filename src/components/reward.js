@@ -6,6 +6,7 @@ import Sidebar from "../sidebar";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from "../config/firebase";
+import AnimatedPage from "../AnimatedPage";
 
 function Reward() {
   const [isOpen, setIsOpen] = useState(false);
@@ -164,6 +165,7 @@ function Reward() {
 
 
   return (
+    <AnimatedPage>
     <div className="home-container">
       <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
      
@@ -214,7 +216,7 @@ function Reward() {
         </div>
        
         {loading ? (
-          <p className="loading">Loading...</p>
+          <p className="loading"></p>
         ) : (
           <div className="rewards-container">
             <h2>Rewards List</h2>
@@ -282,6 +284,7 @@ function Reward() {
       </div>
       <ToastContainer autoClose={1500} hideProgressBar />
     </div>
+    </AnimatedPage>
   );
 }
 

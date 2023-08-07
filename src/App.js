@@ -7,7 +7,9 @@ import Reward from './components/reward';
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 
+
 const App = () => {
+  
   return (
     <Router>
       <Routes>

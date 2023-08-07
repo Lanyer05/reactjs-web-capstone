@@ -342,7 +342,7 @@
 
 .rewards-container {
   margin-top: 20px;
-  padding: 20px;
+  padding: 40px;
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #f8f8f8;
@@ -366,6 +366,8 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.5s ease, transform 0.5s ease; 
 }
 
 .reward-item h3 {
@@ -376,6 +378,10 @@
   margin: 5px 0;
 }
 
+.reward-item:hover {
+  background-color: #3f5159;
+  transform: scale(1.1);
+}
 
 .delete-button {
   background-color: #c05c54; 

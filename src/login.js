@@ -4,6 +4,7 @@ import firebase from './config/firebase';
 import './design.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AnimatedPage from "./AnimatedPage";
 
 const showLoginSuccessToast = () => {
   toast.success('Login Successful!', {
@@ -28,6 +29,7 @@ const Login = () => {
         showLoginSuccessToast();
         navigate('/home');
       }
+
     };
 
     checkLoggedInUser();
@@ -96,6 +98,7 @@ const Login = () => {
   };
 
   return (
+    <AnimatedPage>
     <div className="login-container">
       <h1 className="welcome-text">WELCOME</h1>
       <img className="welcome-image" src="https://via.placeholder.com/317x227" alt="Welcome" />
@@ -131,6 +134,7 @@ const Login = () => {
       </form>
       <ToastContainer />
     </div>
+    </AnimatedPage>
   );
 };
 

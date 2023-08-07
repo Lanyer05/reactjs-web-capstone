@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
+import AnimatedPage from './AnimatedPage';
 
 function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +51,7 @@ function Home() {
   }
 
   return (
+    <AnimatedPage>
     <div className="home-container">
       <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
 
@@ -58,6 +60,7 @@ function Home() {
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
       </div>
     </div>
+    </AnimatedPage>
   );
 }
 

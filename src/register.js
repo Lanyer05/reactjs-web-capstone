@@ -4,6 +4,7 @@ import './design.css';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AnimatedPage from "./AnimatedPage";
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -78,6 +79,7 @@ const Register = () => {
   };
 
   return (
+    <AnimatedPage>
     <div className="login-container">
       <h1 className="welcome-text">REGISTER</h1>
       <img className="welcome-image" src="https://via.placeholder.com/317x227" alt="Welcome" />
@@ -116,6 +118,7 @@ const Register = () => {
       </form>
       <ToastContainer />
     </div>
+    </AnimatedPage>
   );
 };
 
