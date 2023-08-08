@@ -34,7 +34,7 @@ const Register = () => {
       const { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
       console.log('Registration successful!', user);
       showRegistrationSuccessToast();
-      handleLogout(); // Logout the user after registration
+      handleLogout();
     } catch (error) {
       console.error('Registration failed:', error.message);
       if (error.code === 'auth/email-already-in-use') {

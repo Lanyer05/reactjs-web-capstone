@@ -1,20 +1,23 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCP3Dfj2SBh6fC8KAaI4FpiATzgwb7McaQ",
-  authDomain: "capstone-eafdd.firebaseapp.com",
-  projectId: "capstone-eafdd",
-  storageBucket: "capstone-eafdd.appspot.com",
-  messagingSenderId: "211816054856",
-  appId: "1:211816054856:web:2ae7cc44240abe1927d87d"
+  apiKey: "AIzaSyB6qjSc_VkKkNBgEOoybLEwPdUIIK1OinI",
+  authDomain: "capstone1-1b3d1.firebaseapp.com",
+  projectId: "capstone1-1b3d1",
+  storageBucket: "capstone1-1b3d1.appspot.com",
+  messagingSenderId: "710765135722",
+  appId: "1:710765135722:web:8d89c3a5e6623353360713"
 };
+
 
 firebase.initializeApp(firebaseConfig);
 
 export const firestore = firebase.firestore();
 export const auth =firebase.auth();
+export const database = firebase.database();
 
 export default firebase;
 
