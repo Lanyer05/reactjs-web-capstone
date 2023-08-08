@@ -74,13 +74,17 @@ function Task() {
     }
 
     try {
-      await firestore.collection('tasks').add({
+      const batch = firestore.batch();
+      const newTaskRef = firestore.collection('tasks').doc();
+      batch.set(newTaskRef, {
         taskName,
         description,
         location,
         timeFrame: { hours, minutes },
         points: parseInt(points),
       });
+
+      await batch.commit();
       resetForm();
       toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
@@ -107,7 +111,9 @@ function Task() {
     }
 
     try {
-      await firestore.collection('tasks').doc(taskId).update({
+      const batch = firestore.batch();
+      const taskRef = firestore.collection('tasks').doc(taskId);
+      batch.update(taskRef, {
         taskName: updatedTaskName,
         description: updatedDescription,
         location: updatedLocation,
@@ -115,21 +121,7 @@ function Task() {
         points: parseInt(updatedPoints),
       });
 
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            taskName: updatedTaskName,
-            description: updatedDescription,
-            location: updatedLocation,
-            timeFrame: { hours: updatedHours, minutes: updatedMinutes },
-            points: parseInt(updatedPoints),
-          };
-        }
-        return task;
-      });
-
-      setTasks(updatedTasks);
+      await batch.commit();
       setUpdatingTaskId(null);
       setShowUpdateForm(false);
       setIsUpdateFormOpen(false);
