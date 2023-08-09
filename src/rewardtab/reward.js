@@ -17,7 +17,6 @@ function Reward() {
   const [rewardName, setRewardName] = useState("");
   const [points, setPoints] = useState("");
   const [rewardsList, setRewardsList] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedRewardId, setSelectedRewardId] = useState(null);
   const rewardsCollectionRef = firestore.collection("rewards");
   const formContainerRef = useRef(null);
@@ -50,10 +49,8 @@ function Reward() {
         const rewardsSnapshot = await rewardsCollectionRef.get();
         const rewardsData = rewardsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setRewardsList(rewardsData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching rewards:", error);
-        setLoading(false);
       }
     };
     fetchRewards();

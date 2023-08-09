@@ -13,6 +13,7 @@ function Task() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const handleTrigger = () => setIsOpen(!isOpen);
+  const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const navigate = useNavigate();
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
@@ -20,10 +21,10 @@ function Task() {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [points, setPoints] = useState('');
-  const formContainerRef = useRef(null);
-  const [selectedTab, setSelectedTab] = useState('TASK');
-  const [tasks, setTasks] = useState([]);
+  const [tasksList, setTasksList] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const tasksCollectionRef = firestore.collection("tasks");
+  const formContainerRef = useRef(null);
   const [updatedTaskName, setUpdatedTaskName] = useState('');
   const [updatedDescription, setUpdatedDescription] = useState('');
   const [updatedLocation, setUpdatedLocation] = useState('');
@@ -31,60 +32,75 @@ function Task() {
   const [updatedMinutes, setUpdatedMinutes] = useState(0);
   const [updatedPoints, setUpdatedPoints] = useState('');
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('TASK');
+  
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
+  
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const snapshot = await firestore.collection('tasks').get();
-        const fetchedTasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setTasks(fetchedTasks);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-
-    fetchTasks();
-  }, []);
-
-  useEffect(() => {
+   useEffect(() => {
     const handleClickOutsideForm = (event) => {
       if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
         if (showAddForm) {
           setShowAddForm(false);
           resetForm();
         }
-        if (showUpdateForm) {
-          setShowUpdateForm(false);
-          resetUpdateForm();
+        if (updatingTaskId !== null) {
+          setUpdatingTaskId(null);
         }
       }
     };
-
     document.addEventListener('click', handleClickOutsideForm);
     return () => {
       document.removeEventListener('click', handleClickOutsideForm);
     };
   }, [showAddForm, showUpdateForm]);
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const tasksSnapshot = await tasksCollectionRef.get();
+        const tasksData = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setTasksList(tasksData);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [tasksCollectionRef]);
+
+  useEffect(() => {
+    const checkLoggedInUser = async () => {
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
+        navigate('/login');
+      }
+    };
+    checkLoggedInUser();
+  }, [navigate]);
+
   const handleAddTask = async () => {
     if (!taskName || !description || !location || !points) {
+      setEmptyFieldWarning(true);
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
 
     try {
-      const batch = firestore.batch();
-      const newTaskRef = firestore.collection('tasks').doc();
-      batch.set(newTaskRef, {
-        taskName,
-        description,
-        location,
+      const newTask = {
+        taskName:taskName,
+        description:description,
+        location:location,
         timeFrame: { hours, minutes },
-        points: parseInt(points),
-      });
-
-      await batch.commit();
+        points: points,
+      };
+      await tasksCollectionRef.add(newTask);
+      setTasksList([...tasksList, newTask]);
+      setTaskName("");
+      setDescription("");
+      setLocation("");
+      setPoints("");
       resetForm();
       toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
@@ -95,12 +111,23 @@ function Task() {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      await firestore.collection('tasks').doc(taskId).delete();
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+      await tasksCollectionRef.doc(taskId).delete();
+      const updateTasksList = tasksList.filter((task) => task.id !== taskId);
+      setTasksList(updateTasksList);
       toast.success('Task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut();
+      console.log('Logout successful.');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
@@ -109,28 +136,45 @@ function Task() {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-
     try {
-      const batch = firestore.batch();
-      const taskRef = firestore.collection('tasks').doc(taskId);
-      batch.update(taskRef, {
+      await tasksCollectionRef.doc(taskId).update({
         taskName: updatedTaskName,
         description: updatedDescription,
         location: updatedLocation,
         timeFrame: { hours: updatedHours, minutes: updatedMinutes },
-        points: parseInt(updatedPoints),
+        points: updatedPoints,
       });
 
-      await batch.commit();
+      const updateTasksList = tasksList.map((task) => {
+        if (task.id === taskId) {
+          return{
+            ...task,
+            taskName: updatedTaskName,
+            description: updatedDescription,
+            location: updatedLocation,
+            timeFrame: { hours: updatedHours, minutes: updatedMinutes },
+            points: updatedPoints,
+          }
+        }
+        return task;
+      })
+      setTasksList(updateTasksList);
+      setSelectedTask(taskId);
       setUpdatingTaskId(null);
-      setShowUpdateForm(false);
-      setIsUpdateFormOpen(false);
-      resetUpdateForm();
       toast.success('Task updated successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
       console.error('Error updating task:', error);
       toast.error('Failed to update task.', { autoClose: 1500, hideProgressBar: true });
     }
+  };
+
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
+    setShowAddForm(false);
+    resetForm();
+    setShowUpdateForm(false);
+    resetUpdateForm();
+    setIsUpdateFormOpen(false);
   };
 
   const resetForm = () => {
@@ -179,14 +223,6 @@ function Task() {
     }
   };
 
-  const handleTabChange = (tab) => {
-    setSelectedTab(tab);
-    setShowAddForm(false);
-    resetForm();
-    setShowUpdateForm(false);
-    resetUpdateForm();
-    setIsUpdateFormOpen(false);
-  };
 
   const handleTaskItemClick = (taskId) => {
     if (isUpdateFormOpen) {
@@ -220,16 +256,6 @@ function Task() {
     backgroundColor: '#34673d',
   };
 
-  const handleLogout = async () => {
-    try {
-      await firebase.auth().signOut();
-      console.log('Logout successful.');
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -239,11 +265,105 @@ function Task() {
           <h1 className="card-view">TASK PAGE</h1>
 
           <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
-            {/* ... (existing form inputs) */}
+            <div className="form-container">
+              <div className="form-group">
+                <label htmlFor="taskName">Task Name:</label>
+                <input
+                  placeholder="Enter Task Name"
+                  type="text"
+                  id="taskName"
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Description:</label>
+                <input
+                  placeholder="Enter Description"
+                  type="text"
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="location">Location:</label>
+                <input
+                  placeholder="Enter Location"
+                  type="text"
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="timeInput">Time Frame:</label>
+                <div className="time-frame-inputs">
+                  <input
+                    type="number"
+                    id="hours"
+                    min="0"
+                    max="24"
+                    value={hours}
+                    onChange={handleHoursChange}
+                    className="form-control time-input"
+                  />
+                  <span className="time-divider">:</span>
+                  <input
+                    type="number"
+                    id="minutes"
+                    min="0"
+                    max="59"
+                    value={minutes}
+                    onChange={handleMinutesChange}
+                    className="form-control time-input"
+                  />
+                </div>
+                {(hours > 24 || (hours === 24 && minutes > 0)) && (
+                  <div className="error-message">Time frame should be within 24 hours.</div>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="points">Points:</label>
+                <input
+                  placeholder="Enter Points"
+                  type="number"
+                  id="points"
+                  value={points}
+                  onChange={(e) => setPoints(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+              <button onClick={handleAddTask} className="btn btn-primary">
+                Create Task
+              </button>
+              <button onClick={() => { setShowAddForm(false); resetForm(); }} className="btn btn-secondary">
+                Cancel
+              </button>
+            </div>
           </div>
-
           <div className="tabs">
-            {/* ... (existing tab buttons) */}
+          <button
+              style={selectedTab === "TASK" ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange("TASK")}
+            >
+              Reward
+            </button>
+            <button
+              style={selectedTab === "ACCEPT" ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange("ACCEPT")}
+            >
+              Request
+            </button>
+            <button
+              style={selectedTab === "COMPLETE" ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange("COMPLETE")}
+            >
+              Claim
+            </button>
           </div>
 
           {selectedTab === 'TASK' && (
@@ -251,27 +371,26 @@ function Task() {
               <div className="task-container">
                 <h2>Task List</h2>
                 <div className="task-list">
-                  {tasks.map((task) => (
+                  {tasksList.map((task) => (
                     <div
                       key={task.id}
                       className={`task-item ${selectedTask === task.id ? 'selected' : ''}`}
                       onClick={() => handleTaskItemClick(task.id)}
+                      
                     >
                       <h3>{task.taskName}</h3>
                       <p>DESCRIPTION: {task.description}</p>
                       <p>LOCATION: {task.location}</p>
-                      <p> TIME FRAME: {task.timeFrame.hours} hours {task.timeFrame.minutes} minutes</p>
+                      <p>TIME FRAME: {task.timeFrame.hours} hours {task.timeFrame.minutes} minutes</p>
                       <p>POINTS: {task.points}</p>
                       {selectedTask === task.id && !isUpdateFormOpen && (
-                        <div className="task-buttons">
+
+                        <>
                           <button onClick={() => handleDeleteTask(task.id)} className="delete-button1">Delete</button>
-                          <button onClick={() => {
-                            setUpdatingTaskId(task.id);
-                            setIsUpdateFormOpen(true); // Set the update form open state
-                          }} className="update-button1">Update</button>
-                        </div>
+                          <button onClick={() =>handleUpdateTask (task.id)} className="update-button1">Update</button>
+                        </>
                       )}
-                      {updatingTaskId === task.id && isUpdateFormOpen && (
+                      {updatingTaskId === task.id && (
                         <div className="update-form" onClick={(e) => e.stopPropagation()}>
                           <div className="form-group">
                             <input
@@ -342,10 +461,7 @@ function Task() {
                           <button onClick={() => handleUpdateTask(task.id)} className="btn btn-primary">
                             Update
                           </button>
-                          <button onClick={() => {
-                            setUpdatingTaskId(null);
-                            setIsUpdateFormOpen(false); // Close the update form
-                          }} className="btn btn-secondary">
+                          <button onClick={() => setUpdatingTaskId(null)} className="btn btn-secondary">
                             Cancel
                           </button>
                         </div>
@@ -354,7 +470,17 @@ function Task() {
                   ))}
                 </div>
               </div>
-              {/* ... (floating add button) */}
+              <div className="floating-button-container">
+                {showAddForm ? (
+                  <button onClick={() => setShowAddForm(false)} className="floating-add-button">
+                    -
+                  </button>
+                ) : (
+                  <button onClick={() => setShowAddForm(true)} className="floating-add-button">
+                    +
+                  </button>
+                )}
+              </div>
             </>
           )}
 
@@ -372,7 +498,6 @@ function Task() {
             </div>
           )}
         </div>
-
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>
     </AnimatedPage>
