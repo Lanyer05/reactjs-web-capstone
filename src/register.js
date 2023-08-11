@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnimatedPage from "./AnimatedPage";
+import Logo from "./ecotaskreward_logo.png"
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -82,7 +83,7 @@ const Register = () => {
     <AnimatedPage>
     <div className="login-container">
       <h1 className="welcome-text">REGISTER</h1>
-      <img className="welcome-image" src="https://via.placeholder.com/317x227" alt="Welcome" />
+      <img className="welcome-image" src={Logo} alt="Welcome" />
       <div className="welcome-message">Create a new account</div>
       <form onSubmit={handleRegister}>
         <div className="input-container">

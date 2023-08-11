@@ -11,7 +11,6 @@ import AnimatedPage from '../AnimatedPage';
 function Task() {
   const [isOpen, setIsOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const handleTrigger = () => setIsOpen(!isOpen);
   const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const navigate = useNavigate();
@@ -22,9 +21,10 @@ function Task() {
   const [minutes, setMinutes] = useState(0);
   const [points, setPoints] = useState('');
   const [tasksList, setTasksList] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const tasksCollectionRef = firestore.collection("tasks");
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const tasksCollectionRef = firestore.collection('tasks');
   const formContainerRef = useRef(null);
+  const [showDeleteButtonId, setShowDeleteButtonId] = useState(null);
   const [updatedTaskName, setUpdatedTaskName] = useState('');
   const [updatedDescription, setUpdatedDescription] = useState('');
   const [updatedLocation, setUpdatedLocation] = useState('');
@@ -34,15 +34,12 @@ function Task() {
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
   const [selectedTab, setSelectedTab] = useState('TASK');
   
-  const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
-  
 
-   useEffect(() => {
+  useEffect(() => {
     const handleClickOutsideForm = (event) => {
       if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
         if (showAddForm) {
           setShowAddForm(false);
-          resetForm();
         }
         if (updatingTaskId !== null) {
           setUpdatingTaskId(null);
@@ -53,7 +50,7 @@ function Task() {
     return () => {
       document.removeEventListener('click', handleClickOutsideForm);
     };
-  }, [showAddForm, showUpdateForm]);
+  }, [showAddForm, updatingTaskId]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -65,7 +62,6 @@ function Task() {
         console.error('Error fetching tasks:', error);
       }
     };
-
     fetchTasks();
   }, [tasksCollectionRef]);
 
@@ -73,7 +69,7 @@ function Task() {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
       if (!user) {
-        toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
+        toast.error('Please login to access the tasks page.', { autoClose: 1500, hideProgressBar: true });
         navigate('/login');
       }
     };
@@ -89,19 +85,16 @@ function Task() {
 
     try {
       const newTask = {
-        taskName:taskName,
-        description:description,
-        location:location,
+        taskName: taskName,
+        description: description,
+        location: location,
         timeFrame: { hours, minutes },
         points: points,
       };
       await tasksCollectionRef.add(newTask);
       setTasksList([...tasksList, newTask]);
-      setTaskName("");
-      setDescription("");
-      setLocation("");
-      setPoints("");
       resetForm();
+      setShowAddForm(false);
       toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
       console.error('Error adding task:', error);
@@ -111,9 +104,14 @@ function Task() {
 
   const handleDeleteTask = async (taskId) => {
     try {
+      const shouldDelete = window.confirm('Are you sure you want to delete this task?');
+      if (!shouldDelete) {
+        return;
+      }
+  
       await tasksCollectionRef.doc(taskId).delete();
-      const updateTasksList = tasksList.filter((task) => task.id !== taskId);
-      setTasksList(updateTasksList);
+      const updatedTasksList = tasksList.filter((task) => task.id !== taskId);
+      setTasksList(updatedTasksList);
       toast.success('Task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -131,11 +129,20 @@ function Task() {
     }
   };
 
+  const handleTaskItemClick = (taskId) => {
+    setSelectedTaskId((prevId) => (prevId === taskId ? null : taskId));
+  };
+
+  const handleRevealDeleteButton = (id) => {
+    setShowDeleteButtonId((prevId) => (prevId === id ? null : id));
+  };
+
   const handleUpdateTask = async (taskId) => {
-    if (!updatedTaskName || !updatedDescription || !updatedLocation || !updatedPoints) {
+    if (null) {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
+
     try {
       await tasksCollectionRef.doc(taskId).update({
         taskName: updatedTaskName,
@@ -145,21 +152,22 @@ function Task() {
         points: updatedPoints,
       });
 
-      const updateTasksList = tasksList.map((task) => {
+      const updatedTasksList = tasksList.map((task) => {
         if (task.id === taskId) {
-          return{
+          return {
             ...task,
             taskName: updatedTaskName,
             description: updatedDescription,
             location: updatedLocation,
             timeFrame: { hours: updatedHours, minutes: updatedMinutes },
             points: updatedPoints,
-          }
+          };
         }
         return task;
-      })
-      setTasksList(updateTasksList);
-      setSelectedTask(taskId);
+      });
+
+      setTasksList(updatedTasksList);
+      setSelectedTaskId(taskId);
       setUpdatingTaskId(null);
       toast.success('Task updated successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
@@ -170,11 +178,6 @@ function Task() {
 
   const handleTabChange = (tab) => {
     setSelectedTab(tab);
-    setShowAddForm(false);
-    resetForm();
-    setShowUpdateForm(false);
-    resetUpdateForm();
-    setIsUpdateFormOpen(false);
   };
 
   const resetForm = () => {
@@ -184,57 +187,7 @@ function Task() {
     setHours(0);
     setMinutes(0);
     setPoints('');
-  };
-
-  const resetUpdateForm = () => {
-    setUpdatedTaskName('');
-    setUpdatedDescription('');
-    setUpdatedLocation('');
-    setUpdatedHours(0);
-    setUpdatedMinutes(0);
-    setUpdatedPoints('');
-  };
-
-  const handleHoursChange = (e) => {
-    const newHours = parseInt(e.target.value);
-    if (newHours >= 0 && newHours <= 24) {
-      setHours(newHours);
-    }
-  };
-
-  const handleMinutesChange = (e) => {
-    const newMinutes = parseInt(e.target.value);
-    if (newMinutes >= 0 && newMinutes <= 59) {
-      setMinutes(newMinutes);
-    }
-  };
-
-  const handleUpdatedHoursChange = (e) => {
-    const newHours = parseInt(e.target.value);
-    if (newHours >= 0 && newHours <= 24) {
-      setUpdatedHours(newHours);
-    }
-  };
-
-  const handleUpdatedMinutesChange = (e) => {
-    const newMinutes = parseInt(e.target.value);
-    if (newMinutes >= 0 && newMinutes <= 59) {
-      setUpdatedMinutes(newMinutes);
-    }
-  };
-
-
-  const handleTaskItemClick = (taskId) => {
-    if (isUpdateFormOpen) {
-      if (updatingTaskId === taskId) {
-        setIsUpdateFormOpen(false);
-        setUpdatingTaskId(null);
-      }
-    } else if (selectedTask === taskId) {
-      setSelectedTask(null);
-    } else {
-      setSelectedTask(taskId);
-    }
+    setEmptyFieldWarning(false);
   };
 
   const tabStyle = {
@@ -247,7 +200,7 @@ function Task() {
     backgroundColor: '#588157',
     border: 'none',
     cursor: 'pointer',
-    width: '170px',
+    width: '160px',
     height: '40px',
   };
 
@@ -267,9 +220,9 @@ function Task() {
           <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
             <div className="form-container">
               <div className="form-group">
-                <label htmlFor="taskName">Task Name:</label>
+                <label htmlFor="taskName">Task:</label>
                 <input
-                  placeholder="Enter Task Name"
+                  placeholder="Enter Task"
                   type="text"
                   id="taskName"
                   value={taskName}
@@ -300,31 +253,24 @@ function Task() {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="timeInput">Time Frame:</label>
-                <div className="time-frame-inputs">
-                  <input
-                    type="number"
-                    id="hours"
-                    min="0"
-                    max="24"
-                    value={hours}
-                    onChange={handleHoursChange}
-                    className="form-control time-input"
-                  />
-                  <span className="time-divider">:</span>
-                  <input
-                    type="number"
-                    id="minutes"
-                    min="0"
-                    max="59"
-                    value={minutes}
-                    onChange={handleMinutesChange}
-                    className="form-control time-input"
-                  />
-                </div>
-                {(hours > 24 || (hours === 24 && minutes > 0)) && (
-                  <div className="error-message">Time frame should be within 24 hours.</div>
-                )}
+                <label htmlFor="hours">Time Frame (Hours):</label>
+                <input
+                  type="number"
+                  id="hours"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="minutes">Time Frame (Minutes):</label>
+                <input
+                  type="number"
+                  id="minutes"
+                  value={minutes}
+                  onChange={(e) => setMinutes(e.target.value)}
+                  className="form-control"
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
@@ -338,29 +284,30 @@ function Task() {
                 />
               </div>
               <button onClick={handleAddTask} className="btn btn-primary">
-                Create Task
+                Add Task
               </button>
-              <button onClick={() => { setShowAddForm(false); resetForm(); }} className="btn btn-secondary">
+              <button onClick={() => setShowAddForm(false)} className="btn btn-secondary">
                 Cancel
               </button>
             </div>
           </div>
+
           <div className="tabs">
-          <button
-              style={selectedTab === "TASK" ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange("TASK")}
+            <button
+              style={selectedTab === 'TASK' ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange('TASK')}
             >
-              Reward
+              Task
             </button>
             <button
-              style={selectedTab === "ACCEPT" ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange("ACCEPT")}
+              style={selectedTab === 'REQUEST' ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange('REQUEST')}
             >
               Request
             </button>
             <button
-              style={selectedTab === "COMPLETE" ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange("COMPLETE")}
+              style={selectedTab === 'CLAIM' ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange('CLAIM')}
             >
               Claim
             </button>
@@ -368,26 +315,36 @@ function Task() {
 
           {selectedTab === 'TASK' && (
             <>
-              <div className="task-container">
-                <h2>Task List</h2>
-                <div className="task-list">
+              <div className="tasks-container">
+                <h2>Tasks List</h2>
+                <div className="tasks-list">
                   {tasksList.map((task) => (
                     <div
                       key={task.id}
-                      className={`task-item ${selectedTask === task.id ? 'selected' : ''}`}
+                      className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
                       onClick={() => handleTaskItemClick(task.id)}
-                      
+                      onMouseEnter={() => handleRevealDeleteButton(task.id)}
+                      onMouseLeave={() => handleRevealDeleteButton(null)}
                     >
                       <h3>{task.taskName}</h3>
-                      <p>DESCRIPTION: {task.description}</p>
-                      <p>LOCATION: {task.location}</p>
-                      <p>TIME FRAME: {task.timeFrame.hours} hours {task.timeFrame.minutes} minutes</p>
-                      <p>POINTS: {task.points}</p>
-                      {selectedTask === task.id && !isUpdateFormOpen && (
-
+                      <p>Description: {task.description}</p>
+                      <p>Location: {task.location}</p>
+                      <p>Time Frame: {task.timeFrame.hours} hours {task.timeFrame.minutes} minutes</p>
+                      <p>Points: {task.points}</p>
+                      {selectedTaskId === task.id && (
                         <>
-                          <button onClick={() => handleDeleteTask(task.id)} className="delete-button1">Delete</button>
-                          <button onClick={() =>handleUpdateTask (task.id)} className="update-button1">Update</button>
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
+                            className={`delete-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setUpdatingTaskId(task.id)}
+                            className={`update-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
+                          >
+                            Update
+                          </button>
                         </>
                       )}
                       {updatingTaskId === task.id && (
@@ -396,7 +353,7 @@ function Task() {
                             <input
                               type="text"
                               id="updatedTaskName"
-                              placeholder="Updated Task Name"
+                              placeholder="Updated Task"
                               value={updatedTaskName}
                               onChange={(e) => setUpdatedTaskName(e.target.value)}
                               className="form-control"
@@ -423,30 +380,24 @@ function Task() {
                             />
                           </div>
                           <div className="form-group">
-                            <div className="time-frame-inputs">
-                              <input
-                                type="number"
-                                id="updatedHours"
-                                min="0"
-                                max="24"
-                                value={updatedHours}
-                                onChange={handleUpdatedHoursChange}
-                                className="form-control time-input"
-                              />
-                              <span className="time-divider">:</span>
-                              <input
-                                type="number"
-                                id="updatedMinutes"
-                                min="0"
-                                max="59"
-                                value={updatedMinutes}
-                                onChange={handleUpdatedMinutesChange}
-                                className="form-control time-input"
-                              />
-                            </div>
-                            {(updatedHours > 24 || (updatedHours === 24 && updatedMinutes > 0)) && (
-                              <div className="error-message">Time frame should be within 24 hours.</div>
-                            )}
+                            <input
+                              type="number"
+                              id="updatedHours"
+                              placeholder="Updated Hours"
+                              value={updatedHours}
+                              onChange={(e) => setUpdatedHours(e.target.value)}
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <input
+                              type="number"
+                              id="updatedMinutes"
+                              placeholder="Updated Minutes"
+                              value={updatedMinutes}
+                              onChange={(e) => setUpdatedMinutes(e.target.value)}
+                              className="form-control"
+                            />
                           </div>
                           <div className="form-group">
                             <input
@@ -484,17 +435,17 @@ function Task() {
             </>
           )}
 
-          {selectedTab === 'ACCEPT' && (
-            <div className="accept-container">
+          {selectedTab === 'REQUEST' && (
+            <div className="request-container">
               <h2>Request Content</h2>
-              {/* Add content specific to the "ACCEPT" tab */}
+              {/* Add content specific to the "REQUEST" tab */}
             </div>
           )}
 
-          {selectedTab === 'COMPLETE' && (
-            <div className="complete-container">
+          {selectedTab === 'CLAIM' && (
+            <div className="claim-container">
               <h2>Claim Content</h2>
-              {/* Add content specific to the "COMPLETE" tab */}
+              {/* Add content specific to the "CLAIM" tab */}
             </div>
           )}
         </div>

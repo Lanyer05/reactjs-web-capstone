@@ -5,6 +5,7 @@ import Home from './home';
 import Register from './register'; 
 import Reward from './rewardtab/reward';
 import Task from './rewardtab/task';
+import User from './rewardtab/user'
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/home" element={<Home />} /> 
           <Route path="/reward" element={<Reward />} /> 
           <Route path="/task" element={<Task />} /> 
+          <Route path="/user" element={<User />} /> 
         </Route>
         
         <Route path="/sidebar" element={<Sidebar />} />
