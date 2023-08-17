@@ -42,15 +42,10 @@ function Home() {
     checkLoggedInUser();
   }, []);
 
-  
-  const [revealedItems, setRevealedItems] = useState({});
-
-  const handleItemClick = (itemId) => {
-    setRevealedItems((prevItems) => ({
-      ...prevItems,
-      [itemId]: !prevItems[itemId], 
-    }));
-  };
+  if (isLoading) {
+    
+    return <div>Loading...</div>;
+  }
 
   return (
     <AnimatedPage>
