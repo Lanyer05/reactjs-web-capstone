@@ -38,7 +38,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <span>CCTV PREVIEW</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/user-verification')}>
+      <div className="sidebar-position" onClick={() => navigate('/user')}>
         <FontAwesomeIcon icon={faUserAlt} />
         <span>USERS VERIFICATION</span>
       </div>

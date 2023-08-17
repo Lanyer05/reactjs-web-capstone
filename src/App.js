@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './login'; 
 import Home from './home'; 
 import Register from './register'; 
-import Reward from './components/reward';
+import Reward from './rewardtab/reward';
+import Task from './rewardtab/task';
+import User from './rewardtab/user'
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 
@@ -20,6 +22,8 @@ const App = () => {
         <Route element={<PrivateRoute isLogged={true}/>}>
           <Route path="/home" element={<Home />} /> 
           <Route path="/reward" element={<Reward />} /> 
+          <Route path="/task" element={<Task />} /> 
+          <Route path="/user" element={<User />} /> 
         </Route>
         
         <Route path="/sidebar" element={<Sidebar />} />
