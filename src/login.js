@@ -5,6 +5,7 @@ import './design.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnimatedPage from "./AnimatedPage";
+import Logo from "./ecotaskreward_logo.png"
 
 const showLoginSuccessToast = () => {
   toast.success('Login Successful!', {
@@ -101,7 +102,7 @@ const Login = () => {
     <AnimatedPage>
     <div className="login-container">
       <h1 className="welcome-text">WELCOME</h1>
-      <img className="welcome-image" src="https://via.placeholder.com/317x227" alt="Welcome" />
+      <img className="welcome-image" src={Logo} alt="Welcome" />
       <div className="welcome-message">Go Green, Go Clean!</div>
       <form onSubmit={handleLogin}>
         <div className="input-container">
