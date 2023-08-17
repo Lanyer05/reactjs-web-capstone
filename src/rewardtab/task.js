@@ -33,7 +33,7 @@ function Task() {
   const [updatedPoints, setUpdatedPoints] = useState('');
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
   const [selectedTab, setSelectedTab] = useState('TASK');
-  
+  const [userAcceptedTasks, setUserAcceptedTasks] = useState([]);
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -62,8 +62,27 @@ function Task() {
         console.error('Error fetching tasks:', error);
       }
     };
-    fetchTasks();
-  }, [tasksCollectionRef]);
+
+    const unsubscribe = tasksCollectionRef.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        const taskData = { id: change.doc.id, ...change.doc.data() };
+        if (change.type === 'added') {
+          // Handle newly added tasks if needed
+        } else if (change.type === 'modified' && taskData.isAccepted) {
+          // Move the task to "user_acceptedTask" collection and delete from "tasks" collection
+          tasksCollectionRef.doc(taskData.id).delete();
+        }
+      });
+
+      // Fetch tasks after handling changes
+      fetchTasks();
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const checkLoggedInUser = async () => {
@@ -90,6 +109,7 @@ function Task() {
         location: location,
         timeFrame: { hours, minutes },
         points: points,
+        isAccepted: false,
       };
       await tasksCollectionRef.add(newTask);
       setTasksList([...tasksList, newTask]);
@@ -102,14 +122,43 @@ function Task() {
     }
   };
 
+  const handleAcceptTask = async (taskId) => {
+    try {
+      const taskToAccept = tasksList.find(task => task.id === taskId);
+      if (!taskToAccept) {
+        console.error('Task not found');
+        return;
+      }
+      
+      const acceptedTaskData = {
+        ...taskToAccept,
+        acceptedBy: firebase.auth().currentUser.uid,
+      };
+      
+      await firestore.collection('user_acceptedTask').add(acceptedTaskData);
+      await tasksCollectionRef.doc(taskId).delete();
+      
+      toast.success('Task accepted successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error('Error accepting task:', error);
+      toast.error('Failed to accept task.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
   const handleDeleteTask = async (taskId) => {
     try {
       const shouldDelete = window.confirm('Are you sure you want to delete this task?');
       if (!shouldDelete) {
         return;
       }
-  
-      await tasksCollectionRef.doc(taskId).delete();
+
+      const batch = firestore.batch();
+
+      const taskRef = tasksCollectionRef.doc(taskId);
+      batch.delete(taskRef);
+
+      await batch.commit();
+
       const updatedTasksList = tasksList.filter((task) => task.id !== taskId);
       setTasksList(updatedTasksList);
       toast.success('Task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -138,19 +187,24 @@ function Task() {
   };
 
   const handleUpdateTask = async (taskId) => {
-    if (null) {
+    if (!updatedTaskName || !updatedDescription || !updatedLocation || !updatedPoints) {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
 
     try {
-      await tasksCollectionRef.doc(taskId).update({
+      const batch = firestore.batch();
+
+      const taskRef = tasksCollectionRef.doc(taskId);
+      batch.update(taskRef, {
         taskName: updatedTaskName,
         description: updatedDescription,
         location: updatedLocation,
         timeFrame: { hours: updatedHours, minutes: updatedMinutes },
         points: updatedPoints,
       });
+
+      await batch.commit();
 
       const updatedTasksList = tasksList.map((task) => {
         if (task.id === taskId) {
@@ -176,6 +230,20 @@ function Task() {
     }
   };
 
+  useEffect(() => {
+    const fetchUserAcceptedTasks = async () => {
+      try {
+        const acceptedTasksSnapshot = await firestore.collection('user_acceptedTask').get();
+        const acceptedTasksData = acceptedTasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setUserAcceptedTasks(acceptedTasksData);
+      } catch (error) {
+        console.error('Error fetching user accepted tasks:', error);
+      }
+    };
+
+    fetchUserAcceptedTasks();
+  }, []);
+
   const handleTabChange = (tab) => {
     setSelectedTab(tab);
   };
@@ -200,7 +268,7 @@ function Task() {
     backgroundColor: '#588157',
     border: 'none',
     cursor: 'pointer',
-    width: '160px',
+    width: '170px',
     height: '40px',
   };
 
@@ -208,7 +276,7 @@ function Task() {
     ...tabStyle,
     backgroundColor: '#34673d',
   };
-
+  
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -300,16 +368,16 @@ function Task() {
               Task
             </button>
             <button
-              style={selectedTab === 'REQUEST' ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange('REQUEST')}
+              style={selectedTab === 'ACCEPT' ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange('ACCEPT')}
             >
-              Request
+              Accept
             </button>
             <button
-              style={selectedTab === 'CLAIM' ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange('CLAIM')}
+              style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange('COMPLETE')}
             >
-              Claim
+              Complete
             </button>
           </div>
 
@@ -329,7 +397,7 @@ function Task() {
                       <h3>{task.taskName}</h3>
                       <p>Description: {task.description}</p>
                       <p>Location: {task.location}</p>
-                      <p>Time Frame: {task.timeFrame.hours} hours {task.timeFrame.minutes} minutes</p>
+                      <p>Time Frame: {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes</p>
                       <p>Points: {task.points}</p>
                       {selectedTaskId === task.id && (
                         <>
@@ -435,17 +503,32 @@ function Task() {
             </>
           )}
 
-          {selectedTab === 'REQUEST' && (
-            <div className="request-container">
-              <h2>Request Content</h2>
-              {/* Add content specific to the "REQUEST" tab */}
+          {selectedTab === 'ACCEPT' && (
+            <div className="accept-container">
+              <h2>Accept Content</h2>
+              <div className="accept-list">
+                {userAcceptedTasks.map((accepted) => (
+                  <div key={accepted.id} className="accept-item">
+                     <h3>{accepted.taskName}</h3>
+                         <p>Description: {accepted.description}</p>
+                         <p>Location: {accepted.location}</p>
+        {accepted.timeFrame ? (
+        <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
+      ) : (
+        <p>Time Frame: N/A</p>
+      )}
+      <p>Points: {accepted.points}</p>
+    </div>
+  ))}
+</div>
+
             </div>
           )}
 
-          {selectedTab === 'CLAIM' && (
-            <div className="claim-container">
-              <h2>Claim Content</h2>
-              {/* Add content specific to the "CLAIM" tab */}
+          {selectedTab === 'COMPLETE' && (
+            <div className="complete-container">
+              <h2>Complete Content</h2>
+              {/* Add content specific to the "COMPLETE" tab */}
             </div>
           )}
         </div>
