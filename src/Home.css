@@ -116,7 +116,7 @@
   }
   
   .card-view {
-    width: calc(100% - 10px);
+    width: calc(100% - 0px);
     height: 60px;
     background: #588157;
     border-radius: 20px;
@@ -356,26 +356,26 @@
 
 .rewards-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(auto-fit 1fr));
   grid-gap: 30px;
 }
 
 @media (min-width: 768px) {
   .rewards-list {
-    grid-template-columns: repeat(3, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, minmax(20px, 1fr));
   }
 }
 
 @media (max-width: 500px) {
   .rewards-list {
-    grid-template-columns: repeat(2, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, minmax(20px, 1fr));
   }
 }
 
 
 @media (max-width: 480px) {
   .rewards-list {
-    grid-template-columns: repeat(1, minmax(250px, 1fr));
+    grid-template-columns: repeat(1, minmax(20px, 1fr));
   }
 }
 
@@ -576,7 +576,8 @@
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  display: inline-block; /* Change to display: block; */
+  /* Change display: inline-block; to display: block; */
+  display: block;
 }
 
 .delete-button1:hover {

@@ -18,13 +18,13 @@ body {
     line-height: 37.02px;
     letter-spacing: 1.92px;
     word-wrap: break-word;
-    margin-top: 123px;
+    margin-bottom: 20px;
   }
   
   .welcome-image {
-    width: 317px;
-    height: 227px;
-    margin-top: 18px;
+    width: 450px;
+    height: 350px;
+    margin-top: 10px;
   }
   
   .welcome-message {
