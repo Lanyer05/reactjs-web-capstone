@@ -487,6 +487,7 @@ function Task() {
                       )}
                     </div>
                   ))}
+                  {tasksList.length === 0 && <p>No tasks found.</p>} 
                 </div>
               </div>
               <div className="floating-button-container">

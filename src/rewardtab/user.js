@@ -95,27 +95,34 @@ function User() {
         return;
       }
   
-      const batch = firestore.batch();
-  
       const requestRef = firestore.collection("registration_requests").doc(requestId);
-      batch.update(requestRef, { isApproved: true });
+  
+      await requestRef.update({ isApproved: true });
   
       const approvedRequestSnapshot = await requestRef.get();
       const approvedRequestData = approvedRequestSnapshot.data();
   
       if (approvedRequestData) {
         const userRef = firestore.collection("users").doc(approvedRequestData.Uid);
-        batch.set(userRef, approvedRequestData);
+        
+        await firestore.runTransaction(async (transaction) => {
+          transaction.delete(requestRef);
+          
+          transaction.set(userRef, approvedRequestData);
+        });
+  
+        setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
+  
+        toast.success("Request approved successfully!", {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      } else {
+        toast.error("Failed to approve request.", {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
       }
-  
-      await batch.commit();
-  
-      setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
-  
-      toast.success("Request approved successfully!", {
-        autoClose: 1500,
-        hideProgressBar: true,
-      });
     } catch (error) {
       console.error("Error approving request:", error);
       toast.error("Failed to approve request.", {
@@ -132,16 +139,14 @@ function User() {
         return;
       }
   
-      // Step 1: Delete user document from Firestore
+
       await firestore.collection('users').doc(userId).delete();
   
-      // Step 2: Delete authentication user
       const user = firebase.auth().currentUser;
       if (user) {
         await user.delete();
       }
   
-      // Update the userApproved state to remove the deleted user
       setUserApproved(userApproved.filter((user) => user.id !== userId));
   
       toast.success('User deleted successfully!', {
@@ -219,6 +224,7 @@ function User() {
                     )}
                   </div>
                 ))}
+                {userRequests.length === 0 && <p>No tasks found.</p>} 
               </div>
             </div>
           )}
