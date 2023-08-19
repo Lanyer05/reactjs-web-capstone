@@ -37,7 +37,6 @@ function Task() {
   const [selectedAcceptedItemId, setSelectedAcceptedItemId] = useState(null);
   const [showCancelButtonId, setShowCancelButtonId] = useState(null);
 
-
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
       if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
@@ -70,18 +69,14 @@ function Task() {
       snapshot.docChanges().forEach((change) => {
         const taskData = { id: change.doc.id, ...change.doc.data() };
         if (change.type === 'added') {
-          // Handle newly added tasks if needed
         } else if (change.type === 'modified' && taskData.isAccepted) {
-          // Move the task to "user_acceptedTask" collection and delete from "tasks" collection
           tasksCollectionRef.doc(taskData.id).delete();
         }
       });
 
-      // Fetch tasks after handling changes
       fetchTasks();
     });
 
-    // Cleanup the listener when the component unmounts
     return () => {
       unsubscribe();
     };
@@ -104,13 +99,13 @@ function Task() {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-  
+
     try {
       const newTask = {
         taskName: taskName,
         description: description,
         location: location,
-        timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) }, // Convert to integers
+        timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
         points: points,
         isAccepted: false,
       };
@@ -123,7 +118,7 @@ function Task() {
       console.error('Error adding task:', error);
       toast.error('Failed to add task.', { autoClose: 1500, hideProgressBar: true });
     }
-  };  
+  };
 
   const handleAcceptTask = async (taskId) => {
     try {
@@ -132,15 +127,15 @@ function Task() {
         console.error('Task not found');
         return;
       }
-      
+
       const acceptedTaskData = {
         ...taskToAccept,
         acceptedBy: firebase.auth().currentUser.uid,
       };
-      
+
       await firestore.collection('user_acceptedTask').add(acceptedTaskData);
       await tasksCollectionRef.doc(taskId).delete();
-      
+
       toast.success('Task accepted successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
       console.error('Error accepting task:', error);
@@ -194,21 +189,21 @@ function Task() {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-  
+
     try {
       const batch = firestore.batch();
-  
+
       const taskRef = tasksCollectionRef.doc(taskId);
       batch.update(taskRef, {
         taskName: updatedTaskName,
         description: updatedDescription,
         location: updatedLocation,
-        timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) }, // Convert to integers
+        timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) },
         points: updatedPoints,
       });
-  
+
       await batch.commit();
-  
+
       const updatedTasksList = tasksList.map((task) => {
         if (task.id === taskId) {
           return {
@@ -216,13 +211,13 @@ function Task() {
             taskName: updatedTaskName,
             description: updatedDescription,
             location: updatedLocation,
-            timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) }, // Convert to integers
+            timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) },
             points: updatedPoints,
           };
         }
         return task;
       });
-  
+
       setTasksList(updatedTasksList);
       setSelectedTaskId(taskId);
       setUpdatingTaskId(null);
@@ -231,7 +226,7 @@ function Task() {
       console.error('Error updating task:', error);
       toast.error('Failed to update task.', { autoClose: 1500, hideProgressBar: true });
     }
-  };  
+  };
 
   useEffect(() => {
     const fetchUserAcceptedTasks = async () => {
@@ -287,12 +282,11 @@ function Task() {
         console.error('Task not found');
         return;
       }
-  
+
       const batch = firestore.batch();
-  
+
       const taskRef = tasksCollectionRef.doc(taskId);
-  
-      // Fields to add back to "tasks" collection
+
       const taskDataToAdd = {
         description: taskToCancel.description,
         isAccepted: false,
@@ -301,14 +295,14 @@ function Task() {
         taskName: taskToCancel.taskName,
         timeFrame: taskToCancel.timeFrame,
       };
-  
+
       batch.set(taskRef, taskDataToAdd);
-  
+
       const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
-      batch.delete(acceptedTaskRef); // Delete from "user_acceptedTask" collection
-  
+      batch.delete(acceptedTaskRef); 
+
       await batch.commit();
-  
+
       const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
       setUserAcceptedTasks(updatedUserAcceptedTasks);
       toast.success('Task canceled successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -316,8 +310,7 @@ function Task() {
       console.error('Error canceling task:', error);
       toast.error('Failed to cancel task.', { autoClose: 1500, hideProgressBar: true });
     }
-  };  
-
+  };
 
   const handleAcceptItemClick = (itemId) => {
     setSelectedAcceptedItemId((prevId) => (prevId === itemId ? null : itemId));
@@ -326,9 +319,6 @@ function Task() {
   const handleRevealCancelButton = (itemId) => {
     setShowCancelButtonId((prevId) => (prevId === itemId ? null : itemId));
   };
-
-  
-
 
 
   return (
@@ -560,38 +550,38 @@ function Task() {
             </>
           )}
 
-{selectedTab === 'ACCEPT' && (
-  <div className="accept-container">
-    <h2>Accept Content</h2>
-    <div className="accept-list">
-      {userAcceptedTasks.map((accepted) => (
-        <div
-          key={accepted.id}
-          className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
-          onClick={() => handleAcceptItemClick(accepted.id)}
-          onMouseEnter={() => handleRevealCancelButton(accepted.id)}
-          onMouseLeave={() => handleRevealCancelButton(null)}
-        >
-          <h3>{accepted.taskName}</h3>
-          <p>Description: {accepted.description}</p>
-          {accepted.timeFrame ? (
-            <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
-          ) : (
-            <p>Time Frame: N/A</p>
-          )}
-          <p>Points: {accepted.points}</p>
-          <p>User ID: {accepted.acceptedBy}</p>
-          <p>Accepted By: {accepted.acceptedByEmail}</p>
-          {selectedAcceptedItemId === accepted.id && (
-            <button onClick={() => handleCancelTask(accepted.id)} className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}>
-              Cancel
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+          {selectedTab === 'ACCEPT' && (
+              <div className="accept-container">
+                  <h2>Accept Content</h2>
+                     <div className="accept-list">
+                     {userAcceptedTasks.map((accepted) => (
+                        <div
+                         key={accepted.id}
+                         className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
+                         onClick={() => handleAcceptItemClick(accepted.id)}
+                         onMouseEnter={() => handleRevealCancelButton(accepted.id)}
+                         onMouseLeave={() => handleRevealCancelButton(null)}
+                         >
+                         <h3>{accepted.taskName}</h3>
+                         <p>Description: {accepted.description}</p>
+                         {accepted.timeFrame ? (
+                         <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
+                              ) : (
+                         <p>Time Frame: N/A</p>
+                              )}
+                         <p>Points: {accepted.points}</p>
+                         <p>User ID: {accepted.acceptedBy}</p>
+                         <p>Accepted By: {accepted.acceptedByEmail}</p>
+                         {selectedAcceptedItemId === accepted.id && (
+                         <button onClick={() => handleCancelTask(accepted.id)} className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}>
+                           Cancel
+                         </button>
+                         )}
+                        </div>
+                      ))}
+                   </div>
+                </div>
+            )}
 
           {selectedTab === 'COMPLETE' && (
             <div className="complete-container">
