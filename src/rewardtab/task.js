@@ -34,6 +34,9 @@ function Task() {
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
   const [selectedTab, setSelectedTab] = useState('TASK');
   const [userAcceptedTasks, setUserAcceptedTasks] = useState([]);
+  const [selectedAcceptedItemId, setSelectedAcceptedItemId] = useState(null);
+  const [showCancelButtonId, setShowCancelButtonId] = useState(null);
+
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -101,13 +104,13 @@ function Task() {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-
+  
     try {
       const newTask = {
         taskName: taskName,
         description: description,
         location: location,
-        timeFrame: { hours, minutes },
+        timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) }, // Convert to integers
         points: points,
         isAccepted: false,
       };
@@ -120,7 +123,7 @@ function Task() {
       console.error('Error adding task:', error);
       toast.error('Failed to add task.', { autoClose: 1500, hideProgressBar: true });
     }
-  };
+  };  
 
   const handleAcceptTask = async (taskId) => {
     try {
@@ -191,21 +194,21 @@ function Task() {
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
-
+  
     try {
       const batch = firestore.batch();
-
+  
       const taskRef = tasksCollectionRef.doc(taskId);
       batch.update(taskRef, {
         taskName: updatedTaskName,
         description: updatedDescription,
         location: updatedLocation,
-        timeFrame: { hours: updatedHours, minutes: updatedMinutes },
+        timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) }, // Convert to integers
         points: updatedPoints,
       });
-
+  
       await batch.commit();
-
+  
       const updatedTasksList = tasksList.map((task) => {
         if (task.id === taskId) {
           return {
@@ -213,13 +216,13 @@ function Task() {
             taskName: updatedTaskName,
             description: updatedDescription,
             location: updatedLocation,
-            timeFrame: { hours: updatedHours, minutes: updatedMinutes },
+            timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) }, // Convert to integers
             points: updatedPoints,
           };
         }
         return task;
       });
-
+  
       setTasksList(updatedTasksList);
       setSelectedTaskId(taskId);
       setUpdatingTaskId(null);
@@ -228,7 +231,7 @@ function Task() {
       console.error('Error updating task:', error);
       toast.error('Failed to update task.', { autoClose: 1500, hideProgressBar: true });
     }
-  };
+  };  
 
   useEffect(() => {
     const fetchUserAcceptedTasks = async () => {
@@ -276,7 +279,58 @@ function Task() {
     ...tabStyle,
     backgroundColor: '#34673d',
   };
+
+  const handleCancelTask = async (taskId) => {
+    try {
+      const taskToCancel = userAcceptedTasks.find((task) => task.id === taskId);
+      if (!taskToCancel) {
+        console.error('Task not found');
+        return;
+      }
   
+      const batch = firestore.batch();
+  
+      const taskRef = tasksCollectionRef.doc(taskId);
+  
+      // Fields to add back to "tasks" collection
+      const taskDataToAdd = {
+        description: taskToCancel.description,
+        isAccepted: false,
+        location: taskToCancel.location,
+        points: taskToCancel.points,
+        taskName: taskToCancel.taskName,
+        timeFrame: taskToCancel.timeFrame,
+      };
+  
+      batch.set(taskRef, taskDataToAdd);
+  
+      const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
+      batch.delete(acceptedTaskRef); // Delete from "user_acceptedTask" collection
+  
+      await batch.commit();
+  
+      const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
+      setUserAcceptedTasks(updatedUserAcceptedTasks);
+      toast.success('Task canceled successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error('Error canceling task:', error);
+      toast.error('Failed to cancel task.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };  
+
+
+  const handleAcceptItemClick = (itemId) => {
+    setSelectedAcceptedItemId((prevId) => (prevId === itemId ? null : itemId));
+  };
+
+  const handleRevealCancelButton = (itemId) => {
+    setShowCancelButtonId((prevId) => (prevId === itemId ? null : itemId));
+  };
+
+  
+
+
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -322,23 +376,25 @@ function Task() {
               </div>
               <div className="form-group">
                 <label htmlFor="hours">Time Frame (Hours):</label>
-                <input
-                  type="number"
-                  id="hours"
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value)}
-                  className="form-control"
-                />
-              </div>
+                  <input
+                     type="number"
+                     id="hours"
+                     placeholder='0'
+                     value={hours === 0 ? '' : hours}
+                     onChange={(e) => setHours(Math.min(23, Math.max(0, parseInt(e.target.value))))}
+                     className="form-control"
+                   />
+                  </div>
               <div className="form-group">
                 <label htmlFor="minutes">Time Frame (Minutes):</label>
-                <input
-                  type="number"
-                  id="minutes"
-                  value={minutes}
-                  onChange={(e) => setMinutes(e.target.value)}
-                  className="form-control"
-                />
+                  <input
+                   type="number"
+                   id="minutes"
+                   placeholder='0'
+                   value={minutes === 0 ? '' : minutes}
+                   onChange={(e) => setMinutes(Math.min(59, Math.max(0, parseInt(e.target.value))))}
+                   className="form-control"
+                 />
               </div>
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
@@ -421,7 +477,7 @@ function Task() {
                             <input
                               type="text"
                               id="updatedTaskName"
-                              placeholder="Updated Task"
+                              placeholder="Update Task Name"
                               value={updatedTaskName}
                               onChange={(e) => setUpdatedTaskName(e.target.value)}
                               className="form-control"
@@ -431,7 +487,7 @@ function Task() {
                             <input
                               type="text"
                               id="updatedDescription"
-                              placeholder="Updated Description"
+                              placeholder="Update Description"
                               value={updatedDescription}
                               onChange={(e) => setUpdatedDescription(e.target.value)}
                               className="form-control"
@@ -441,7 +497,7 @@ function Task() {
                             <input
                               type="text"
                               id="updatedLocation"
-                              placeholder="Updated Location"
+                              placeholder="Update Location"
                               value={updatedLocation}
                               onChange={(e) => setUpdatedLocation(e.target.value)}
                               className="form-control"
@@ -451,8 +507,8 @@ function Task() {
                             <input
                               type="number"
                               id="updatedHours"
-                              placeholder="Updated Hours"
-                              value={updatedHours}
+                              placeholder="0"
+                              value={updatedHours === 0 ? '' : updatedHours}
                               onChange={(e) => setUpdatedHours(e.target.value)}
                               className="form-control"
                             />
@@ -461,8 +517,8 @@ function Task() {
                             <input
                               type="number"
                               id="updatedMinutes"
-                              placeholder="Updated Minutes"
-                              value={updatedMinutes}
+                              placeholder="0"
+                              value={updatedMinutes === 0 ? '' : updatedMinutes}
                               onChange={(e) => setUpdatedMinutes(e.target.value)}
                               className="form-control"
                             />
@@ -471,7 +527,7 @@ function Task() {
                             <input
                               type="number"
                               id="updatedPoints"
-                              placeholder="Updated Points"
+                              placeholder="0"
                               value={updatedPoints}
                               onChange={(e) => setUpdatedPoints(e.target.value)}
                               className="form-control"
@@ -504,27 +560,38 @@ function Task() {
             </>
           )}
 
-          {selectedTab === 'ACCEPT' && (
-            <div className="accept-container">
-              <h2>Accept Content</h2>
-              <div className="accept-list">
-                {userAcceptedTasks.map((accepted) => (
-                  <div key={accepted.id} className="accept-item">
-                     <h3>{accepted.taskName}</h3>
-                         <p>Description: {accepted.description}</p>
-                         <p>Location: {accepted.location}</p>
-        {accepted.timeFrame ? (
-        <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
-      ) : (
-        <p>Time Frame: N/A</p>
-      )}
-      <p>Points: {accepted.points}</p>
-    </div>
-  ))}
-</div>
-
-            </div>
+{selectedTab === 'ACCEPT' && (
+  <div className="accept-container">
+    <h2>Accept Content</h2>
+    <div className="accept-list">
+      {userAcceptedTasks.map((accepted) => (
+        <div
+          key={accepted.id}
+          className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
+          onClick={() => handleAcceptItemClick(accepted.id)}
+          onMouseEnter={() => handleRevealCancelButton(accepted.id)}
+          onMouseLeave={() => handleRevealCancelButton(null)}
+        >
+          <h3>{accepted.taskName}</h3>
+          <p>Description: {accepted.description}</p>
+          {accepted.timeFrame ? (
+            <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
+          ) : (
+            <p>Time Frame: N/A</p>
           )}
+          <p>Points: {accepted.points}</p>
+          <p>User ID: {accepted.acceptedBy}</p>
+          <p>Accepted By: {accepted.acceptedByEmail}</p>
+          {selectedAcceptedItemId === accepted.id && (
+            <button onClick={() => handleCancelTask(accepted.id)} className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}>
+              Cancel
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
           {selectedTab === 'COMPLETE' && (
             <div className="complete-container">

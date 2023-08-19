@@ -887,7 +887,8 @@ text p {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: background-color 0.5s ease, transform 0.5s ease; 
+  transition: background-color 0.5s ease, transform 0.5s ease;
+  position: relative; 
 }
 
 .accept-item h3 {
@@ -914,4 +915,21 @@ text p {
 
 .accept-item.selected {
   background-color: #34673d; 
+}
+
+.accept-item.selected .accept-buttons {
+  display: block;
+}
+
+.accept-buttons {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.accept-buttons button {
+  /* ... button styles ... */
+  margin-right: 5px;
 }
