@@ -321,6 +321,52 @@ function Task() {
   };
 
 
+  const [completedTasks, setCompletedTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchCompletedTasks = async () => {
+      try {
+        const completedTasksSnapshot = await firestore.collection('completed_task').get();
+        const completedTasksData = completedTasksSnapshot.docs.map((doc) => {
+          const completedTask = doc.data();
+          // Assuming you have a field "remainingTime" in the completed_task document
+          const remainingTime = completedTask.remainingTime;
+          return {
+            id: doc.id,
+            ...doc.data(),
+            remainingTime: remainingTime,
+          };
+        });
+        setCompletedTasks(completedTasksData);
+      } catch (error) {
+        console.error('Error fetching completed tasks:', error);
+      }
+    };
+  
+    fetchCompletedTasks();
+  }, []);
+
+  const handleDeleteCompletedTask = async (taskId) => {
+    try {
+      const shouldDelete = window.confirm('Are you sure you want to delete this completed task?');
+      if (!shouldDelete) {
+        return;
+      }
+
+      // Assuming you have a reference to the "completed_task" collection
+      const completedTaskRef = firestore.collection('completed_task').doc(taskId);
+      await completedTaskRef.delete();
+
+      const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
+      setCompletedTasks(updatedCompletedTasks);
+
+      toast.success('Completed task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error('Error deleting completed task:', error);
+      toast.error('Failed to delete completed task.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -579,16 +625,36 @@ function Task() {
                          )}
                         </div>
                       ))}
+                      {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
                    </div>
                 </div>
             )}
 
           {selectedTab === 'COMPLETE' && (
-            <div className="complete-container">
-              <h2>Complete Content</h2>
-              {/* Add content specific to the "COMPLETE" tab */}
-            </div>
-          )}
+        <div className="complete-container">
+          <h2>Complete Content</h2>
+          <div className="completed-list">
+            {completedTasks.map((completed) => (
+              <div key={completed.id} className="completed-item">
+                <h3>{completed.taskName}</h3>
+                <p>Description: {completed.description}</p>
+                {completed.timeFrame ? (
+                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+                ) : (
+                  <p>Time Frame: N/A</p>
+                )}
+                <p>Points: {completed.points}</p>
+                <p>User Email: {completed.acceptedByEmail}</p>
+                <p> End Time: {completed.remainingTime}</p>
+                <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
+                  Delete
+                </button>
+              </div>
+            ))}
+            {completedTasks.length === 0 && <p>No completed tasks found.</p>}
+          </div>
+        </div>
+      )}
         </div>
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>

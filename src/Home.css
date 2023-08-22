@@ -933,3 +933,66 @@ text p {
   /* ... button styles ... */
   margin-right: 5px;
 }
+
+
+
+
+
+.completed-list {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(250px, 1fr));
+}
+
+.completed-item {
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.5s ease, transform 0.5s ease;
+  position: relative; 
+}
+
+.completed-item h3 {
+  margin: 0;
+}
+
+.completed-item p {
+  margin: 5px 0;
+  margin-bottom: 10px;
+}
+
+.completed-item:hover {
+  background-color: #3f5159;
+  transform: scale(1.03);
+}
+.completed-item {
+  background-color: #588157; 
+  color: white; 
+  padding: 10px; 
+  margin-bottom: 10px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+}
+
+.completed-item.selected {
+  background-color: #34673d; 
+}
+
+.completed-item.selected .accept-buttons {
+  display: block;
+}
+
+.completed-buttons {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.completed-buttons button {
+  /* ... button styles ... */
+  margin-right: 5px;
+}
