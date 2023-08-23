@@ -367,6 +367,25 @@ function Task() {
     }
   };
 
+
+  useEffect(() => {
+    const unsubscribeAccepted = firestore.collection('user_acceptedTask').onSnapshot(snapshot => {
+      const acceptedTasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserAcceptedTasks(acceptedTasksData);
+    });
+
+    const unsubscribeCompleted = firestore.collection('completed_task').onSnapshot(snapshot => {
+      const completedTasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCompletedTasks(completedTasksData);
+    });
+
+    return () => {
+      unsubscribeAccepted();
+      unsubscribeCompleted();
+    };
+  }, []);
+
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -596,39 +615,45 @@ function Task() {
             </>
           )}
 
-          {selectedTab === 'ACCEPT' && (
-              <div className="accept-container">
-                  <h2>Accept Content</h2>
-                     <div className="accept-list">
-                     {userAcceptedTasks.map((accepted) => (
-                        <div
-                         key={accepted.id}
-                         className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
-                         onClick={() => handleAcceptItemClick(accepted.id)}
-                         onMouseEnter={() => handleRevealCancelButton(accepted.id)}
-                         onMouseLeave={() => handleRevealCancelButton(null)}
-                         >
-                         <h3>{accepted.taskName}</h3>
-                         <p>Description: {accepted.description}</p>
-                         {accepted.timeFrame ? (
-                         <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
-                              ) : (
-                         <p>Time Frame: N/A</p>
-                              )}
-                         <p>Points: {accepted.points}</p>
-                         <p>User ID: {accepted.acceptedBy}</p>
-                         <p>Accepted By: {accepted.acceptedByEmail}</p>
-                         {selectedAcceptedItemId === accepted.id && (
-                         <button onClick={() => handleCancelTask(accepted.id)} className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}>
-                           Cancel
-                         </button>
-                         )}
-                        </div>
-                      ))}
-                      {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
-                   </div>
-                </div>
-            )}
+{selectedTab === 'ACCEPT' && (
+  <div className="accept-container">
+    <h2>Accept Content</h2>
+    <div className="accept-list">
+      {userAcceptedTasks.map((accepted) => (
+        <div
+          key={accepted.id}
+          className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
+          onClick={() => handleAcceptItemClick(accepted.id)}
+          onMouseEnter={() => handleRevealCancelButton(accepted.id)}
+          onMouseLeave={() => handleRevealCancelButton(null)}
+        >
+          {accepted.isStarted ? (
+            <div className="ongoing-indicator"></div>
+          ) : null}
+          <h3>{accepted.taskName}</h3>
+          <p>Description: {accepted.description}</p>
+          {accepted.timeFrame ? (
+            <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
+          ) : (
+            <p>Time Frame: N/A</p>
+          )}
+          <p>Points: {accepted.points}</p>
+          <p>User ID: {accepted.acceptedBy}</p>
+          <p>Accepted By: {accepted.acceptedByEmail}</p>
+          {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
+            <button
+              onClick={() => handleCancelTask(accepted.id)}
+              className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      ))}
+      {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
+    </div>
+  </div>
+)}
 
           {selectedTab === 'COMPLETE' && (
         <div className="complete-container">

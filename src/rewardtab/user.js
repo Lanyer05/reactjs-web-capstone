@@ -181,6 +181,23 @@ function User() {
     backgroundColor: "#34673d",
   };
 
+  useEffect(() => {
+    const unsubscribeRequests = firestore.collection('registration_requests').onSnapshot(snapshot => {
+      const userRequestsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserRequests(userRequestsData);
+    });
+  
+    const unsubscribeUsers = firestore.collection('users').onSnapshot(snapshot => {
+      const userApprovedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserApproved(userApprovedData);
+    });
+  
+    return () => {
+      unsubscribeRequests();
+      unsubscribeUsers();
+    };
+  }, []);
+
   return (
     <AnimatedPage>
       <div className="home-container">

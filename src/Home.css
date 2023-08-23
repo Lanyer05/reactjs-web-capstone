@@ -996,3 +996,23 @@ text p {
   /* ... button styles ... */
   margin-right: 5px;
 }
+
+.ongoing-indicator {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: red;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
