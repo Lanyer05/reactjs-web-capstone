@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import firebase from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
-import "../Home.css";
+import "../css/Home.css";
 import Sidebar from "../sidebar";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,8 +12,8 @@ function Reward() {
   const [isOpen, setIsOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const handleTrigger = () => setIsOpen(!isOpen);
-  const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const navigate = useNavigate();
+  const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const [rewardName, setRewardName] = useState("");
   const [points, setPoints] = useState("");
   const [rewardsList, setRewardsList] = useState([]);
@@ -67,6 +67,7 @@ function Reward() {
     };
     fetchRewards();
   }, []);
+
 
   const handleAddReward = async () => {
     if (!rewardName || !points) {
@@ -360,9 +361,8 @@ function Reward() {
     )}
   </div>
         <ToastContainer autoClose={1500} hideProgressBar />
-      </div>
+        </div>
     </AnimatedPage>
   );
 }
-
 export default Reward;

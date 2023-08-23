@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './login'; 
 import Home from './home'; 
 import Register from './register'; 
-import Reward from './rewardtab/reward';
-import Task from './rewardtab/task';
-import User from './rewardtab/user'
+import Reward from './tabs/reward';
+import Task from './tabs/task';
+import User from './tabs/user'
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 

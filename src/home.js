@@ -42,20 +42,17 @@ function Home() {
     checkLoggedInUser();
   }, []);
 
-
   // State for tracking revealed content of each item
   const [revealedItems, setRevealedItems] = useState({});
 
   const handleItemClick = (itemId) => {
     setRevealedItems((prevItems) => ({
       ...prevItems,
-
-      [itemId]: !prevItems[itemId], 
-
       [itemId]: !prevItems[itemId], // Toggle the state of the clicked item
     }));
   };
 
+  
   return (
     <AnimatedPage>
       <div className="home-container">
