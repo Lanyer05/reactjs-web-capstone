@@ -603,45 +603,45 @@ function Task() {
 
 
 
-{selectedTab === 'ACCEPT' && (
-  <div className="accept-container">
-    <h2>Accept Content</h2>
-    <div className="accept-list">
-      {userAcceptedTasks.map((accepted) => (
+    {selectedTab === 'ACCEPT' && (
+        <div className="accept-container">
+        <h2>Accept Content</h2>
+        <div className="accept-list">
+        {userAcceptedTasks.map((accepted) => (
         <div
           key={accepted.id}
           className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
           onClick={() => handleAcceptItemClick(accepted.id)}
           onMouseEnter={() => handleRevealCancelButton(accepted.id)}
           onMouseLeave={() => handleRevealCancelButton(null)}
-        >
-          {accepted.isStarted ? (
-            <div className="ongoing-indicator"></div>
-          ) : null}
+         >
+             {accepted.isStarted ? (
+             <div className="ongoing-indicator"></div>
+             ) : null}
           <h3>{accepted.taskName}</h3>
-          <p>Description: {accepted.description}</p>
-          {accepted.timeFrame ? (
-            <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
-          ) : (
-            <p>Time Frame: N/A</p>
-          )}
-          <p>Points: {accepted.points}</p>
-          <p>User ID: {accepted.acceptedBy}</p>
-          <p>Accepted By: {accepted.acceptedByEmail}</p>
-          {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
-            <button
-              onClick={() => handleCancelTask(accepted.id)}
-              className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      ))}
-      {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
-    </div>
-  </div>
-)}
+              <p>Description: {accepted.description}</p>
+            {accepted.timeFrame ? (
+              <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
+              ) : (
+              <p>Time Frame: N/A</p>
+              )}
+              <p>Points: {accepted.points}</p>
+              <p>User ID: {accepted.acceptedBy}</p>
+              <p>Accepted By: {accepted.acceptedByEmail}</p>
+            {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
+                  <button
+                  onClick={() => handleCancelTask(accepted.id)}
+                  className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}
+                  >
+                  Cancel
+                  </button>
+                  )}
+                  </div>
+                  ))}
+                {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
+          </div>
+      </div>
+    )}
 
 
 

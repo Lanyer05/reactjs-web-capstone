@@ -35,35 +35,35 @@ function User() {
     const handleClickOutsideForm = (event) => {
       if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
         if (showAddForm) {
-          setShowAddForm(false);
+        setShowAddForm(false);
         }
         if (updatingRewardId !== null) {
-          setUpdatingRewardId(null);
+        setUpdatingRewardId(null);
         }
-      }
-    };
+        }
+        };
         document.addEventListener("click", handleClickOutsideForm);
         return () => {
         document.removeEventListener("click", handleClickOutsideForm);
-      };
+        };
     }, [showAddForm, updatingRewardId]);
 
 
   useEffect(() => {
     const checkLoggedInUser = async () => {
-      const user = firebase.auth().currentUser;
+        const user = firebase.auth().currentUser;
         if (!user) {
         toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
         navigate('/login');
         }
-      };
+        };
         checkLoggedInUser();
     }, [navigate]);
 
 
   useEffect(() => {
     const fetchUserRequests = async () => {
-      try {
+        try {
         const userRequestsSnapshot = await firestore.collection("registration_requests").get();
         const userRequestsData = userRequestsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setUserRequests(userRequestsData);
@@ -71,13 +71,13 @@ function User() {
         console.error("Error fetching user requests:", error);
         }
         };
-    fetchUserRequests();
+        fetchUserRequests();
   }, []);
 
 
   useEffect(() => {
     const fetchUserApproved = async () => {
-      try {
+        try {
         const userApprovedSnapshot = await firestore.collection("users").get();
         const userApprovedData = userApprovedSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setUserApproved(userApprovedData);
@@ -98,7 +98,7 @@ function User() {
     try {
       const shouldApprove = window.confirm('Are you sure you want to approve this request?');
       if (!shouldApprove) {
-        return;
+      return;
       }
       const requestRef = firestore.collection("registration_requests").doc(requestId);
       await requestRef.update({ isApproved: true });
@@ -109,19 +109,19 @@ function User() {
         await firestore.runTransaction(async (transaction) => {
           transaction.delete(requestRef);
           transaction.set(userRef, approvedRequestData);
-        });
+          });
           setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
           toast.success("Request approved successfully!", {
           autoClose: 1500,
           hideProgressBar: true,
-        });
-        } else {
-        toast.error("Failed to approve request.", {
+          });
+          } else {
+          toast.error("Failed to approve request.", {
           autoClose: 1500,
           hideProgressBar: true,
-        });
-        }
-      } catch (error) {
+          });
+          }
+          } catch (error) {
         console.error("Error approving request:", error);
         toast.error("Failed to approve request.", {
         autoClose: 1500,
@@ -146,15 +146,15 @@ function User() {
         toast.success('User deleted successfully!', {
         autoClose: 1500,
         hideProgressBar: true,
-      });
-      } catch (error) {
+        });
+        } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user.', {
         autoClose: 1500,
         hideProgressBar: true,
-      });
-    }
-  };
+        });
+      }
+    };
 
 
   const tabStyle = {
@@ -181,15 +181,16 @@ function User() {
       const userRequestsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setUserRequests(userRequestsData);
       });
-    const unsubscribeUsers = firestore.collection('users').onSnapshot(snapshot => {
+      const unsubscribeUsers = firestore.collection('users').onSnapshot(snapshot => {
       const userApprovedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setUserApproved(userApprovedData);
       });
-    return () => {
+      return () => {
       unsubscribeRequests();
       unsubscribeUsers();
-    };
+      };
   }, []);
+
 
   return (
     <AnimatedPage>
@@ -201,15 +202,15 @@ function User() {
             <button
               style={selectedTab === "REQUEST" ? activeTabStyle : tabStyle}
               onClick={() => handleTabChange("REQUEST")}
-            >
+              >
               User Request
-            </button>
-            <button
+              </button>
+              <button
               style={selectedTab === "APPROVED" ? activeTabStyle : tabStyle}
               onClick={() => handleTabChange("APPROVED")}
-            >
+              >
               User Approved
-            </button>
+              </button>
           </div>
 
 
@@ -227,12 +228,12 @@ function User() {
                       <button
                         onClick={() => handleApproveRequest(request.id)}
                         className="delete-button"
-                      >
+                        >
                         Approve
                       </button>
                     )}
                   </div>
-                ))}
+                  ))}
                 {userRequests.length === 0 && <p>No tasks found.</p>} 
               </div>
             </div>
@@ -252,7 +253,7 @@ function User() {
                     <button
                       onClick={() => handleDeleteUserApproved(approved.id)}
                       className="delete-button"
-                    >
+                      >
                       Delete
                     </button>
                   </div>
