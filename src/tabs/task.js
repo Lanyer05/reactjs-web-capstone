@@ -6,6 +6,7 @@ import Sidebar from '../sidebar';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from '../config/firebase';
+import { storage } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
 
 function Task() {
@@ -37,6 +38,7 @@ function Task() {
   const [selectedAcceptedItemId, setSelectedAcceptedItemId] = useState(null);
   const [showCancelButtonId, setShowCancelButtonId] = useState(null);
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [selectedCompletedItemId, setSelectedCompletedItemId] = useState(null);
 
 
   useEffect(() => {
@@ -305,12 +307,10 @@ function Task() {
   };
 
 
-  const handleAcceptItemClick = (itemId) => {
-    setSelectedAcceptedItemId((prevId) => (prevId === itemId ? null : itemId));
+  const handleCompletedItemClick = (itemId) => {
+    setSelectedCompletedItemId((prevId) => (prevId === itemId ? null : itemId));
   };
-  const handleRevealCancelButton = (itemId) => {
-    setShowCancelButtonId((prevId) => (prevId === itemId ? null : itemId));
-  };
+  
 
 
   useEffect(() => {
@@ -355,6 +355,14 @@ function Task() {
       toast.error('Failed to delete completed task.', { autoClose: 1500, hideProgressBar: true });
     }
   };
+
+  const handleAcceptItemClick = (itemId) => {
+    setSelectedAcceptedItemId((prevId) => (prevId === itemId ? null : itemId));
+  };
+  const handleRevealCancelButton = (itemId) => {
+    setShowCancelButtonId((prevId) => (prevId === itemId ? null : itemId));
+  };
+
 
 
   useEffect(() => {
@@ -645,31 +653,51 @@ function Task() {
 
 
 
-          {selectedTab === 'COMPLETE' && (
-        <div className="complete-container">
-          <h2>Complete Content</h2>
-          <div className="completed-list">
-            {completedTasks.map((completed) => (
-              <div key={completed.id} className="completed-item">
-                <h3>{completed.taskName}</h3>
-                <p>Description: {completed.description}</p>
-                {completed.timeFrame ? (
-                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
-                ) : (
-                  <p>Time Frame: N/A</p>
-                )}
-                <p>Points: {completed.points}</p>
-                <p>User Email: {completed.acceptedByEmail}</p>
-                <p> End Time: {completed.remainingTime}</p>
-                <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
-                  Delete
-                </button>
+{selectedTab === 'COMPLETE' && (
+  <div className="complete-container">
+    <h2>Complete Content</h2>
+    <div className="completed-list">
+      {completedTasks.map((completed) => (
+        <div
+          key={completed.id}
+          className={`completed-item ${selectedCompletedItemId === completed.id ? 'selected' : ''}`}
+          onClick={() => handleCompletedItemClick(completed.id)}
+          onMouseEnter={() => handleRevealDeleteButton(completed.id)}
+          onMouseLeave={() => handleRevealDeleteButton(null)}
+        >
+          <h3>{completed.taskName}</h3>
+          <p>Description: {completed.description}</p>
+          {completed.timeFrame ? (
+            <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+          ) : (
+            <p>Time Frame: N/A</p>
+          )}
+          <p>Points: {completed.points}</p>
+          <p>User Email: {completed.acceptedByEmail}</p>
+          <p>End Time: {completed.remainingTime}</p>
+          {selectedCompletedItemId === completed.id && (
+            <div className={`completed-item-actions ${showDeleteButtonId === completed.id ? 'visible' : ''}`}>
+              <div className="centered-image">
+                  {completed.imageUrl && (
+                    <img
+                    src={completed.imageUrl}
+                    alt="Completed Task"
+                    style={{ maxWidth: '400px', maxHeight: '400px' }}
+                    />
+                  )}
               </div>
-            ))}
-            {completedTasks.length === 0 && <p>No completed tasks found.</p>}
-          </div>
+              <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
+                Delete
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      ))}
+      {completedTasks.length === 0 && <p>No completed tasks found.</p>}
+    </div>
+  </div>
+)}
+
         </div>
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>
