@@ -6,7 +6,6 @@ import Sidebar from '../sidebar';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from '../config/firebase';
-import { storage } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
 
 function Task() {
@@ -39,6 +38,9 @@ function Task() {
   const [showCancelButtonId, setShowCancelButtonId] = useState(null);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [selectedCompletedItemId, setSelectedCompletedItemId] = useState(null);
+  const [selectedSubTab, setSelectedSubTab] = useState('COMPLETED');
+  const [confirmedTasks, setConfirmedTasks] = useState([]);
+  const [selectedConfirmedItemId, setSelectedConfirmedItemId] = useState(null);
 
 
   useEffect(() => {
@@ -65,9 +67,9 @@ function Task() {
         const tasksSnapshot = await tasksCollectionRef.get();
         const tasksData = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setTasksList(tasksData);
-        } catch (error) {
+      } catch (error) {
         console.error('Error fetching tasks:', error);
-        }
+      }
       };
     const unsubscribe = tasksCollectionRef.onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
@@ -76,15 +78,14 @@ function Task() {
         } else if (change.type === 'modified' && taskData.isAccepted) {
           tasksCollectionRef.doc(taskData.id).delete();
         }
-        });
-
-        fetchTasks();
-        });
-        return () => {
-        unsubscribe();
-        };
-      }, []);
-
+      });
+  
+      fetchTasks();
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [tasksCollectionRef]);
 
 
   useEffect(() => {
@@ -99,14 +100,23 @@ function Task() {
     }, [navigate]);
 
 
+      const handleLogout = async () => {
+      try {
+      await firebase.auth().signOut();
+      console.log('Logout successful.');
+      navigate('/login');
+      } catch (error) {
+      console.error('Logout failed:', error);
+      }
+    };
+
 
   const handleAddTask = async () => {
     if (!taskName || !description || !location || !points) {
       setEmptyFieldWarning(true);
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
-      return;
-    }
-    try {
+      return;}
+      try {
       const newTask = {
         taskName: taskName,
         description: description,
@@ -127,39 +137,16 @@ function Task() {
     };
 
 
-  const handleAcceptTask = async (taskId) => {
-        try {
-        const taskToAccept = tasksList.find(task => task.id === taskId);
-        if (!taskToAccept) {
-        console.error('Task not found');
-        return;
-        }
-      const acceptedTaskData = {
-        ...taskToAccept,
-        acceptedBy: firebase.auth().currentUser.uid,
-        };
-        await firestore.collection('user_acceptedTask').add(acceptedTaskData);
-        await tasksCollectionRef.doc(taskId).delete();
-        toast.success('Task accepted successfully!', { autoClose: 1500, hideProgressBar: true });
-        } catch (error) {
-        console.error('Error accepting task:', error);
-        toast.error('Failed to accept task.', { autoClose: 1500, hideProgressBar: true });
-        }
-      };
-
-
   const handleDeleteTask = async (taskId) => {
     try {
       const shouldDelete = window.confirm('Are you sure you want to delete this task?');
       if (!shouldDelete) {
       return;
       }
-
       const batch = firestore.batch();
       const taskRef = tasksCollectionRef.doc(taskId);
       batch.delete(taskRef);
       await batch.commit();
-
       const updatedTasksList = tasksList.filter((task) => task.id !== taskId);
       setTasksList(updatedTasksList);
       toast.success('Task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -168,17 +155,6 @@ function Task() {
       toast.error('Failed to delete task.', { autoClose: 1500, hideProgressBar: true });
      }
    };
-
-
-  const handleLogout = async () => {
-      try {
-      await firebase.auth().signOut();
-      console.log('Logout successful.');
-      navigate('/login');
-      } catch (error) {
-      console.error('Logout failed:', error);
-      }
-    };
 
 
     const handleTaskItemClick = (taskId) => {
@@ -276,34 +252,27 @@ function Task() {
 
   const handleCancelTask = async (taskId) => {
     try {
-      const taskToCancel = userAcceptedTasks.find((task) => task.id === taskId);
-      if (!taskToCancel) {
-        console.error('Task not found');
-        return;
-      }
-        const batch = firestore.batch();
-        const taskRef = tasksCollectionRef.doc(taskId);
-        const taskDataToAdd = {
-          description: taskToCancel.description,
-          isAccepted: false,
-          location: taskToCancel.location,
-          points: taskToCancel.points,
-          taskName: taskToCancel.taskName,
-          timeFrame: taskToCancel.timeFrame,
-          };
-
-          batch.set(taskRef, taskDataToAdd);
-          const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
-          batch.delete(acceptedTaskRef); 
-          await batch.commit();
-
-          const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
-          setUserAcceptedTasks(updatedUserAcceptedTasks);
-          toast.success('Task canceled successfully!', { autoClose: 1500, hideProgressBar: true });
-          } catch (error) {
-          console.error('Error canceling task:', error);
-          toast.error('Failed to cancel task.', { autoClose: 1500, hideProgressBar: true });
-      }
+      const batch = firestore.batch();
+      const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
+      const taskRef = tasksCollectionRef.doc(taskId);
+      batch.delete(acceptedTaskRef);
+      batch.update(taskRef, {
+        isAccepted: false,
+      });
+      await batch.commit();
+      const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
+      setUserAcceptedTasks(updatedUserAcceptedTasks);
+      toast.success('Accepted task canceled successfully!', {
+        autoClose: 1500,
+        hideProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error canceling accepted task:', error);
+      toast.error('Failed to cancel accepted task.', {
+        autoClose: 1500,
+        hideProgressBar: true,
+      });
+    }
   };
 
 
@@ -319,7 +288,6 @@ function Task() {
         const completedTasksSnapshot = await firestore.collection('completed_task').get();
         const completedTasksData = completedTasksSnapshot.docs.map((doc) => {
         const completedTask = doc.data();
-          // Assuming you have a field "remainingTime" in the completed_task document
             const remainingTime = completedTask.remainingTime;
             return {
             id: doc.id,
@@ -336,25 +304,27 @@ function Task() {
     }, []);
 
 
-  const handleDeleteCompletedTask = async (taskId) => {
-    try {
-      const shouldDelete = window.confirm('Are you sure you want to delete this completed task?');
-      if (!shouldDelete) {
-        return;
-      }
-      // Assuming you have a reference to the "completed_task" collection
-      const completedTaskRef = firestore.collection('completed_task').doc(taskId);
-      await completedTaskRef.delete();
-
-      const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
-      setCompletedTasks(updatedCompletedTasks);
-
-      toast.success('Completed task deleted successfully!', { autoClose: 1500, hideProgressBar: true });
+    const handleDeleteCompletedTask = async (taskId) => {
+      try {
+        const batch = firestore.batch();
+        const completedTaskRef = firestore.collection('completed_task').doc(taskId);
+        batch.delete(completedTaskRef);
+        await batch.commit();
+        const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
+        setCompletedTasks(updatedCompletedTasks);
+        toast.success('Completed task deleted successfully!', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
       } catch (error) {
-      console.error('Error deleting completed task:', error);
-      toast.error('Failed to delete completed task.', { autoClose: 1500, hideProgressBar: true });
-    }
-  };
+        console.error('Error deleting completed task:', error);
+        toast.error('Failed to delete completed task.', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      }
+    };
+
 
   const handleAcceptItemClick = (itemId) => {
     setSelectedAcceptedItemId((prevId) => (prevId === itemId ? null : itemId));
@@ -362,7 +332,6 @@ function Task() {
   const handleRevealCancelButton = (itemId) => {
     setShowCancelButtonId((prevId) => (prevId === itemId ? null : itemId));
   };
-
 
 
   useEffect(() => {
@@ -380,6 +349,90 @@ function Task() {
       };
   }, []);
 
+
+  const handleSubTabChange = (tab) => {
+    setSelectedSubTab(tab);
+  };
+  
+  const handleConfirmedItemClick = (itemId) => {
+    setSelectedConfirmedItemId((prevId) => (prevId === itemId ? null : itemId));
+  };
+  
+  const handleRevealConfirmButton = (itemId) => {
+  };
+
+
+  useEffect(() => {
+    const fetchConfirmedTasks = async () => {
+      try {
+        const confirmedTasksSnapshot = await firestore.collection('completed_task').get();
+        const confirmedTasksData = confirmedTasksSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setConfirmedTasks(confirmedTasksData);
+      } catch (error) {
+        console.error('Error fetching confirmed tasks:', error);
+      }
+    };
+    fetchConfirmedTasks();
+  }, []);
+
+
+ const handleConfirmCompletedTask = async (taskId) => {
+      try {
+        const batch = firestore.batch();
+        const completedTaskRef = firestore.collection('completed_task').doc(taskId);
+        batch.update(completedTaskRef, {
+          isConfirmed: true,
+        });
+        await batch.commit();
+        const updatedCompletedTasks = completedTasks.map((completed) => {
+          if (completed.id === taskId) {
+            return {
+              ...completed,
+              isConfirmed: true,
+            };
+          }
+          return completed;
+        });
+        setCompletedTasks(updatedCompletedTasks);
+        await updatePointsFromCompletedTasks(taskId);
+        toast.success('Task confirmed successfully!', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      } catch (error) {
+        console.error('Error confirming task:', error);
+        toast.error('Failed to confirm task.', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      }
+    };
+  
+
+  const updatePointsFromCompletedTasks = async (taskId) => {
+    try {
+      const completedTaskDoc = await firestore.collection('completed_task').doc(taskId).get();
+      const completedTaskData = completedTaskDoc.data();
+      const userId = completedTaskData.acceptedBy;
+      const userDoc = await firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const currentPoints = userData.userpoints || 0;
+        const taskPoints = parseInt(completedTaskData.points, 10);
+        const updatedPoints = currentPoints + taskPoints;
+        await firestore.collection('users').doc(userId).update({
+          userpoints: updatedPoints,
+        });
+        console.log('User points updated successfully.');
+      }
+    } catch (error) {
+      console.error('Error updating user points:', error);
+    }
+  };
+  
 
   return (
     <AnimatedPage>
@@ -656,49 +709,118 @@ function Task() {
 {selectedTab === 'COMPLETE' && (
   <div className="complete-container">
     <h2>Complete Content</h2>
+    <div className="tab-buttons">
+      <button
+        className={`tab-button ${selectedSubTab === 'COMPLETED' ? 'active' : ''}`}
+        onClick={() => handleSubTabChange('COMPLETED')}
+      >
+        Completed
+      </button>
+      <button
+        className={`tab-button ${selectedSubTab === 'CONFIRMED' ? 'active' : ''}`}
+        onClick={() => handleSubTabChange('CONFIRMED')}
+      >
+        Confirmed
+      </button>
+    </div>
     <div className="completed-list">
-      {completedTasks.map((completed) => (
+      {selectedSubTab === 'COMPLETED' && (
+        <>
+          {completedTasks
+            .filter((completed) => !completed.isConfirmed)
+            .map((completed) => (
+              <div
+                key={completed.id}
+                className={`completed-item ${selectedCompletedItemId === completed.id ? 'selected' : ''}`}
+                onClick={() => handleCompletedItemClick(completed.id)}
+                onMouseEnter={() => handleRevealDeleteButton(completed.id)}
+                onMouseLeave={() => handleRevealDeleteButton(null)}
+              >
+                <h3>{completed.taskName}</h3>
+                <p>Description: {completed.description}</p>
+                {completed.timeFrame ? (
+                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+                ) : (
+                  <p>Time Frame: N/A</p>
+                )}
+                <p>Points: {completed.points}</p>
+                <p>User ID: {completed.acceptedBy}</p>
+                <p>User Email: {completed.acceptedByEmail}</p>
+                <p>End Time: {completed.remainingTime}</p>
+                {selectedCompletedItemId === completed.id && (
+                  <div className={`completed-item-actions ${showDeleteButtonId === completed.id ? 'visible' : ''}`}>
+                    <div className="centered-image">
+                      {completed.imageUrl && (
+                        <img
+                          src={completed.imageUrl}
+                          alt="Completed Task"
+                          className="responsive-image"
+                        />
+                      )}
+                    </div>
+                    <button onClick={() => handleConfirmCompletedTask(completed.id)} className="confirm-button">
+                      Confirm
+                    </button>
+                    <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          {completedTasks.filter((completed) => !completed.isConfirmed).length === 0 && (
+            <p>No completed tasks found.</p>
+          )}
+        </>
+      )}
+      {selectedSubTab === 'CONFIRMED' && (
+  <div className="confirmed-list">
+    {confirmedTasks
+      .filter((confirmed) => confirmed.isConfirmed)
+      .map((confirmed) => (
         <div
-          key={completed.id}
-          className={`completed-item ${selectedCompletedItemId === completed.id ? 'selected' : ''}`}
-          onClick={() => handleCompletedItemClick(completed.id)}
-          onMouseEnter={() => handleRevealDeleteButton(completed.id)}
-          onMouseLeave={() => handleRevealDeleteButton(null)}
+          key={confirmed.id}
+          className={`confirmed-item ${selectedConfirmedItemId === confirmed.id ? 'selected' : ''}`}
+          onClick={() => handleConfirmedItemClick(confirmed.id)}
+          onMouseEnter={() => handleRevealConfirmButton(confirmed.id)}
+          onMouseLeave={() => handleRevealConfirmButton(null)}
         >
-          <h3>{completed.taskName}</h3>
-          <p>Description: {completed.description}</p>
-          {completed.timeFrame ? (
-            <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+          <h3>{confirmed.taskName}</h3>
+          <p>Description: {confirmed.description}</p>
+          {confirmed.timeFrame ? (
+            <p>Time Frame: {confirmed.timeFrame.hours}:{confirmed.timeFrame.minutes}:00</p>
           ) : (
             <p>Time Frame: N/A</p>
           )}
-          <p>Points: {completed.points}</p>
-          <p>User Email: {completed.acceptedByEmail}</p>
-          <p>End Time: {completed.remainingTime}</p>
-          {selectedCompletedItemId === completed.id && (
-            <div className={`completed-item-actions ${showDeleteButtonId === completed.id ? 'visible' : ''}`}>
+          <p>Points: {confirmed.points}</p>
+          <p>User ID: {confirmed.acceptedBy}</p>
+          <p>User Email: {confirmed.acceptedByEmail}</p>
+          <p>End Time: {confirmed.remainingTime}</p>
+          <p>Status: Confirmed</p>
+          {selectedConfirmedItemId === confirmed.id && (
+            <div className={`confirmed-item-actions ${showDeleteButtonId === confirmed.id ? 'visible' : ''}`}>
               <div className="centered-image">
-                  {completed.imageUrl && (
-                    <img
-                    src={completed.imageUrl}
-                    alt="Completed Task"
-                    style={{ maxWidth: '400px', maxHeight: '400px' }}
-                    />
-                  )}
+                {confirmed.imageUrl && (
+                  <img
+                    src={confirmed.imageUrl}
+                    alt="Confirmed Task"
+                    className="responsive-image"
+                  />
+                )}
               </div>
-              <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
-                Delete
-              </button>
             </div>
           )}
         </div>
       ))}
-      {completedTasks.length === 0 && <p>No completed tasks found.</p>}
+    {confirmedTasks.filter((confirmed) => confirmed.isConfirmed).length === 0 && (
+      <p>No confirmed tasks found.</p>
+      )}
+      </div>
+      )}
+      </div>
     </div>
-  </div>
-)}
-
-        </div>
+      )}
+       </div>
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>
     </AnimatedPage>

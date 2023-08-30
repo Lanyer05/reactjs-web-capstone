@@ -24,8 +24,9 @@ function Reward() {
   const [updatedRewardPoints, setUpdatedRewardPoints] = useState("");
   const [updatingRewardId, setUpdatingRewardId] = useState(null);
   const [selectedTab, setSelectedTab] = useState("REWARD");
-
   const rewardsCollectionRef = firestore.collection("rewards");
+  const [requestsList, setRequestsList] = useState([]);
+  const [completeRequestsList, setCompleteRequestsList] = useState([]);
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -56,17 +57,15 @@ function Reward() {
   }, [navigate]);
 
   useEffect(() => {
-    const fetchRewards = async () => {
-      try {
-        const rewardsSnapshot = await rewardsCollectionRef.get();
-        const rewardsData = rewardsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setRewardsList(rewardsData);
-      } catch (error) {
-        console.error("Error fetching rewards:", error);
-      }
+    const unsubscribeRewards = rewardsCollectionRef.onSnapshot((snapshot) => {
+      const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setRewardsList(rewardsData);
+    });
+  
+    return () => {
+      unsubscribeRewards();
     };
-    fetchRewards();
-  }, []);
+  }, [rewardsCollectionRef]);
 
 
   const handleAddReward = async () => {
@@ -201,7 +200,104 @@ function Reward() {
     ...tabStyle,
     backgroundColor: "#34673d",
   };
+
+  useEffect(() => {
+    const unsubscribeRequests = firestore.collection("rewardrequest").onSnapshot((snapshot) => {
+      const requestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setRequestsList(requestsData);
+    });
   
+    return () => {
+      unsubscribeRequests();
+    };
+  }, []);
+
+  
+  const handleCancelRequest = async (id) => {
+    try {
+      const shouldDelete = window.confirm('Are you sure you want to delete this request?');
+      if (!shouldDelete) {
+        return;
+      }
+  
+      const batch = firestore.batch();
+  
+      const requestRef = firestore.collection("rewardrequest").doc(id);
+      batch.delete(requestRef);
+  
+      await batch.commit();
+  
+      const updatedRequestsList = requestsList.filter((request) => request.id !== id);
+      setRequestsList(updatedRequestsList);
+      toast.success('Request deleted successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      toast.error('Failed to delete request.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
+
+  const handleConfirmRequest = async (requestId) => {
+    try {
+      const db = firebase.firestore();
+      const batch = db.batch();
+      const requestRef = db.collection('rewardrequest').doc(requestId);
+      const completeRequestRef = db.collection('complete_rewardreq').doc(requestId);
+      const requestDoc = await requestRef.get();
+      
+      if (requestDoc.exists) {
+        const requestData = requestDoc.data();
+        if (requestData.pendingStatus) {
+          const userRef = db.collection('users').doc(requestData.userId);
+          const userDoc = await userRef.get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            const currentPoints = userData.userpoints || 0;
+            const updatedPoints = currentPoints - requestData.rewardPoints;
+            batch.update(userRef, { userpoints: updatedPoints });
+          } else {
+            toast.error('User document not found.', { autoClose: 1500, hideProgressBar: true });
+            return;
+          }
+          
+          batch.update(requestRef, { pendingStatus: false });
+          batch.set(completeRequestRef, requestData);
+          batch.delete(requestRef);
+          await batch.commit();
+          
+          const updatedRequestsList = requestsList.filter((request) => request.id !== requestId);
+          setRequestsList(updatedRequestsList);
+          
+          toast.success('Request confirmed successfully!', {
+            autoClose: 1500,
+            hideProgressBar: true,
+          });
+        } else {
+          toast.error('This request has already been confirmed.', { autoClose: 1500, hideProgressBar: true });
+        }
+      } else {
+        toast.error('Request document not found.', { autoClose: 1500, hideProgressBar: true });
+      }
+    } catch (error) {
+      console.error('Error confirming request:', error);
+      toast.error('Failed to confirm request.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+  
+
+  useEffect(() => {
+    const unsubscribeCompleteRequests = firestore.collection("complete_rewardreq").onSnapshot((snapshot) => {
+      const completeRequestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCompleteRequestsList(completeRequestsData);
+    });
+  
+    return () => {
+      unsubscribeCompleteRequests();
+    };
+  }, []);
+  
+  
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -260,7 +356,7 @@ function Reward() {
               style={selectedTab === "CLAIM" ? activeTabStyle : tabStyle}
               onClick={() => handleTabChange("CLAIM")}
             >
-              Claim
+              Claimed
             </button>
           </div>
 
@@ -344,22 +440,64 @@ function Reward() {
       </>
     )}
 
-    {selectedTab === 'REQUEST' && (
-      <div className="request-container">
-        <h2>Request Content</h2>
-        {/* Add content specific to the "REQUEST" tab */}
-      </div>
-    )}
-
-    {selectedTab === 'CLAIM' && (
-      <div className="claim-container">
-        <h2>Claim Content</h2>
-        <div className="claim-list">
-          {/* Add content specific to the "CLAIM" tab */}
-        </div>
-      </div>
+{selectedTab === 'REQUEST' && (
+  <div className="request-container">
+    <h2>Request List</h2>
+    <div className="request-list">
+    {requestsList.map((request) => (
+  <div
+    key={request.id}
+    className={`request-item ${selectedRewardId === request.id ? 'selected' : ''}`}
+    onClick={() => handleRewardClick(request.id)}
+    onMouseEnter={() => handleRevealDeleteButton(request.id)}
+    onMouseLeave={() => handleRevealDeleteButton(null)}
+  >
+    <h3>{request.subject}</h3>
+    <p>{request.message}</p>
+    <h3>{request.rewardName}</h3>
+    <p>User ID: {request.userId}</p>
+    <p>Email: {request.email}</p>
+    {selectedRewardId === request.id && (
+      <>
+        <button
+          onClick={() => handleCancelRequest(request.id)}
+          className={`delete-button ${showDeleteButtonId === request.id ? 'visible' : ''}`}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => handleConfirmRequest(request.id)}
+          className={`update-button ${showDeleteButtonId === request.id ? 'visible' : ''}`}
+        >
+          Confirm
+        </button>
+      </>
     )}
   </div>
+))}
+      {requestsList.length === 0 && <p>No requests found.</p>}
+    </div>
+  </div>
+)}
+
+      {selectedTab === 'CLAIM' && (
+          <div className="claim-container">
+            <h2>Claimed List</h2>
+            <div className="claim-list">
+              {completeRequestsList.map((completeRequest) => (
+                <div key={completeRequest.id} className="claim-item">
+                  <h3>{completeRequest.subject}</h3>
+                  <p>{completeRequest.message}</p>
+                  <h3>{completeRequest.rewardName}</h3>
+                  <p>User ID: {completeRequest.userId}</p>
+                  <p>Email: {completeRequest.email}</p>
+                </div>
+              ))}
+              {completeRequestsList.length === 0 && <p>No completed requests found.</p>}
+            </div>
+          </div>
+        )}
+      </div>
         <ToastContainer autoClose={1500} hideProgressBar />
         </div>
     </AnimatedPage>

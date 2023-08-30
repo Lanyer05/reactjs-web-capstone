@@ -6,12 +6,12 @@ import 'firebase/messaging';
 import 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAOeeOeSwXgjRGHkmNlfP_tpyNgTlFMV4A",
-  authDomain: "capstone-42e7f.firebaseapp.com",
-  projectId: "capstone-42e7f",
-  storageBucket: "capstone-42e7f.appspot.com",
-  messagingSenderId: "221741818484",
-  appId: "1:221741818484:web:bc3aae451e45e7708b2721"
+  apiKey: "AIzaSyB-Iv08ra8cU21__MfzLV40NYgsgi0qQTA",
+  authDomain: "ecotaskreward-f1a4f.firebaseapp.com",
+  projectId: "ecotaskreward-f1a4f",
+  storageBucket: "ecotaskreward-f1a4f.appspot.com",
+  messagingSenderId: "238602413554",
+  appId: "1:238602413554:web:f47a1315ae7670ac09776b"
 };
 
 firebase.initializeApp(firebaseConfig);

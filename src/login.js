@@ -17,12 +17,10 @@ const showLoginSuccessToast = () => {
     draggable: true,
   });
 };
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
   useEffect(() => {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
@@ -30,30 +28,24 @@ const Login = () => {
         showLoginSuccessToast();
         navigate('/home');
       }
-
     };
-
     checkLoggedInUser();
-
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user && user.email && user.email.endsWith('youradmin.com')) {
         showLoginSuccessToast();
         navigate('/home');
       }
     });
-
     return () => {
       unsubscribe();
     };
   }, [navigate]);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       showToast('Please enter a valid email address.', 'error');
       return;
     }
-
     try {
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -81,12 +73,10 @@ const Login = () => {
       }
     }
   };
-
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
   const showToast = (message, type) => {
     toast[type](message, {
       position: 'top-center',
@@ -97,7 +87,6 @@ const Login = () => {
       draggable: true,
     });
   };
-
   return (
     <AnimatedPage>
     <div className="login-container">
@@ -123,7 +112,6 @@ const Login = () => {
             />
           </div>
         </div>
-
         <div className="button-container">
           <button className="login-button" type="submit">
             SIGN IN
@@ -138,5 +126,4 @@ const Login = () => {
     </AnimatedPage>
   );
 };
-
 export default Login;
