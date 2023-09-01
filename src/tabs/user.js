@@ -94,30 +94,35 @@ function User() {
       if (!shouldApprove) {
         return;
       }
-  
+
       const batch = firestore.batch();
-  
+
+      // Update the request document to set isApproved = true
       const requestRef = firestore.collection("registration_requests").doc(requestId);
+      batch.update(requestRef, { isApproved: true });
+
+      // Create a new user document with the request data
       const approvedRequestSnapshot = await requestRef.get();
       const approvedRequestData = approvedRequestSnapshot.data();
-  
+
       if (approvedRequestData) {
         const userRef = firestore.collection("users").doc(approvedRequestData.Uid);
-        
+
         // Set the userData object with userpoints = 0 and isApproved = true
         const userData = {
           ...approvedRequestData,
           userpoints: 0,
           isApproved: true,
         };
-  
+
         batch.set(userRef, userData);
       }
-  
+
       await batch.commit();
-  
+
+      // Update the userRequests state to remove the approved request
       setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
-  
+
       toast.success("Request approved successfully!", {
         autoClose: 1500,
         hideProgressBar: true,
@@ -138,13 +143,18 @@ function User() {
       if (!shouldDelete) {
         return;
       }
-  
-      // Delete user document from Firestore
-      await firestore.collection('users').doc(userId).delete();
-  
+
+      const batch = firestore.batch();
+
+      // Delete user document from Firestore using the batch
+      const userRef = firestore.collection('users').doc(userId);
+      batch.delete(userRef);
+
       // Update the userApproved state to remove the deleted user
-      setUserApproved(userApproved.filter((user) => user.id !== userId));
-  
+      setUserApproved((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+
+      await batch.commit();
+
       toast.success('User deleted successfully!', {
         autoClose: 1500,
         hideProgressBar: true,
