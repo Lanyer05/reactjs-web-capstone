@@ -739,7 +739,7 @@ function Task() {
                 <h3>{completed.taskName}</h3>
                 <p>Description: {completed.description}</p>
                 {completed.timeFrame ? (
-                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+                  <p>Time Frame: {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
                 ) : (
                   <p>Time Frame: N/A</p>
                 )}
@@ -788,7 +788,7 @@ function Task() {
           <h3>{confirmed.taskName}</h3>
           <p>Description: {confirmed.description}</p>
           {confirmed.timeFrame ? (
-            <p>Time Frame: {confirmed.timeFrame.hours}:{confirmed.timeFrame.minutes}:00</p>
+            <p>Time Frame: {confirmed.timeFrame ? `${confirmed.timeFrame.hours.toString().padStart(2, '0')}:${confirmed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
           ) : (
             <p>Time Frame: N/A</p>
           )}
@@ -826,4 +826,4 @@ function Task() {
     </AnimatedPage>
   );
 }
-export default Task;
+export default React.memo(Task);

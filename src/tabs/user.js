@@ -13,12 +13,13 @@ function User() {
   const [showAddForm, setShowAddForm] = useState(false);
   const handleTrigger = () => setIsOpen(!isOpen);
   const navigate = useNavigate();
-  const rewardsCollectionRef = firestore.collection("users");
   const formContainerRef = useRef(null);
   const [updatingRewardId, setUpdatingRewardId] = useState(null);
   const [selectedTab, setSelectedTab] = useState("REQUEST");
   const [userRequests, setUserRequests] = useState([]);
   const [userApproved, setUserApproved] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const handleLogout = async () => {
     try {
@@ -61,7 +62,7 @@ function User() {
   useEffect(() => {
     const fetchUserRequests = async () => {
       try {
-        const userRequestsSnapshot = await firestore.collection("registration_requests").get();
+        const userRequestsSnapshot = await firestore.collection("registration_requests").limit(itemsPerPage).get();
         const userRequestsData = userRequestsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setUserRequests(userRequestsData);
       } catch (error) {
@@ -69,14 +70,16 @@ function User() {
       }
     };
     fetchUserRequests();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
     const fetchUserApproved = async () => {
       try {
-        const userApprovedSnapshot = await firestore.collection("users").get();
-        const userApprovedData = userApprovedSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setUserApproved(userApprovedData);
+        if (userApproved.length === 0) {
+          const userApprovedSnapshot = await firestore.collection("users").get();
+          const userApprovedData = userApprovedSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setUserApproved(userApprovedData);
+        }
       } catch (error) {
         console.error("Error fetching user approved requests:", error);
       }
@@ -96,12 +99,7 @@ function User() {
       }
 
       const batch = firestore.batch();
-
-      // Update the request document to set isApproved = true
       const requestRef = firestore.collection("registration_requests").doc(requestId);
-      batch.update(requestRef, { isApproved: true });
-
-      // Create a new user document with the request data
       const approvedRequestSnapshot = await requestRef.get();
       const approvedRequestData = approvedRequestSnapshot.data();
 
@@ -120,7 +118,6 @@ function User() {
 
       await batch.commit();
 
-      // Update the userRequests state to remove the approved request
       setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
 
       toast.success("Request approved successfully!", {
@@ -135,7 +132,6 @@ function User() {
       });
     }
   };
-  
 
   const handleDeleteUserApproved = async (userId) => {
     try {
@@ -144,16 +140,11 @@ function User() {
         return;
       }
 
-      const batch = firestore.batch();
-
-      // Delete user document from Firestore using the batch
-      const userRef = firestore.collection('users').doc(userId);
-      batch.delete(userRef);
+      // Delete user document from Firestore
+      await firestore.collection('users').doc(userId).delete();
 
       // Update the userApproved state to remove the deleted user
-      setUserApproved((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-
-      await batch.commit();
+      setUserApproved(userApproved.filter((user) => user.id !== userId));
 
       toast.success('User deleted successfully!', {
         autoClose: 1500,
@@ -187,7 +178,6 @@ function User() {
     backgroundColor: "#34673d",
   };
 
-
   useEffect(() => {
     const userRequestsListener = firestore.collection("registration_requests").onSnapshot((snapshot) => {
       const userRequestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -204,7 +194,6 @@ function User() {
       userApprovedListener();
     };
   }, []);
-
 
   return (
     <AnimatedPage>
@@ -283,4 +272,4 @@ function User() {
   );
 }
 
-export default User;
+export default React.memo(User);

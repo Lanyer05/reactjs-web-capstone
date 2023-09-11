@@ -51,4 +51,4 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
   );
 }
 
-export default Sidebar;
+export default React.memo(Sidebar);

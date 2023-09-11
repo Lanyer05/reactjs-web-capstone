@@ -57,7 +57,6 @@ function Home() {
     <AnimatedPage>
       <div className="home-container">
         <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
-
         <div className="content">
           <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
           <div className="homepage-container">
@@ -74,7 +73,7 @@ function Home() {
                   <p className='text'>The Reward Page functions as a hub where websites intersect user actions and incentives, fostering a symbiotic connection between the platform and its visitors. Rooted in behavioral psychology and gamification principles, its primary role is to incentivize and reward users for desired actions, cultivating a sense of accomplishment and satisfaction. This fuels heightened user engagement and extended session durations, pivotal metrics for optimizing website performance. Moreover, the Reward Page serves as a conduit for data-driven personalization, adapting incentives based on user behaviors and preferences. It visually tracks progress, showcasing users' achievements and earned rewards, stimulating motivation for return visits. Through tiered rewards and loyalty programs, the Reward Page fosters a sense of exclusivity, cultivating brand affinity and recurring site visits. It also functions as a conduit for user-generated content and social sharing, amplifying brand exposure and user acquisition. Seamlessly facilitating the redemption of accrued rewards into tangible benefits, the Reward Page elevates user satisfaction and retention. In summation, the Reward Page stands as a pivotal component of modern website strategies, pivotal in driving user engagement, loyalty, and expansion. Its adept utilization of behavioral dynamics and gamification principles underscores its essentiality in the toolkit of website administrators, a driving force in the ongoing evolution of digital platforms.</p>
                 </div>
               )}
-            </div>
+            
 
             <div className="ui-item" onClick={() => handleItemClick('item2')}>
               <h2>Explore Task Tab</h2>
@@ -117,8 +116,9 @@ function Home() {
           </div>
         </div>
       </div>
+      </div>
     </AnimatedPage>
   );
 }
 
-export default Home;
+export default React.memo(Home);

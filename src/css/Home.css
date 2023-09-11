@@ -567,6 +567,26 @@
   outline: none;
 }
 
+.claim-button {
+  background-color: #dad7cd;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.claim-button1:hover {
+  background-color: #b1afab;
+}
+
+.claim-button1:focus {
+  outline: none;
+}
+
 .delete-button1 {
   background-color: #c05c54;
   color: white;
@@ -865,7 +885,7 @@
 }
 
 .text:hover {
-  background-color: #e0e0e0;
+  background-color: #dad7cd;
 }
 text p {
   margin-top: 10px;
@@ -1136,7 +1156,7 @@ text p {
 }
 
 .request-container h2 {
-  margin-bottom: 50px;
+
   align-content: center;
 }
 
@@ -1261,4 +1281,12 @@ text p {
 
 .claim-item.selected {
   background-color: #34673d; 
+}
+
+.red-highlight {
+  color: rgb(241, 179, 179);
+}
+
+.blue-highlight {
+  color: #08bdff;
 }
