@@ -111,30 +111,35 @@ function Task() {
     };
 
 
-  const handleAddTask = async () => {
-    if (!taskName || !description || !location || !points) {
-      setEmptyFieldWarning(true);
-      toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
-      return;}
+    const handleAddTask = async () => {
+      if (!taskName || !description || !location || !points) {
+        setEmptyFieldWarning(true);
+        toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
+        return;
+      } 
       try {
-      const newTask = {
-        taskName: taskName,
-        description: description,
-        location: location,
-        timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
-        points: points,
-        isAccepted: false,
+        const newTask = {
+          taskName: taskName,
+          description: description,
+          location: location,
+          timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
+          points: points,
+          isAccepted: false,
         };
-        await tasksCollectionRef.add(newTask);
+        const batch = firestore().batch();
+        const taskDocRef = tasksCollectionRef.doc();
+        batch.set(taskDocRef, newTask);
+        await batch.commit();   
         setTasksList([...tasksList, newTask]);
         resetForm();
         setShowAddForm(false);
         toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
-        } catch (error) {
+      } catch (error) {
         console.error('Error adding task:', error);
         toast.error('Failed to add task.', { autoClose: 1500, hideProgressBar: true });
       }
     };
+    
 
 
   const handleDeleteTask = async (taskId) => {
@@ -739,7 +744,7 @@ function Task() {
                 <h3>{completed.taskName}</h3>
                 <p>Description: {completed.description}</p>
                 {completed.timeFrame ? (
-                  <p>Time Frame: {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
+                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
                 ) : (
                   <p>Time Frame: N/A</p>
                 )}
@@ -788,7 +793,7 @@ function Task() {
           <h3>{confirmed.taskName}</h3>
           <p>Description: {confirmed.description}</p>
           {confirmed.timeFrame ? (
-            <p>Time Frame: {confirmed.timeFrame ? `${confirmed.timeFrame.hours.toString().padStart(2, '0')}:${confirmed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
+            <p>Time Frame: {confirmed.timeFrame.hours}:{confirmed.timeFrame.minutes}:00</p>
           ) : (
             <p>Time Frame: N/A</p>
           )}
