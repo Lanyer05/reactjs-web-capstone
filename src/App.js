@@ -5,13 +5,11 @@ import Home from './home';
 import Register from './register'; 
 import Reward from './tabs/reward';
 import Task from './tabs/task';
-import User from './tabs/user'
+import User from './tabs/user';
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 
-
 const App = () => {
-  
   return (
     <Router>
       <Routes>

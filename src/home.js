@@ -3,6 +3,7 @@ import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
 import AnimatedPage from './AnimatedPage';
+import { getMessaging, getToken } from "firebase/messaging";
 
 function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,31 +21,58 @@ function Home() {
   };
 
   useEffect(() => {
+    const messaging = getMessaging(firebase);
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
       if (user) {
-        const fcmToken = await firebase.messaging().getToken();
-        const userRef = firebase.firestore().collection('users').doc(user.uid);
-        const batch = firebase.firestore().batch();
-        const userDoc = await userRef.get();
-        if (userDoc.exists) {
-          batch.update(userRef, {
-            fcmToken: fcmToken,
-            email: user.email, 
-            uid: user.uid,     
+        try {
+          const fcmToken = await getToken(messaging, {
+            vapidKey: 'BDneUCoqMhUSrmRipQwoVqhu_camxMlC6AUYmWijyqTp4z-uT5bdNhATsB4p3ZPCiUiIk7DgmcESh5lPgYFkcsQ',
           });
-        } else {
-          batch.set(userRef, {
-            fcmToken: fcmToken,
-            email: user.email, 
-            uid: user.uid,     
-          });
+          const userRef = firebase.firestore().collection('users').doc(user.uid);
+          const batch = firebase.firestore().batch();
+          
+          if (userRef) {
+            batch.update(userRef, {
+              fcmToken: fcmToken,
+              email: user.email,
+              uid: user.uid,
+            });
+          } else {
+            batch.set(userRef, {
+              fcmToken: fcmToken,
+              email: user.email,
+              uid: user.uid,
+            });
+          }
+          
+          await batch.commit();
+        } catch (error) {
+          console.error('Error while retrieving or updating FCM token:', error);
         }
-        await batch.commit();
       }
     };
+  
     checkLoggedInUser();
   }, []);
+
+  useEffect(() => {
+    const requestPermission = () => {
+      console.log('Requesting permission...');
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+        } else if (permission === 'denied') {
+          console.log('Notification permission denied.');
+        } else {
+          console.log('Notification permission dismissed.');
+        }
+      });
+    };
+
+    requestPermission();
+  }, []);
+
 
 
   const [isLoading, setIsLoading] = useState(true);

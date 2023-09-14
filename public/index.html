@@ -41,5 +41,18 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+
+<script>
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+          .then((registration) => {
+              console.log('Firebase Service Worker registered:', registration);
+          })
+          .catch((error) => {
+              console.error('Error registering Firebase Service Worker:', error);
+          });
+  }
+</script>
+    
   </body>
 </html>

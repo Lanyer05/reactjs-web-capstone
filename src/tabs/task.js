@@ -668,7 +668,6 @@ function Task() {
           )}
 
 
-
     {selectedTab === 'ACCEPT' && (
         <div className="accept-container">
         <h2>Accept Content</h2>
