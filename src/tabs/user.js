@@ -97,29 +97,27 @@ function User() {
       if (!shouldApprove) {
         return;
       }
-
-      const batch = firestore.batch();
+  
       const requestRef = firestore.collection("registration_requests").doc(requestId);
       const approvedRequestSnapshot = await requestRef.get();
       const approvedRequestData = approvedRequestSnapshot.data();
-
+  
       if (approvedRequestData) {
+        await requestRef.delete();
+  
         const userRef = firestore.collection("users").doc(approvedRequestData.Uid);
-
-        // Set the userData object with userpoints = 0 and isApproved = true
+  
         const userData = {
           ...approvedRequestData,
-          userpoints: 0,
+          userpoints: 0, 
           isApproved: true,
         };
-
-        batch.set(userRef, userData);
+  
+        await userRef.set(userData);
       }
-
-      await batch.commit();
-
+  
       setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
-
+  
       toast.success("Request approved successfully!", {
         autoClose: 1500,
         hideProgressBar: true,
@@ -132,6 +130,7 @@ function User() {
       });
     }
   };
+  
 
   const handleDeleteUserApproved = async (userId) => {
     try {
