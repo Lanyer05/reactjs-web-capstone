@@ -40,8 +40,6 @@ const Login = () => {
       unsubscribe();
     };
   }, [navigate]);
-
-  
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {

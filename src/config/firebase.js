@@ -1,24 +1,26 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/database';
-import 'firebase/compat/messaging';
-import 'firebase/compat/storage';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
+import 'firebase/database';
+import 'firebase/messaging';
+import 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB-Iv08ra8cU21__MfzLV40NYgsgi0qQTA",
-  authDomain: "ecotaskreward-f1a4f.firebaseapp.com",
-  projectId: "ecotaskreward-f1a4f",
-  storageBucket: "ecotaskreward-f1a4f.appspot.com",
-  messagingSenderId: "238602413554",
-  appId: "1:238602413554:web:f47a1315ae7670ac09776b"
+  apiKey: "AIzaSyDSZkeMXvu8Jt4XUv3I0aSYxyooZXa-LhU",
+  authDomain: "ecotaskreward-bd9f8.firebaseapp.com",
+  projectId: "ecotaskreward-bd9f8",
+  storageBucket: "ecotaskreward-bd9f8.appspot.com",
+  messagingSenderId: "680499772205",
+  appId: "1:680499772205:web:76e4e03dfb0b802d3cb1a4"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-export const storage = app.storage();
-export const firestore = app.firestore();
-export const auth = app.auth();
-export const database = app.database();
-export const messaging = app.messaging();
+firebase.initializeApp(firebaseConfig);
 
-export default app;
+export const storage = firebase.storage();
+export const firestore = firebase.firestore();
+export const auth =firebase.auth();
+export const database = firebase.database();
+export const messaging = firebase.messaging();
+
+export default firebase;
+

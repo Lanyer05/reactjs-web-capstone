@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB-Iv08ra8cU21__MfzLV40NYgsgi0qQTA",
-  authDomain: "ecotaskreward-f1a4f.firebaseapp.com",
-  projectId: "ecotaskreward-f1a4f",
-  storageBucket: "ecotaskreward-f1a4f.appspot.com",
-  messagingSenderId: "238602413554",
-  appId: "1:238602413554:web:f47a1315ae7670ac09776b"
+  apiKey: "AIzaSyDSZkeMXvu8Jt4XUv3I0aSYxyooZXa-LhU",
+  authDomain: "ecotaskreward-bd9f8.firebaseapp.com",
+  projectId: "ecotaskreward-bd9f8",
+  storageBucket: "ecotaskreward-bd9f8.appspot.com",
+  messagingSenderId: "680499772205",
+  appId: "1:680499772205:web:76e4e03dfb0b802d3cb1a4"
 });
 
 const messaging = firebase.messaging();

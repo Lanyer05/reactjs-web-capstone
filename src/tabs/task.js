@@ -116,7 +116,7 @@ function Task() {
         setEmptyFieldWarning(true);
         toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
         return;
-      } 
+      }  
       try {
         const newTask = {
           taskName: taskName,
@@ -125,12 +125,9 @@ function Task() {
           timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
           points: points,
           isAccepted: false,
-        };
-        const batch = firestore().batch();
-        const taskDocRef = tasksCollectionRef.doc();
-        batch.set(taskDocRef, newTask);
-        await batch.commit();   
-        setTasksList([...tasksList, newTask]);
+        };   
+        const docRef = await firestore.collection('tasks').add(newTask);
+        setTasksList([...tasksList, { id: docRef.id, ...newTask }]);  
         resetForm();
         setShowAddForm(false);
         toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -547,15 +544,15 @@ function Task() {
           {selectedTab === 'TASK' && (
             <>
               <div className="tasks-container">
-                <h2>Tasks List</h2>
+                  <h2>Tasks List</h2>
                 <div className="tasks-list">
-                  {tasksList.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
-                      onClick={() => handleTaskItemClick(task.id)}
-                      onMouseEnter={() => handleRevealDeleteButton(task.id)}
-                      onMouseLeave={() => handleRevealDeleteButton(null)}
+                {tasksList.map((task, index) => (
+                <div
+                  key={index}
+                  className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
+                  onClick={() => handleTaskItemClick(task.id)}
+                  onMouseEnter={() => handleRevealDeleteButton(task.id)}
+                  onMouseLeave={() => handleRevealDeleteButton(null)}
                     >
                       <h3>{task.taskName}</h3>
                       <p>Description: {task.description}</p>
@@ -668,6 +665,7 @@ function Task() {
           )}
 
 
+
     {selectedTab === 'ACCEPT' && (
         <div className="accept-container">
         <h2>Accept Content</h2>
@@ -743,7 +741,7 @@ function Task() {
                 <h3>{completed.taskName}</h3>
                 <p>Description: {completed.description}</p>
                 {completed.timeFrame ? (
-                  <p>Time Frame: {completed.timeFrame.hours}:{completed.timeFrame.minutes}:00</p>
+                  <p>Time Frame: {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
                 ) : (
                   <p>Time Frame: N/A</p>
                 )}
@@ -792,7 +790,7 @@ function Task() {
           <h3>{confirmed.taskName}</h3>
           <p>Description: {confirmed.description}</p>
           {confirmed.timeFrame ? (
-            <p>Time Frame: {confirmed.timeFrame.hours}:{confirmed.timeFrame.minutes}:00</p>
+            <p>Time Frame: {confirmed.timeFrame ? `${confirmed.timeFrame.hours.toString().padStart(2, '0')}:${confirmed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
           ) : (
             <p>Time Frame: N/A</p>
           )}

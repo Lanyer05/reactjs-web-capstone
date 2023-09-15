@@ -3,7 +3,6 @@ import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
 import AnimatedPage from './AnimatedPage';
-import { getMessaging, getToken } from "firebase/messaging";
 
 function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,41 +19,39 @@ function Home() {
     }
   };
 
+  
   useEffect(() => {
-    const messaging = getMessaging(firebase);
     const checkLoggedInUser = async () => {
-      const user = firebase.auth().currentUser;
-      if (user) {
-        try {
-          const fcmToken = await getToken(messaging, {
-            vapidKey: 'BDneUCoqMhUSrmRipQwoVqhu_camxMlC6AUYmWijyqTp4z-uT5bdNhATsB4p3ZPCiUiIk7DgmcESh5lPgYFkcsQ',
-          });
+      try {
+        const user = firebase.auth().currentUser;
+        if (user) {
+          const fcmToken = await firebase.messaging().getToken();
           const userRef = firebase.firestore().collection('users').doc(user.uid);
           const batch = firebase.firestore().batch();
-          
-          if (userRef) {
+          const userDoc = await userRef.get();
+          if (userDoc.exists) {
             batch.update(userRef, {
               fcmToken: fcmToken,
-              email: user.email,
-              uid: user.uid,
+              email: user.email, 
+              uid: user.uid,     
             });
           } else {
             batch.set(userRef, {
               fcmToken: fcmToken,
-              email: user.email,
-              uid: user.uid,
+              email: user.email, 
+              uid: user.uid,     
             });
           }
-          
           await batch.commit();
-        } catch (error) {
-          console.error('Error while retrieving or updating FCM token:', error);
         }
+      } catch (error) {
+        console.error('Error while retrieving or updating FCM token:', error);
       }
     };
-  
     checkLoggedInUser();
   }, []);
+  
+
 
   useEffect(() => {
     const requestPermission = () => {
@@ -74,7 +71,6 @@ function Home() {
   }, []);
 
 
-
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const checkLoggedInUser = async () => {
@@ -87,13 +83,12 @@ function Home() {
     checkLoggedInUser();
   }, []);
 
-  // State for tracking revealed content of each item
-  const [revealedItems, setRevealedItems] = useState({});
 
+  const [revealedItems, setRevealedItems] = useState({});
   const handleItemClick = (itemId) => {
     setRevealedItems((prevItems) => ({
       ...prevItems,
-      [itemId]: !prevItems[itemId], // Toggle the state of the clicked item
+      [itemId]: !prevItems[itemId],
     }));
   };
 
