@@ -25,21 +25,21 @@ function Home() {
       try {
         const user = firebase.auth().currentUser;
         if (user) {
-          const fcmToken = await firebase.messaging().getToken();
+          const fcmToken_admin = await firebase.messaging().getToken(); 
           const userRef = firebase.firestore().collection('users').doc(user.uid);
           const batch = firebase.firestore().batch();
           const userDoc = await userRef.get();
           if (userDoc.exists) {
             batch.update(userRef, {
-              fcmToken: fcmToken,
-              email: user.email, 
-              uid: user.uid,     
+              fcmToken_admin: fcmToken_admin, 
+              email: user.email,
+              uid: user.uid,
             });
           } else {
             batch.set(userRef, {
-              fcmToken: fcmToken,
-              email: user.email, 
-              uid: user.uid,     
+              fcmToken_admin: fcmToken_admin,
+              email: user.email,
+              uid: user.uid,
             });
           }
           await batch.commit();
@@ -50,6 +50,7 @@ function Home() {
     };
     checkLoggedInUser();
   }, []);
+  
   
 
 

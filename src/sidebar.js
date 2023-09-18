@@ -33,7 +33,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <span>TASK</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/cctv-preview')}>
+      <div className="sidebar-position" onClick={() => navigate('/cctv')}>
         <FontAwesomeIcon icon={faVideo} />
         <span>CCTV PREVIEW</span>
       </div>
