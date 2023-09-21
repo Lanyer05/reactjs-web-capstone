@@ -2,16 +2,13 @@
   import firebase from '../config/firebase';
   import { useNavigate } from 'react-router-dom';
   import "../css/Home.css";
-  import Sidebar from "../sidebar";
   import { toast, ToastContainer } from 'react-toastify';
   import 'react-toastify/dist/ReactToastify.css';
   import { firestore } from "../config/firebase";
   import AnimatedPage from "../AnimatedPage";
 
   function Reward() {
-    const [isOpen, setIsOpen] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
-    const handleTrigger = () => setIsOpen(!isOpen);
     const navigate = useNavigate();
     const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
     const [rewardName, setRewardName] = useState("");
@@ -126,15 +123,6 @@
       }
     };
 
-    const handleLogout = async () => {
-      try {
-        await firebase.auth().signOut();
-        console.log('Logout successful.');
-        navigate('/login');
-      } catch (error) {
-        console.error('Logout failed:', error);
-      }
-    };
 
     const handleRewardClick = (id) => {
       setSelectedRewardId((prevId) => (prevId === id ? null : id));
@@ -364,8 +352,6 @@
     return (
       <AnimatedPage>
         <div className="home-container">
-          <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
-
           <div className="content">
             <h1 className="card-view">REWARD PAGE</h1>
 

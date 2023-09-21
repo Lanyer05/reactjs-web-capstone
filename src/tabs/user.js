@@ -2,16 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import firebase from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
 import "../css/Home.css";
-import Sidebar from "../sidebar";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from "../config/firebase";
 import AnimatedPage from "../AnimatedPage";
 
 function User() {
-  const [isOpen, setIsOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const handleTrigger = () => setIsOpen(!isOpen);
   const navigate = useNavigate();
   const formContainerRef = useRef(null);
   const [updatingRewardId, setUpdatingRewardId] = useState(null);
@@ -20,16 +17,6 @@ function User() {
   const [userApproved, setUserApproved] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-
-  const handleLogout = async () => {
-    try {
-      await firebase.auth().signOut();
-      console.log('Logout successful.');
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -197,8 +184,6 @@ function User() {
   return (
     <AnimatedPage>
       <div className="home-container">
-        <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
-
         <div className="content">
           <h1 className="card-view">USER PAGE</h1>
 

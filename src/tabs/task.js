@@ -2,16 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import firebase from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
 import "../css/Home.css";
-import Sidebar from '../sidebar';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
 
 function Task() {
-  const [isOpen, setIsOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const handleTrigger = () => setIsOpen(!isOpen);
   const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const navigate = useNavigate();
   const [taskName, setTaskName] = useState('');
@@ -98,17 +95,6 @@ function Task() {
       };
       checkLoggedInUser();
     }, [navigate]);
-
-
-      const handleLogout = async () => {
-      try {
-      await firebase.auth().signOut();
-      console.log('Logout successful.');
-      navigate('/login');
-      } catch (error) {
-      console.error('Logout failed:', error);
-      }
-    };
 
 
     const handleAddTask = async () => {
@@ -439,7 +425,6 @@ function Task() {
   return (
     <AnimatedPage>
       <div className="home-container">
-        <Sidebar isOpen={isOpen} handleTrigger={handleTrigger} navigate={navigate} handleLogout={handleLogout} />
         <div className="content">
           <h1 className="card-view">TASK PAGE</h1>
           <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>

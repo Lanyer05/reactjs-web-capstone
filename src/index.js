@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
@@ -14,8 +15,8 @@ if ('serviceWorker' in navigator) {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <Router>  
+  <App />
+</Router>,
   document.getElementById('root')
 );
