@@ -20,7 +20,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
 
       <div className="sidebar-position" onClick={() => navigate('/home')}>
         <FontAwesomeIcon icon={faHome} />
-        <span>Home</span>
+        <span>HOME</span>
       </div>
 
       <div className="sidebar-position" onClick={() => navigate('/reward')}>
@@ -35,17 +35,17 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
 
       <div className="sidebar-position" onClick={() => navigate('/cctv')}>
         <FontAwesomeIcon icon={faVideo} />
-        <span>CCTV PREVIEW</span>
+        <span>CAMERA VIEW</span>
       </div>
 
       <div className="sidebar-position" onClick={() => navigate('/user')}>
         <FontAwesomeIcon icon={faUserAlt} />
-        <span>USERS VERIFICATION</span>
+        <span>USERS INFO</span>
       </div>
 
       <div className="sidebar-logout-position" onClick={handleLogout}>
         <FontAwesomeIcon icon={faSignOutAlt} />
-        <span>Logout</span>
+        <span>LOGOUT</span>
       </div>
     </div>
   );

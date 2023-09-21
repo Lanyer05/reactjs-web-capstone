@@ -8,42 +8,54 @@ import "../css/Home.css";
 const API_KEY = 'AIzaSyBRPSMC0ekzqQUgE8hcG5hKa3Fe9kHWsY0';
 const CHANNEL_ID = 'UC3MVj4c1s5oZuvxlqm_OB7Q';
 
-
-function Cctv() {
+function CctvComponent() {
   const [liveStreams, setLiveStreams] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchLiveStreams = async () => {
-      try {
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&eventType=live&type=video&part=snippet`
-        );
+    // Check if cached state exists in localStorage and use it if available
+    const cachedState = localStorage.getItem('cctvState');
+    if (cachedState) {
+      setLiveStreams(JSON.parse(cachedState));
+    } else {
+      // Fetch live streams if no cached state is available
+      const fetchLiveStreams = async () => {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&eventType=live&type=video&part=snippet`
+          );
 
-        if (response.ok) {
-          const data = await response.json();
-          const liveStreamData = data.items;
-          setLiveStreams(liveStreamData);
-        } else {
-          console.error('Error fetching live streams data');
+          if (response.ok) {
+            const data = await response.json();
+            const liveStreamData = data.items;
+            setLiveStreams(liveStreamData);
+
+            // Cache the state in localStorage
+            localStorage.setItem('cctvState', JSON.stringify(liveStreamData));
+          } else {
+            console.error('Error fetching live streams data');
+          }
+        } catch (error) {
+          console.error('Error:', error);
         }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-    fetchLiveStreams();
+      };
+      fetchLiveStreams();
+    }
   }, []);
 
   useEffect(() => {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
       if (!user) {
-        toast.error('Please login to access the tasks page.', { autoClose: 1500, hideProgressBar: true });
+        toast.error('Please login to access the tasks page.', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
         navigate('/login');
       }
-      };
-      checkLoggedInUser();
-    }, [navigate]);
+    };
+    checkLoggedInUser();
+  }, [navigate]);
 
   return (
     <AnimatedPage>
@@ -60,7 +72,7 @@ function Cctv() {
                     <iframe
                       title={stream.snippet.title}
                       width="100%"
-                      height="100%" 
+                      height="100%"
                       src={`https://www.youtube.com/embed/${stream.id.videoId}?modestbranding=1&controls=1&showinfo=0&autohide=1&iv_load_policy=3`}
                       frameBorder="0"
                       allowFullScreen
@@ -76,4 +88,4 @@ function Cctv() {
   );
 }
 
-export default Cctv;
+export default React.memo(CctvComponent);
