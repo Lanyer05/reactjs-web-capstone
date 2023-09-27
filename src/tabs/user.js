@@ -230,7 +230,9 @@ function User() {
             <div className="approved-container">
               <h2>Approved Users List</h2>
               <div className="user-approved-list">
-                {userApproved.map((approved) => (
+              {userApproved
+                  .filter((approved) => !approved.email.endsWith('@youradmin.com'))
+                  .map((approved) => (
                   <div key={approved.id} className="user-approved-item">
                     <h3>{approved.name}</h3>
                     <p>User ID: {approved.Uid}</p>

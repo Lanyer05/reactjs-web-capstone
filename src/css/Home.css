@@ -33,6 +33,7 @@
     z-index: 1; /* Ensure sidebar is above content */
   }
   
+  
   .sidebar--open {
     width: 250px;
     transition: all 0.5s ease;
@@ -171,10 +172,14 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 0px 12px;
     text-align: left;
-    margin-top: 540px;
-    z-index: 1; /* Ensure logout position is above content */
+    position: absolute;
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    z-index: 1; 
+    padding-bottom: 15px;
   }
 
 .sidebar-logout-position:hover {

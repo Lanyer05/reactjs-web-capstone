@@ -14,8 +14,8 @@ function Task() {
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
+  const [hours, setHours] = useState('');
+  const [minutes, setMinutes] = useState('');
   const [points, setPoints] = useState('');
   const [tasksList, setTasksList] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
@@ -238,37 +238,50 @@ function Task() {
     };
 
 
-  const handleCancelTask = async (taskId) => {
-    try {
-      const batch = firestore.batch();
-      const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
-      const taskRef = tasksCollectionRef.doc(taskId);
-      batch.delete(acceptedTaskRef);
-      batch.update(taskRef, {
-        isAccepted: false,
-      });
-      await batch.commit();
-      const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
-      setUserAcceptedTasks(updatedUserAcceptedTasks);
-      toast.success('Accepted task canceled successfully!', {
-        autoClose: 1500,
-        hideProgressBar: true,
-      });
-    } catch (error) {
-      console.error('Error canceling accepted task:', error);
-      toast.error('Failed to cancel accepted task.', {
-        autoClose: 1500,
-        hideProgressBar: true,
-      });
-    }
-  };
-
+    const handleCancelTask = async (taskId) => {
+      try {
+        const batch = firestore.batch();
+        const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
+        const taskRef = tasksCollectionRef.doc(taskId);
+        const acceptedTaskSnapshot = await acceptedTaskRef.get();
+        const taskData = acceptedTaskSnapshot.data();
+        batch.delete(acceptedTaskRef);
+        const userTasksRef = firestore.collection('tasks').doc(taskId);
+        batch.set(userTasksRef, {
+          description: taskData.description,
+          isAccepted: false,
+          location: taskData.location,
+          points: taskData.points,
+          taskName: taskData.taskName,
+          timeFrame: {
+            hours: taskData.timeFrame.hours,
+            minutes: taskData.timeFrame.minutes,
+          },
+        });
+        batch.update(taskRef, {
+          isAccepted: false,
+        });
+        await batch.commit();
+        const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
+        setUserAcceptedTasks(updatedUserAcceptedTasks);
+        toast.success('Accepted Task Canceled!', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      } catch (error) {
+        console.error('Error canceling accepted task:', error);
+        toast.error('Failed to cancel accepted task.', {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      }
+    };    
+    
 
   const handleCompletedItemClick = (itemId) => {
     setSelectedCompletedItemId((prevId) => (prevId === itemId ? null : itemId));
   };
   
-
 
   useEffect(() => {
     const fetchCompletedTasks = async () => {
@@ -300,7 +313,7 @@ function Task() {
         await batch.commit();
         const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
         setCompletedTasks(updatedCompletedTasks);
-        toast.success('Completed task deleted successfully!', {
+        toast.success('Completed task denied!', {
           autoClose: 1500,
           hideProgressBar: true,
         });
@@ -462,28 +475,28 @@ function Task() {
                   className="form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="hours">Time Frame (Hours):</label>
-                  <input
-                     type="number"
-                     id="hours"
-                     placeholder='0'
-                     value={hours === 0 ? '' : hours}
-                     onChange={(e) => setHours(Math.min(23, Math.max(0, parseInt(e.target.value))))}
-                     className="form-control"
-                   />
-                  </div>
-               <div className="form-group">
-                <label htmlFor="minutes">Time Frame (Minutes):</label>
-                  <input
-                   type="number"
-                   id="minutes"
-                   placeholder='0'
-                   value={minutes === 0 ? '' : minutes}
-                   onChange={(e) => setMinutes(Math.min(59, Math.max(0, parseInt(e.target.value))))}
-                   className="form-control"
-                 />
-              </div>
+            <div className="form-group">
+               <label htmlFor="hours">Time Frame (Hours):</label>
+                <input
+                  type="number"
+                  id="hours"
+                  placeholder="00"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value === '' ? '' : Math.min(23, parseInt(e.target.value)))}
+                  className="form-control"
+                />
+            </div>
+            <div className="form-group">
+              <label htmlFor="minutes">Time Frame (Minutes):</label>
+                <input
+                  type="number"
+                  id="minutes"
+                  placeholder="00"
+                  value={minutes}
+                  onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.min(59, parseInt(e.target.value)))}
+                  className="form-control"
+                />
+            </div>
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
                 <input
@@ -749,7 +762,7 @@ function Task() {
                       Confirm
                     </button>
                     <button onClick={() => handleDeleteCompletedTask(completed.id)} className="delete-button">
-                      Delete
+                      Deny
                     </button>
                   </div>
                 )}

@@ -21,9 +21,8 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check the user's login status when the component mounts
     firebase.auth().onAuthStateChanged((user) => {
-      setIsLoggedIn(!!user); // Set isLoggedIn to true if the user is logged in
+      setIsLoggedIn(!!user);
     });
   }, []);
 
@@ -33,14 +32,13 @@ function App() {
     try {
       await firebase.auth().signOut();
       console.log('Logout successful.');
-      setIsLoggedIn(false); // Set isLoggedIn to false on logout
+      setIsLoggedIn(false);
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  // Conditionally render the Sidebar based on the route path and isLoggedIn state
   const shouldDisplaySidebar = !['/', '/login', '/register'].includes(location.pathname) && isLoggedIn;
 
   return (
@@ -53,7 +51,7 @@ function App() {
           <Route path="/" element={<Login />} /> 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          {isLoggedIn ? ( // Only render these routes if isLoggedIn is true
+          {isLoggedIn ? (
             <Route element={<PrivateRoute isLogged={true}/>}>
               <Route path="/home" element={<Home />} /> 
               <Route path="/reward" element={<Reward />} /> 
@@ -62,7 +60,6 @@ function App() {
               <Route path="/cctv" element={<Cctv />} />
             </Route>
           ) : (
-            // Redirect to login if not logged in
             <Route path="*" element={<Login />} />
           )}
         </Routes>

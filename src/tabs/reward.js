@@ -331,7 +331,6 @@
             ...doc.data(),
           }));
           
-          // Filter and set the data for "Claimable" and "Claimed"
           const claimable = completeRequestsData.filter(
             (completeRequest) => completeRequest.isClaimable === true
           );
