@@ -1316,7 +1316,7 @@ text p {
 
 .video-wrapper {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio for responsive sizing */
+  padding-bottom: 42.19%;  /* 16:9 aspect ratio for responsive sizing */
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

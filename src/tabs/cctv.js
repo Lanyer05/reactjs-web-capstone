@@ -9,7 +9,7 @@ const YOUTUBE_API_KEY = 'AIzaSyBRPSMC0ekzqQUgE8hcG5hKa3Fe9kHWsY0';
 const CHANNEL_ID = 'UC3MVj4c1s5oZuvxlqm_OB7Q';
 
 function Cctv() {
-  const [liveStreamLink, setLiveStreamLink] = useState('');
+  const [liveStreamLinks, setLiveStreamLinks] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ function Cctv() {
   }, [navigate]);
 
   useEffect(() => {
-    const fetchLiveStreamLink = async () => {
+    const fetchLiveStreamLinks = async () => {
       try {
         const response = await fetch(
           `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&eventType=live&type=video&part=snippet`
@@ -35,10 +35,12 @@ function Cctv() {
 
         if (response.ok) {
           const data = await response.json();
-          const liveStreamData = data.items[0];
-          const videoId = liveStreamData.id.videoId;
-          const link = `https://www.youtube.com/embed/${videoId}?modestbranding=1&controls=1&showinfo=0&autohide=1&iv_load_policy=3`;
-          setLiveStreamLink(link);
+          const liveStreamItems = data.items;
+          const links = liveStreamItems.map((item) => {
+            const videoId = item.id.videoId;
+            return `https://www.youtube.com/embed/${videoId}?modestbranding=1&controls=1&showinfo=0&autohide=1&iv_load_policy=3`;
+          });
+          setLiveStreamLinks(links);
         } else {
           console.error('Error fetching live stream data');
         }
@@ -46,27 +48,33 @@ function Cctv() {
         console.error('Error:', error);
       }
     };
-    fetchLiveStreamLink();
-  }, []);
+    fetchLiveStreamLinks();
+  }, []); 
+
+  const containerStyle = {
+    margin: '30px',
+  };
 
   return (
     <AnimatedPage>
       <div className="home-container">
-        <div className="content">
+        <div className="content" >
           <h1 className="card-view">CCTV LIVE STREAM</h1>
-          {liveStreamLink ? (
-            <div className="video-wrapper">
-              <iframe
-                title="Live Stream"
-                width="100%"
-                height="100%"
-                src={liveStreamLink}
-                frameBorder="0"
-                allowFullScreen
-              ></iframe>
-            </div>
+          {liveStreamLinks.length > 0 ? (
+            liveStreamLinks.map((link, index) => (
+              <div className="video-wrapper" key={index} style={containerStyle}>
+                <iframe
+                  title={`Live Stream ${index + 1}`}
+                  width="100%"
+                  height="100%"
+                  src={link}
+                  frameBorder="0"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            ))
           ) : (
-            <p>No live stream available at the moment.</p>
+            <p>No live streams available at the moment.</p>
           )}
         </div>
       </div>

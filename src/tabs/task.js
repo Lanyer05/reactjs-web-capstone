@@ -214,11 +214,12 @@ function Task() {
     setTaskName('');
     setDescription('');
     setLocation('');
-    setHours(0);
-    setMinutes(0);
+    setHours('');
+    setMinutes('');
     setPoints('');
     setEmptyFieldWarning(false);
   };
+  
   const tabStyle = {
     fontSize: '18px',
     fontWeight: 'bold',
