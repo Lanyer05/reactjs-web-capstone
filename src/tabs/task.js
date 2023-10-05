@@ -412,28 +412,31 @@ function Task() {
         });
       }
     };
-  
 
-  const updatePointsFromCompletedTasks = async (taskId) => {
-    try {
-      const completedTaskDoc = await firestore.collection('completed_task').doc(taskId).get();
-      const completedTaskData = completedTaskDoc.data();
-      const userId = completedTaskData.acceptedBy;
-      const userDoc = await firestore.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        const currentPoints = userData.userpoints || 0;
-        const taskPoints = parseInt(completedTaskData.points, 10);
-        const updatedPoints = currentPoints + taskPoints;
-        await firestore.collection('users').doc(userId).update({
-          userpoints: updatedPoints,
-        });
-        console.log('User points updated successfully.');
+    const updatePointsFromCompletedTasks = async (taskId) => {
+      try {
+        const completedTaskDoc = await firestore.collection('completed_task').doc(taskId).get();
+        const completedTaskData = completedTaskDoc.data();
+        const userId = completedTaskData.acceptedBy;
+        const userDoc = await firestore.collection('users').doc(userId).get();
+        
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const currentPoints = userData.userpoints || 0;
+          const taskPoints = parseInt(completedTaskData.points, 10);
+          const remainingTime = completedTaskData.remainingTime;
+          const hasNegativeTime = remainingTime.includes('-');
+          const updatedPoints = hasNegativeTime ? currentPoints + taskPoints - 1 : currentPoints + taskPoints;
+          await firestore.collection('users').doc(userId).update({
+            userpoints: updatedPoints,
+          });
+          console.log('User points updated successfully.');
+        }
+      } catch (error) {
+        console.error('Error updating user points:', error);
       }
-    } catch (error) {
-      console.error('Error updating user points:', error);
-    }
-  };
+    };
+    
   
 
   return (
@@ -667,7 +670,7 @@ function Task() {
 
     {selectedTab === 'ACCEPT' && (
         <div className="accept-container">
-        <h2>Accept Content</h2>
+        <h2>Accept List</h2>
         <div className="accept-list">
         {userAcceptedTasks.map((accepted) => (
         <div
@@ -709,7 +712,7 @@ function Task() {
 
 {selectedTab === 'COMPLETE' && (
   <div className="complete-container">
-    <h2>Complete Content</h2>
+    <h2>Complete List</h2>
     <div className="tab-buttons">
       <button
         className={`tab-button ${selectedSubTab === 'COMPLETED' ? 'active' : ''}`}

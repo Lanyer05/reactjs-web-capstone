@@ -23,8 +23,21 @@ messaging.onBackgroundMessage((payload) => {
       icon: '/ecotaskreward_logo.png'
     };
 
+    notificationOptions.data = {
+      url: '/task'
+    };
+
     self.registration.showNotification(notificationTitle, notificationOptions);
   } else {
     console.error('Invalid notification payload:', payload);
+  }
+});
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  const data = event.notification.data;
+  if (data && data.url) {
+    event.waitUntil(
+      clients.openWindow(data.url)
+    );
   }
 });

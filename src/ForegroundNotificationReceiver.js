@@ -4,10 +4,12 @@ import 'firebase/messaging';
 import { Snackbar, Alert } from '@mui/material';
 import React from 'react';
 import logoImage from './ecotaskreward_logo.png';
+import { useNavigate } from 'react-router-dom';
 
 const ForegroundNotificationReceiver = () => {
   const [notification, setNotification] = useState(null);
   const [autoCloseTimer, setAutoCloseTimer] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const messaging = firebase.messaging();
@@ -32,7 +34,7 @@ const ForegroundNotificationReceiver = () => {
             ...prevNotification,
             open: false,
           }));
-        }, 5000);
+        }, 10000);
 
         setAutoCloseTimer(newAutoCloseTimer);
       }
@@ -56,14 +58,20 @@ const ForegroundNotificationReceiver = () => {
   };
 
   const handleMouseLeave = () => {
-    if (!notification?.open) return; 
+    if (!notification?.open) return;
+
     const newAutoCloseTimer = setTimeout(() => {
       setNotification((prevNotification) => ({
         ...prevNotification,
         open: false,
       }));
-    }, 5000);
+    }, 10000);
+
     setAutoCloseTimer(newAutoCloseTimer);
+  };
+
+  const handleClick = () => {
+    navigate('task', { screen: 'COMPLETED' });
   };
 
   return (
@@ -72,6 +80,7 @@ const ForegroundNotificationReceiver = () => {
       autoHideDuration={null}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
       <Alert

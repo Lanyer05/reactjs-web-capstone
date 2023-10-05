@@ -204,7 +204,7 @@ function User() {
 
           {selectedTab === "REQUEST" && (
             <div className="request-container">
-              <h2>User Request List</h2>
+              <h2>Request User List</h2>
               <div className="user-request-list">
                 {userRequests.map((request) => (
                   <div key={request.id} className="user-request-item">
