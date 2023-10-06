@@ -1,12 +1,134 @@
 import React, { useState, useEffect } from 'react';
 import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
-
 import AnimatedPage from './AnimatedPage';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 function Home() {
-
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [chartData, setChartData] = useState(null);
+  const [taskChartData, setTaskChartData] = useState(null);
+  const [userChartData, setUserChartData] = useState(null);
+  const [dataFetched, setDataFetched] = useState(false);
+
+  useEffect(() => {
+    if (!dataFetched) {
+      const fetchData = async () => {
+        try {
+          const rewardsSnapshot = await firebase.firestore().collection('rewards').get();
+          const completeRewardReqSnapshot = await firebase.firestore().collection('complete_rewardreq').get();
+          const rewardRequestSnapshot = await firebase.firestore().collection('rewardrequest').get();
+
+          const rewardsData = rewardsSnapshot.docs.map((doc) => doc.data());
+          const completeRewardReqData = completeRewardReqSnapshot.docs.map((doc) => doc.data());
+          const rewardRequestData = rewardRequestSnapshot.docs.map((doc) => doc.data());
+
+          const chartData = [
+            {
+              name: 'Rewards',
+              Rewards: rewardsData.length,
+            },
+            {
+              name: 'Reward Requests',
+              'Reward Requests': rewardRequestData.length,
+            },
+            {
+              name: 'Complete Reward Requests',
+              'Complete Reward Requests': completeRewardReqData.length,
+            },
+          ];
+
+          setChartData(chartData);
+          setDataFetched(true); // Mark data as fetched
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+
+      fetchData();
+    }
+  }, [dataFetched]);
+
+  useEffect(() => {
+    const fetchTaskData = async () => {
+      try {
+        const tasksSnapshot = await firebase.firestore().collection('tasks').get();
+        const acceptedTasksSnapshot = await firebase.firestore().collection('user_acceptedTask').get();
+        const completedTasksSnapshot = await firebase.firestore().collection('completed_task').get();
+  
+        const tasksData = tasksSnapshot.docs.map((doc) => doc.data());
+        const acceptedTasksData = acceptedTasksSnapshot.docs.map((doc) => doc.data());
+        const completedTasksData = completedTasksSnapshot.docs.map((doc) => doc.data());
+  
+        const confirmedTasks = completedTasksData.filter((task) => task.isConfirmed === true);
+        const unconfirmedTasks = completedTasksData.filter((task) => task.isConfirmed === false);
+  
+        const taskChartData = [
+          {
+            name: 'Available Tasks',
+            'Available Tasks': tasksData.length,
+          },
+          {
+            name: 'Accepted Tasks',
+            'Accepted Tasks': acceptedTasksData.length,
+          },
+          {
+            name: 'To Review Tasks',
+            'To Review Tasks': unconfirmedTasks.length,
+          },
+          {
+            name: 'Confirmed Tasks',
+            'Confirmed Tasks': confirmedTasks.length,
+          },
+        
+        ];
+  
+        setTaskChartData(taskChartData);
+      } catch (error) {
+        console.error('Error fetching task data:', error);
+      }
+    };
+  
+    if (!dataFetched) {
+      fetchTaskData(); // Fetch task data only if dataFetched is false
+    }
+  }, [dataFetched]);
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const usersSnapshot = await firebase.firestore().collection('users').get();
+        const registrationRequestsSnapshot = await firebase.firestore().collection('registration_requests').get();
+  
+        const usersData = usersSnapshot.docs
+        .map((doc) => doc.data())
+        .filter((user) => user.email.endsWith('@gmail.com'));
+
+        const registrationRequestsData = registrationRequestsSnapshot.docs.map((doc) => doc.data());
+  
+        const userChartData = [
+          {
+            name: 'Registration Requests',
+            'Registration Requests': registrationRequestsData.length,
+          },
+          {
+            name: 'Users',
+            Users: usersData.length,
+          },
+        ];
+  
+        setUserChartData(userChartData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+  
+    if (!dataFetched) {
+      fetchUserData();
+    }
+  }, [dataFetched]);
 
   
   useEffect(() => {
@@ -40,9 +162,6 @@ function Home() {
     checkLoggedInUser();
   }, []);
   
-  
-
-
   useEffect(() => {
     const requestPermission = () => {
       console.log('Requesting permission...');
@@ -56,12 +175,9 @@ function Home() {
         }
       });
     };
-
     requestPermission();
   }, []);
-
-
-  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
@@ -69,10 +185,8 @@ function Home() {
         setIsLoading(false);
       }
     };
-
     checkLoggedInUser();
   }, []);
-
 
   const [revealedItems, setRevealedItems] = useState({});
   const handleItemClick = (itemId) => {
@@ -82,69 +196,125 @@ function Home() {
     }));
   };
 
-  
   return (
     <AnimatedPage>
       <div className="home-container">
         <div className="content">
           <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
           <div className="homepage-container">
-            <div className="ui-list">
+            {chartData && (
               <div className="ui-item" onClick={() => handleItemClick('item1')}>
                 <h2>Explore Rewards Tab</h2>
                 <button className="explore-button" onClick={() => navigate('/reward')}>
                   Explore
                 </button>
               </div>
-              
-              {revealedItems['item1'] && (
-                <div className="ui-revealed-content">
-                  <p className='text'>The Reward Page functions as a hub where websites intersect user actions and incentives, fostering a symbiotic connection between the platform and its visitors. Rooted in behavioral psychology and gamification principles, its primary role is to incentivize and reward users for desired actions, cultivating a sense of accomplishment and satisfaction. This fuels heightened user engagement and extended session durations, pivotal metrics for optimizing website performance. Moreover, the Reward Page serves as a conduit for data-driven personalization, adapting incentives based on user behaviors and preferences. It visually tracks progress, showcasing users' achievements and earned rewards, stimulating motivation for return visits. Through tiered rewards and loyalty programs, the Reward Page fosters a sense of exclusivity, cultivating brand affinity and recurring site visits. It also functions as a conduit for user-generated content and social sharing, amplifying brand exposure and user acquisition. Seamlessly facilitating the redemption of accrued rewards into tangible benefits, the Reward Page elevates user satisfaction and retention. In summation, the Reward Page stands as a pivotal component of modern website strategies, pivotal in driving user engagement, loyalty, and expansion. Its adept utilization of behavioral dynamics and gamification principles underscores its essentiality in the toolkit of website administrators, a driving force in the ongoing evolution of digital platforms.</p>
+            )}
+            {revealedItems['item1'] && (
+              <div className="ui-revealed-content">
+                <h2>Reward Chart</h2>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center'}}>
+                  <BarChart
+                    width={700}
+                    height={450}
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Rewards" fill="#8884d8" />
+                    <Bar dataKey="Reward Requests" fill="#ffc658" />
+                    <Bar dataKey="Complete Reward Requests" fill="#82ca9d" />
+                  </BarChart>
                 </div>
-              )}
-            
-
-            <div className="ui-item" onClick={() => handleItemClick('item2')}>
-              <h2>Explore Task Tab</h2>
-              <button className="explore-button" onClick={() => navigate('/task')}>
-                Explore
-              </button>
-            </div>
-
+              </div>
+            )}
+    
+            {taskChartData && (
+              <div className="ui-item" onClick={() => handleItemClick('item2')}>
+                <h2>Explore Task Tab</h2>
+                <button className="explore-button" onClick={() => navigate('/task')}>
+                  Explore
+                </button>
+              </div>
+            )}
             {revealedItems['item2'] && (
               <div className="ui-revealed-content">
-                <p className='text'>The provided code establishes a dynamic task management page in a React web application, integrating Firebase for authentication and Firestore for data storage. Users can efficiently oversee tasks, requests, and claims using distinct tabs, each serving specific functions. The core features encompass task management, including the ability to access and manipulate task details, add new tasks through a form, update existing tasks, and delete tasks with a confirmation step. The interface's navigation is facilitated by tabs ("Task," "Request," "Claim"), allowing users to seamlessly transition between different functionalities. The code also ensures user authentication, redirecting unauthenticated users to the login page. The user interface boasts a polished design and utilizes React Toastify to provide informative notifications, enhancing user experience and interaction.</p>
+                <h2>Task Chart</h2>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <BarChart
+                    width={700}
+                    height={450}
+                    data={taskChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Available Tasks" fill="#8884d8" />
+                    <Bar dataKey="Accepted Tasks" fill="#ff6f61" />
+                    <Bar dataKey="To Review Tasks" fill="#82ca9d" />
+                    <Bar dataKey="Confirmed Tasks" fill="#ffc658" />        
+                  </BarChart>
+                </div>
               </div>
             )}
-
-            <div className="ui-item" onClick={() => handleItemClick('item3')}>
-              <h2>Explore CCTV Preview Tab</h2>
-              <button className="explore-button" onClick={() => navigate('/cctv')}>
-                Explore
-              </button>
-            </div>
-
+  
+            {/* Add the "CCTV" tab */}
+            {chartData && (
+              <div className="ui-item" onClick={() => handleItemClick('item3')}>
+                <h2>Explore CCTV Tab</h2>
+                <button className="explore-button" onClick={() => navigate('/cctv')}>
+                  Explore
+                </button>
+              </div>
+            )}
+  
             {revealedItems['item3'] && (
               <div className="ui-revealed-content">
-                <p className='text'>The Reward Page functions as a hub where websites intersect user actions and incentives, fostering a symbiotic connection between the platform and its visitors. Rooted in behavioral psychology and gamification principles, its primary role is to incentivize and reward users for desired actions, cultivating a sense of accomplishment and satisfaction. This fuels heightened user engagement and extended session durations, pivotal metrics for optimizing website performance. Moreover, the Reward Page serves as a conduit for data-driven personalization, adapting incentives based on user behaviors and preferences. It visually tracks progress, showcasing users' achievements and earned rewards, stimulating motivation for return visits. Through tiered rewards and loyalty programs, the Reward Page fosters a sense of exclusivity, cultivating brand affinity and recurring site visits. It also functions as a conduit for user-generated content and social sharing, amplifying brand exposure and user acquisition. Seamlessly facilitating the redemption of accrued rewards into tangible benefits, the Reward Page elevates user satisfaction and retention. In summation, the Reward Page stands as a pivotal component of modern website strategies, pivotal in driving user engagement, loyalty, and expansion. Its adept utilization of behavioral dynamics and gamification principles underscores its essentiality in the toolkit of website administrators, a driving force in the ongoing evolution of digital platforms.</p>
+                <h2>This section monitors the ongoing tasks</h2>
+                {/* Include CCTV-related content here */}
               </div>
             )}
-            
-            <div className="ui-item" onClick={() => handleItemClick('item4')}>
-              <h2>Explore Users Tab</h2>
-              <button className="explore-button" onClick={() => navigate('/user')}>
-                Explore
-              </button>
-            </div>
+  
+  {userChartData && (
+  <div className="ui-item" onClick={() => handleItemClick('item5')}>
+    <h2>Explore User Tab</h2>
+    <button className="explore-button" onClick={() => navigate('/user')}>
+      Explore
+    </button>
+  </div>
+)}
 
-            {revealedItems['item4'] && (
-              <div className="ui-revealed-content">
-                <p className='text'>This React web application component serves as a dynamic "User" page, facilitating efficient user management tasks through Firebase authentication and Firestore database integration. The component offers two main tabs: "User Request" enables administrators to review and approve user registration requests, while "User Approved" showcases the list of approved users. Admins can manage user requests by approving them, triggering a confirmation dialog and updating their approval status. Similarly, administrators can delete users from the approved list. The component prioritizes a well-structured UI with intuitive tab navigation, stylish buttons, and React Toastify for informative notifications. Security is ensured through Firebase authentication, preventing unauthorized access and allowing secure logout for administrators.</p>
-              </div>
-            )}
+{revealedItems['item5'] && (
+  <div className="ui-revealed-content">
+    <h2>User Chart</h2>
+    <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
+      <BarChart
+        width={700}
+        height={450}
+        data={userChartData}
+        margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="Users" fill="#8884d8" />
+        <Bar dataKey="Registration Requests" fill="#ff6f61" />
+      </BarChart>
+    </div>
+  </div>
+)}
+  
+  
           </div>
         </div>
-      </div>
       </div>
     </AnimatedPage>
   );

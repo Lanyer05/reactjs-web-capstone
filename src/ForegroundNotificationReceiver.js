@@ -5,6 +5,7 @@ import { Snackbar, Alert } from '@mui/material';
 import React from 'react';
 import logoImage from './ecotaskreward_logo.png';
 import { useNavigate } from 'react-router-dom';
+import notificationSound from './notification.mp3';
 
 const ForegroundNotificationReceiver = () => {
   const [notification, setNotification] = useState(null);
@@ -18,6 +19,9 @@ const ForegroundNotificationReceiver = () => {
       if (payload?.notification?.title && payload?.notification?.body) {
         const notificationTitle = payload.notification.title;
         const notificationBody = payload.notification.body;
+
+        const audio = new Audio(notificationSound);
+        audio.play();
 
         setNotification({
           title: notificationTitle,

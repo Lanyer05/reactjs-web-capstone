@@ -693,6 +693,7 @@ function Task() {
               <p>Points: {accepted.points}</p>
               <p>User ID: {accepted.acceptedBy}</p>
               <p>Accepted By: {accepted.acceptedByEmail}</p>
+              <p className="blue-highlight">Time Accepted: {accepted.acceptedDateTime}</p>
             {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
                   <button
                   onClick={() => handleCancelTask(accepted.id)}
@@ -747,10 +748,12 @@ function Task() {
                 ) : (
                   <p>Time Frame: N/A</p>
                 )}
-                <p>Points: {completed.points}</p>
-                <p>User ID: {completed.acceptedBy}</p>
-                <p>User Email: {completed.acceptedByEmail}</p>
-                <p>End Time: {completed.remainingTime}</p>
+                <p>Points:  {completed.points}</p>
+                <p>User ID:  {completed.acceptedBy}</p>
+                <p>User Email:  {completed.acceptedByEmail}</p>
+                <p>Remaining Timeframe:  {completed.remainingTime}</p>
+                <p className="blue-highlight">Accepted Time:  {completed.acceptedDateTime}</p>
+                <p className="red-highlight">Completed Time:  {completed.completedDateTime}</p>
                 {selectedCompletedItemId === completed.id && (
                   <div className={`completed-item-actions ${showDeleteButtonId === completed.id ? 'visible' : ''}`}>
                     <div className="centered-image">
@@ -800,7 +803,9 @@ function Task() {
           <p>User ID: {confirmed.acceptedBy}</p>
           <p>User Email: {confirmed.acceptedByEmail}</p>
           <p>End Time: {confirmed.remainingTime}</p>
-          <p>Status: Confirmed</p>
+          <p className="blue-highlight">Accepted Time:  {confirmed.acceptedDateTime}</p>
+          <p className="red-highlight">Completed Time:  {confirmed.completedDateTime}</p>
+          <p className="blue-highlight">Status: Confirmed</p>
           {selectedConfirmedItemId === confirmed.id && (
             <div className={`confirmed-item-actions ${showDeleteButtonId === confirmed.id ? 'visible' : ''}`}>
               <div className="centered-image">
