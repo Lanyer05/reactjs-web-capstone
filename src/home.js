@@ -136,6 +136,8 @@ function Home() {
       try {
         const user = firebase.auth().currentUser;
         if (user) {
+          console.log('User is logged in:', user.uid);
+          await user.getIdToken(true);
           const fcmToken_admin = await firebase.messaging().getToken(); 
           const userRef = firebase.firestore().collection('users').doc(user.uid);
           const batch = firebase.firestore().batch();
@@ -160,7 +162,38 @@ function Home() {
       }
     };
     checkLoggedInUser();
-  }, []);
+  }, []); const checkLoggedInUser = async () => {
+    try {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        console.log('User is logged in:', user.uid);
+        await user.getIdToken(true);
+        
+        // Fetch the current FCM token
+        const fcmToken_admin = await firebase.messaging().getToken(); 
+        
+        // Fetch the existing user data
+        const userRef = firebase.firestore().collection('users').doc(user.uid);
+        const userDoc = await userRef.get();
+        
+        // Check if the FCM token has changed
+        if (userDoc.exists && userDoc.data().fcmToken_admin !== fcmToken_admin) {
+          const batch = firebase.firestore().batch();
+          batch.update(userRef, {
+            fcmToken_admin: fcmToken_admin, 
+            email: user.email,
+            uid: user.uid,
+          });
+          await batch.commit();
+          console.log('FCM token updated:', fcmToken_admin);
+        }
+        
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error while retrieving or updating FCM token:', error);
+    }
+  };
   
   useEffect(() => {
     const requestPermission = () => {
@@ -179,13 +212,14 @@ function Home() {
   }, []);
   
   useEffect(() => {
-    const checkLoggedInUser = async () => {
-      const user = firebase.auth().currentUser;
+    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        setIsLoading(false);
+        checkLoggedInUser();
       }
-    };
-    checkLoggedInUser();
+    });
+
+    // Unsubscribe from the auth state observer when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   const [revealedItems, setRevealedItems] = useState({});
