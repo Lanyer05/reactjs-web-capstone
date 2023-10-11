@@ -84,7 +84,7 @@ const Register = () => {
     <div className="login-container">
       <h1 className="welcome-text">REGISTER</h1>
       <img className="welcome-image" src={Logo} alt="Welcome" />
-      <div className="welcome-message">Create a new account</div>
+      <div className="welcome-message">Create new admin account</div>
       <form onSubmit={handleRegister}>
         <div className="input-container">
           <div className="input-field">

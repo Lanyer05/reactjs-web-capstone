@@ -124,7 +124,6 @@ function Task() {
     };
     
 
-
   const handleDeleteTask = async (taskId) => {
     try {
       const shouldDelete = window.confirm('Are you sure you want to delete this task?');

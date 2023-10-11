@@ -168,15 +168,9 @@ function Home() {
       if (user) {
         console.log('User is logged in:', user.uid);
         await user.getIdToken(true);
-        
-        // Fetch the current FCM token
         const fcmToken_admin = await firebase.messaging().getToken(); 
-        
-        // Fetch the existing user data
         const userRef = firebase.firestore().collection('users').doc(user.uid);
-        const userDoc = await userRef.get();
-        
-        // Check if the FCM token has changed
+        const userDoc = await userRef.get(); 
         if (userDoc.exists && userDoc.data().fcmToken_admin !== fcmToken_admin) {
           const batch = firebase.firestore().batch();
           batch.update(userRef, {
@@ -217,8 +211,6 @@ function Home() {
         checkLoggedInUser();
       }
     });
-
-    // Unsubscribe from the auth state observer when the component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -298,7 +290,6 @@ function Home() {
               </div>
             )}
   
-            {/* Add the "CCTV" tab */}
             {chartData && (
               <div className="ui-item" onClick={() => handleItemClick('item3')}>
                 <h2>Explore CCTV Tab</h2>
@@ -311,42 +302,39 @@ function Home() {
             {revealedItems['item3'] && (
               <div className="ui-revealed-content">
                 <h2>This section monitors the ongoing tasks</h2>
-                {/* Include CCTV-related content here */}
               </div>
             )}
   
-  {userChartData && (
-  <div className="ui-item" onClick={() => handleItemClick('item5')}>
-    <h2>Explore User Tab</h2>
-    <button className="explore-button" onClick={() => navigate('/user')}>
-      Explore
-    </button>
-  </div>
-)}
+          {userChartData && (
+          <div className="ui-item" onClick={() => handleItemClick('item5')}>
+            <h2>Explore User Tab</h2>
+            <button className="explore-button" onClick={() => navigate('/user')}>
+              Explore
+            </button>
+          </div>
+        )}
 
-{revealedItems['item5'] && (
-  <div className="ui-revealed-content">
-    <h2>User Chart</h2>
-    <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
-      <BarChart
-        width={700}
-        height={450}
-        data={userChartData}
-        margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="Users" fill="#8884d8" />
-        <Bar dataKey="Registration Requests" fill="#ff6f61" />
-      </BarChart>
-    </div>
-  </div>
-)}
-  
-  
+          {revealedItems['item5'] && (
+            <div className="ui-revealed-content">
+              <h2>User Chart</h2>
+              <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
+                <BarChart
+                  width={700}
+                  height={450}
+                  data={userChartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="Users" fill="#8884d8" />
+                  <Bar dataKey="Registration Requests" fill="#ff6f61" />
+                </BarChart>
+              </div>
+            </div>
+          )}           
           </div>
         </div>
       </div>

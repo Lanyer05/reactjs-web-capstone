@@ -17,10 +17,13 @@ const showLoginSuccessToast = () => {
     draggable: true,
   });
 };
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
   useEffect(() => {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
@@ -40,12 +43,17 @@ const Login = () => {
       unsubscribe();
     };
   }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     if (!validateEmail(email)) {
       showToast('Please enter a valid email address.', 'error');
+      setIsLoading(false);
       return;
     }
+
     try {
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -71,12 +79,16 @@ const Login = () => {
       } else {
         showToast('Error logging in. Please try again later.', 'error');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
   const showToast = (message, type) => {
     toast[type](message, {
       position: 'top-center',
@@ -87,43 +99,68 @@ const Login = () => {
       draggable: true,
     });
   };
+
   return (
     <AnimatedPage>
-    <div className="login-container">
-      <h1 className="welcome-text">WELCOME</h1>
-      <img className="welcome-image" src={Logo} alt="Welcome" />
-      <div className="welcome-message">Go Green, Go Clean!</div>
-      <form onSubmit={handleLogin}>
-        <div className="input-container">
-          <div className="input-field">
-            <input
-              type="email"
-              placeholder=" Enter Admin Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+      <div className="login-container">
+        <h1 className="welcome-text">WELCOME</h1>
+        <img className="welcome-image" src={Logo} alt="Welcome" />
+        <div className="welcome-message">Go Green, Go Clean!</div>
+
+
+        {isLoading && (
+          <div className="loader">
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
           </div>
-          <div className="input-field">
-            <input
-              type="password"
-              placeholder=" Enter Admin Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        )}
+
+        <form onSubmit={handleLogin}>
+          <div className="input-container">
+            <div className="input-field">
+              <input
+                type="email"
+                placeholder=" Enter Admin Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="input-field">
+              <input
+                type="password"
+                placeholder=" Enter Admin Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
-        <div className="button-container">
-          <button className="login-button" type="submit">
-            SIGN IN
-          </button>
-        </div>
-        <p className="forgot-password">
-          Dont have an admin account? <Link className="forgot-password" to="/register">Register here</Link>.
-        </p>
-      </form>
-      <ToastContainer />
-    </div>
+          <div className="button-container">
+            <button className="login-button" type="submit">
+              LOGIN
+            </button>
+          </div>
+          <p className="forgot-password">
+            Dont have an admin account? <Link className="forgot-password" to="/register">Register here</Link>.
+          </p>
+        </form>
+        <ToastContainer />
+      </div>
     </AnimatedPage>
   );
 };
+
 export default Login;

@@ -6,6 +6,7 @@ import Register from './register';
 import Reward from './tabs/reward';
 import Task from './tabs/task';
 import User from './tabs/user';
+import Announcement from './tabs/announcement';
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
 import Cctv from './tabs/cctv';
@@ -58,6 +59,7 @@ function App() {
               <Route path="/task" element={<Task />} /> 
               <Route path="/user" element={<User />} /> 
               <Route path="/cctv" element={<Cctv />} />
+              <Route path='/announcement' element={<Announcement/>}/>
             </Route>
           ) : (
             <Route path="*" element={<Login />} />
