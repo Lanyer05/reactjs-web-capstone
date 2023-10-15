@@ -11,13 +11,13 @@ const AnnouncementForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [announcements, setAnnouncements] = useState([]);
-  const [currentAnnouncement, setCurrentAnnouncement] = useState(null); // To manage the announcement being edited
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
 
   useEffect(() => {
     const checkLoggedInUser = async () => {
       const user = firebase.auth().currentUser;
       if (!user) {
-        toast.error('Please login to access the rewards page.', {
+        toast.error('Please login to access the announcement page.', {
           autoClose: 1500,
           hideProgressBar: true,
         });
@@ -30,8 +30,6 @@ const AnnouncementForm = () => {
   useEffect(() => {
     const db = firebase.firestore();
     const announcementsRef = db.collection('announcements');
-
-    // Use the onSnapshot method to listen for real-time updates
     const unsubscribe = announcementsRef.onSnapshot((querySnapshot) => {
       const announcementsData = [];
       querySnapshot.forEach((doc) => {
@@ -39,9 +37,7 @@ const AnnouncementForm = () => {
       });
       setAnnouncements(announcementsData);
     });
-
     return () => {
-      // Unsubscribe from the snapshot listener when the component unmounts
       unsubscribe();
     };
   }, []);
@@ -118,7 +114,6 @@ const AnnouncementForm = () => {
         .commit()
         .then(() => {
           console.log('Announcement deleted with ID: ', announcementId);
-          // No need to manually update the state; the real-time listener will do it automatically
         })
         .catch((error) => {
           console.error('Error deleting announcement: ', error);

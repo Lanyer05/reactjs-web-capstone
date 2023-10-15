@@ -56,13 +56,11 @@
       };
       checkLoggedInUser();
     }, [navigate]);
-
     useEffect(() => {
       const unsubscribeRewards = rewardsCollectionRef.onSnapshot((snapshot) => {
         const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setRewardsList(rewardsData);
       });
-    
       return () => {
         unsubscribeRewards();
       };
@@ -81,14 +79,10 @@
           rewardName: rewardName,
           points: points
         };
-
         const batch = firestore.batch();
-
         const newRewardRef = rewardsCollectionRef.doc();
         batch.set(newRewardRef, newReward);
-
         await batch.commit();
-
         setRewardsList([...rewardsList, { ...newReward, id: newRewardRef.id }]);
         setRewardName("");
         setPoints("");
@@ -106,14 +100,10 @@
         if (!shouldDelete) {
           return;
         }
-    
         const batch = firestore.batch();
-    
         const rewardRef = rewardsCollectionRef.doc(id);
         batch.delete(rewardRef);
-    
-        await batch.commit();
-    
+        await batch.commit();   
         const updatedRewardsList = rewardsList.filter((reward) => reward.id !== id);
         setRewardsList(updatedRewardsList);
         toast.success('Reward deleted successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -207,18 +197,14 @@
     
     const handleCancelRequest = async (id) => {
       try {
-        const shouldDelete = window.confirm('Are you sure you want to delete this request?');
+        const shouldDelete = window.confirm('Are you sure you want to cancel this request?');
         if (!shouldDelete) {
           return;
-        }
-    
-        const batch = firestore.batch();
-    
+        }   
+        const batch = firestore.batch();    
         const requestRef = firestore.collection("rewardrequest").doc(id);
-        batch.delete(requestRef);
-    
-        await batch.commit();
-    
+        batch.delete(requestRef);   
+        await batch.commit();   
         const updatedRequestsList = requestsList.filter((request) => request.id !== id);
         setRequestsList(updatedRequestsList);
         toast.success('Request deleted successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -235,15 +221,12 @@
         const batch = db.batch();
         const requestRef = db.collection('rewardrequest').doc(requestId);
         const completeRequestRef = db.collection('complete_rewardreq').doc(requestId);
-        const requestDoc = await requestRef.get();
-        
+        const requestDoc = await requestRef.get();       
         if (requestDoc.exists) {
-          const requestData = requestDoc.data();
-          
+          const requestData = requestDoc.data();       
           if (requestData.pendingStatus) {
             const userRef = db.collection('users').doc(requestData.userId);
-            const userDoc = await userRef.get();
-            
+            const userDoc = await userRef.get();        
             if (userDoc.exists) {
               const userData = userDoc.data();
               const currentPoints = userData.userpoints || 0;
@@ -252,23 +235,19 @@
             } else {
               toast.error('User document not found.', { autoClose: 1500, hideProgressBar: true });
               return;
-            }
-            
+            }           
             const completeRequestData = {
               ...requestData,
               isClaimable: true,
               pendingStatus: false,
               claimDate: firebase.firestore.FieldValue.serverTimestamp(),
-            };
-            
+            };         
             batch.update(requestRef, { pendingStatus: false });
             batch.set(completeRequestRef, completeRequestData);
             batch.delete(requestRef);
-            await batch.commit();
-            
+            await batch.commit();           
             const updatedRequestsList = requestsList.filter((request) => request.id !== requestId);
-            setRequestsList(updatedRequestsList);
-            
+            setRequestsList(updatedRequestsList);   
             toast.success('Request confirmed successfully!', {
               autoClose: 1500,
               hideProgressBar: true,

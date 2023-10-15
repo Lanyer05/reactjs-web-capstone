@@ -231,7 +231,7 @@ function User() {
               <h2>Approved Users List</h2>
               <div className="user-approved-list">
               {userApproved
-                  .filter((approved) => !approved.email.endsWith('@youradmin.com'))
+                   .filter((approved) => approved.isApproved === true && !approved.email.endsWith('@youradmin.com'))
                   .map((approved) => (
                   <div key={approved.id} className="user-approved-item">
                     <h3>{approved.name}</h3>

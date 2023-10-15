@@ -53,7 +53,6 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
-
     try {
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
