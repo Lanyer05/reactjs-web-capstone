@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faTimes, faTrophy, faClipboardList, faVideo, faUserAlt, faSignOutAlt, faHome, faBullhorn } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faTimes, faMedal, faClipboardList, faVideo, faUserAlt, faSignOutAlt, faHome, faBullhorn } from "@fortawesome/free-solid-svg-icons";
 import firebase from "firebase/app";
 import "firebase/auth";
 import LogoImage from "./logowhite.png"; 
@@ -49,7 +49,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
       </div>
 
       <div className="sidebar-position" onClick={() => navigate('/reward')}>
-        <FontAwesomeIcon icon={faTrophy} />
+        <FontAwesomeIcon icon={faMedal} />
         <span>REWARD</span>
       </div>
 

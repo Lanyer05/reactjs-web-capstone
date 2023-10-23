@@ -57,7 +57,6 @@ function Task() {
     };
   }, [showAddForm, updatingTaskId]);
 
-
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -82,7 +81,7 @@ function Task() {
     return () => {
       unsubscribe();
     };
-  }, [tasksCollectionRef]);
+  }, []);
 
 
   useEffect(() => {
@@ -192,17 +191,27 @@ function Task() {
      };
 
 
-  useEffect(() => {
-    const fetchUserAcceptedTasks = async () => {
-      try {
-        const acceptedTasksSnapshot = await firestore.collection('user_acceptedTask').get();
-        const acceptedTasksData = acceptedTasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setUserAcceptedTasks(acceptedTasksData);
-      } catch (error) {
-        console.error('Error fetching user accepted tasks:', error);
-      }
-    };
-    fetchUserAcceptedTasks(); 
+     useEffect(() => {
+      const fetchUserAcceptedTasks = async () => {
+        try {
+          const acceptedTasksSnapshot = await firestore.collection('user_acceptedTask').get();
+          const acceptedTasksData = acceptedTasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setUserAcceptedTasks(acceptedTasksData);
+        } catch (error) {
+          console.error('Error fetching user accepted tasks:', error);
+        }
+      };
+      fetchUserAcceptedTasks();
+      const unsubscribe = firestore.collection('user_acceptedTask').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added' || change.type === 'modified') {
+          }
+        });
+      });
+    
+      return () => {
+        unsubscribe();
+      };
     }, []);
 
 
@@ -226,7 +235,7 @@ function Task() {
     margin: '0 1px',
     marginBottom: '5px',
     color: 'white',
-    backgroundColor: '#588157',
+    backgroundColor: '#659E64',
     border: 'none',
     cursor: 'pointer',
     width: '170px',
@@ -234,7 +243,7 @@ function Task() {
     };
   const activeTabStyle = {
     ...tabStyle,
-    backgroundColor: '#34673d',
+    backgroundColor: '#3f5159',
     };
 
 
@@ -286,23 +295,28 @@ function Task() {
   useEffect(() => {
     const fetchCompletedTasks = async () => {
       try {
-        const completedTasksSnapshot = await firestore.collection('completed_task').get();
-        const completedTasksData = completedTasksSnapshot.docs.map((doc) => {
-        const completedTask = doc.data();
+        const completedTasksRef = firestore.collection('completed_task');
+        const unsubscribe = completedTasksRef.onSnapshot((snapshot) => {
+          const completedTasksData = snapshot.docs.map((doc) => {
+            const completedTask = doc.data();
             const remainingTime = completedTask.remainingTime;
             return {
-            id: doc.id,
-            ...doc.data(),
-            remainingTime: remainingTime,
+              id: doc.id,
+              ...doc.data(),
+              remainingTime: remainingTime,
             };
-            });
-            setCompletedTasks(completedTasksData);
-            } catch (error) {
-            console.error('Error fetching completed tasks:', error);
-          }
+          });
+          setCompletedTasks(completedTasksData);
+        });
+        return () => { 
+          unsubscribe();
         };
-      fetchCompletedTasks();
-    }, []);
+      } catch (error) {
+        console.error('Error fetching completed tasks:', error);
+      }
+    };
+    fetchCompletedTasks();
+  }, []);
 
 
     const handleDeleteCompletedTask = async (taskId) => {
@@ -540,8 +554,6 @@ function Task() {
             </button>
           </div>
 
-
-
           {selectedTab === 'TASK' && (
             <>
               <div className="tasks-container">
@@ -555,24 +567,43 @@ function Task() {
                   onMouseEnter={() => handleRevealDeleteButton(task.id)}
                   onMouseLeave={() => handleRevealDeleteButton(null)}
                     >
-                      <h3>{task.taskName}</h3>
-                      <p>Description: {task.description}</p>
-                      <p>Location: {task.location}</p>
-                      <p>Time Frame: {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes</p>
-                      <p>Points: {task.points}</p>
+                      <div className="task-details">
+                        <h3>{task.taskName}</h3>
+                        <div className="divider"></div>
+                        <p>
+                          <span className="label">Description:</span>
+                          {task.description}
+                        </p>
+                        <div className="divider"></div>
+                        <p>
+                          <span className="label">Location:</span>
+                          {task.location}
+                        </p>
+                        <div className="divider"></div>
+                        <p>
+                          <span className="label">Time Frame:</span>
+                          {task.timeFrame?.hours || 0} hour/s {task.timeFrame?.minutes || 0} minute/s
+                        </p>
+                        <div className="divider"></div>
+                        <p>
+                          <span className="label">Points:</span>
+                          {task.points}
+                        </p>
+                      </div>
+
                       {selectedTaskId === task.id && (
                         <>
+                          <button
+                            onClick={() => setUpdatingTaskId(task.id)}
+                            className={`confirm-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
+                          >
+                            Update
+                          </button>
                           <button
                             onClick={() => handleDeleteTask(task.id)}
                             className={`delete-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
                           >
                             Delete
-                          </button>
-                          <button
-                            onClick={() => setUpdatingTaskId(task.id)}
-                            className={`update-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
-                          >
-                            Update
                           </button>
                         </>
                       )}
@@ -638,10 +669,10 @@ function Task() {
                               className="form-control"
                             />
                           </div>
-                          <button onClick={() => handleUpdateTask(task.id)} className="btn btn-primary">
+                          <button onClick={() => handleUpdateTask(task.id)} className="confirm-button">
                             Update
                           </button>
-                          <button onClick={() => setUpdatingTaskId(null)} className="btn btn-secondary">
+                          <button onClick={() => setUpdatingTaskId(null)} className="delete-button">
                             Cancel
                           </button>
                         </div>
@@ -654,18 +685,16 @@ function Task() {
               <div className="floating-button-container">
                 {showAddForm ? (
                   <button onClick={() => setShowAddForm(false)} className="floating-add-button">
-                    -
-                  </button>
+                  <span style={{ fontSize: '24px' }}>-</span>
+                </button>
                 ) : (
                   <button onClick={() => setShowAddForm(true)} className="floating-add-button">
-                    +
-                  </button>
+                  <span style={{ fontSize: '24px' }}>+</span>
+                </button>
                 )}
               </div>
             </>
           )}
-
-
 
     {selectedTab === 'ACCEPT' && (
         <div className="accept-container">
@@ -682,17 +711,41 @@ function Task() {
              {accepted.isStarted ? (
              <div className="ongoing-indicator"></div>
              ) : null}
-          <h3>{accepted.taskName}</h3>
-              <p>Description: {accepted.description}</p>
-            {accepted.timeFrame ? (
-              <p>Time Frame: {accepted.timeFrame.hours} hours {accepted.timeFrame.minutes} minutes</p>
-              ) : (
-              <p>Time Frame: N/A</p>
-              )}
-              <p>Points: {accepted.points}</p>
-              <p>User ID: {accepted.acceptedBy}</p>
-              <p>Accepted By: {accepted.acceptedByEmail}</p>
-              <p className="blue-highlight">Time Accepted: {accepted.acceptedDateTime}</p>
+          <div className="accepted-details">
+            <h3>{accepted.taskName}</h3>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Description:</span>
+              {accepted.description}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Time Frame:</span>
+              {accepted.timeFrame
+                ? `${accepted.timeFrame.hours} hours ${accepted.timeFrame.minutes} minutes`
+                : 'N/A'}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Points:</span>
+              {accepted.points}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">User ID:</span>
+              {accepted.acceptedBy}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Accepted By:</span>
+              {accepted.acceptedByEmail}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Time Accepted:</span>
+              <span className="blue-highlight">{accepted.acceptedDateTime}</span>
+            </p>
+          </div>
             {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
                   <button
                   onClick={() => handleCancelTask(accepted.id)}
@@ -707,8 +760,6 @@ function Task() {
           </div>
       </div>
     )}
-
-
 
 {selectedTab === 'COMPLETE' && (
   <div className="complete-container">
@@ -740,19 +791,50 @@ function Task() {
                 onMouseEnter={() => handleRevealDeleteButton(completed.id)}
                 onMouseLeave={() => handleRevealDeleteButton(null)}
               >
-                <h3>{completed.taskName}</h3>
-                <p>Description: {completed.description}</p>
-                {completed.timeFrame ? (
-                  <p>Time Frame: {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
-                ) : (
-                  <p>Time Frame: N/A</p>
-                )}
-                <p>Points:  {completed.points}</p>
-                <p>User ID:  {completed.acceptedBy}</p>
-                <p>User Email:  {completed.acceptedByEmail}</p>
-                <p>Remaining Timeframe:  {completed.remainingTime}</p>
-                <p className="blue-highlight">Accepted Time:  {completed.acceptedDateTime}</p>
-                <p className="red-highlight">Completed Time:  {completed.completedDateTime}</p>
+                <div className="completed-details">
+                    <h3>{completed.taskName}</h3>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Description:</span>
+                      {completed.description}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Time Frame:</span>
+                      {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Points:</span>
+                      {completed.points}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">User ID:</span>
+                      {completed.acceptedBy}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">User Email:</span>
+                      {completed.acceptedByEmail}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Remaining Timeframe:</span>
+                      {completed.remainingTime}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Accepted Time:</span>
+                      <span className="blue-highlight">{completed.acceptedDateTime}</span>
+                    </p>
+                     <div className="divider"></div>
+                    <p>
+                      <span className="label">Completed Time:</span>
+                      <span className="red-highlight">{completed.completedDateTime}</span>
+                    </p>
+                  </div>
+
                 {selectedCompletedItemId === completed.id && (
                   <div className={`completed-item-actions ${showDeleteButtonId === completed.id ? 'visible' : ''}`}>
                     <div className="centered-image">
@@ -779,6 +861,7 @@ function Task() {
           )}
         </>
       )}
+      </div>
       {selectedSubTab === 'CONFIRMED' && (
   <div className="confirmed-list">
     {confirmedTasks
@@ -791,20 +874,53 @@ function Task() {
           onMouseEnter={() => handleRevealConfirmButton(confirmed.id)}
           onMouseLeave={() => handleRevealConfirmButton(null)}
         >
-          <h3>{confirmed.taskName}</h3>
-          <p>Description: {confirmed.description}</p>
-          {confirmed.timeFrame ? (
-            <p>Time Frame: {confirmed.timeFrame ? `${confirmed.timeFrame.hours.toString().padStart(2, '0')}:${confirmed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}</p>
-          ) : (
-            <p>Time Frame: N/A</p>
-          )}
-          <p>Points: {confirmed.points}</p>
-          <p>User ID: {confirmed.acceptedBy}</p>
-          <p>User Email: {confirmed.acceptedByEmail}</p>
-          <p>End Time: {confirmed.remainingTime}</p>
-          <p className="blue-highlight">Accepted Time:  {confirmed.acceptedDateTime}</p>
-          <p className="red-highlight">Completed Time:  {confirmed.completedDateTime}</p>
-          <p className="blue-highlight">Status: Confirmed</p>
+          <div className="confirmed-details">
+            <h3>{confirmed.taskName}</h3>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Description:</span>
+              {confirmed.description}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Time Frame:</span>
+              {confirmed.timeFrame
+                ? `${confirmed.timeFrame.hours.toString().padStart(2, '0')}:${confirmed.timeFrame.minutes.toString().padStart(2, '0')}:00`
+                : 'N/A'}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Points:</span>
+              {confirmed.points}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">User ID:</span>
+              {confirmed.acceptedBy}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">User Email:</span>
+              {confirmed.acceptedByEmail}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">End Time:</span>
+              {confirmed.remainingTime}
+            </p>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Accepted Time:</span>
+              <span className="blue-highlight">{confirmed.acceptedDateTime}</span>
+            </p>
+            <div className="divider"></div>
+            <p>
+            <span className="label">Completed Time:</span>
+            <span className="red-highlight">{confirmed.completedDateTime}</span>
+            </p>
+            <div className="divider"></div>
+            <p className="blue-highlight">Status: Confirmed</p>
+          </div>
           {selectedConfirmedItemId === confirmed.id && (
             <div className={`confirmed-item-actions ${showDeleteButtonId === confirmed.id ? 'visible' : ''}`}>
               <div className="centered-image">
@@ -825,7 +941,6 @@ function Task() {
       )}
       </div>
       )}
-      </div>
     </div>
       )}
        </div>

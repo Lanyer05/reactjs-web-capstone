@@ -1,459 +1,481 @@
-  import React, { useState, useEffect, useRef } from "react";
-  import firebase from '../config/firebase';
-  import { useNavigate } from 'react-router-dom';
-  import "../css/Home.css";
-  import { toast, ToastContainer } from 'react-toastify';
-  import 'react-toastify/dist/ReactToastify.css';
-  import { firestore } from "../config/firebase";
-  import AnimatedPage from "../AnimatedPage";
+import React, { useState, useEffect, useRef } from "react";
+import firebase from '../config/firebase';
+import { useNavigate } from 'react-router-dom';
+import "../css/Home.css";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { firestore } from "../config/firebase";
+import AnimatedPage from "../AnimatedPage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
-  function Reward() {
-    const [showAddForm, setShowAddForm] = useState(false);
-    const navigate = useNavigate();
-    const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
-    const [rewardName, setRewardName] = useState("");
-    const [points, setPoints] = useState("");
-    const [rewardsList, setRewardsList] = useState([]);
-    const [selectedRewardId, setSelectedRewardId] = useState(null);
-    const formContainerRef = useRef(null);
-    const [showDeleteButtonId, setShowDeleteButtonId] = useState(null);
-    const [updatedRewardName, setUpdatedRewardName] = useState("");
-    const [updatedRewardPoints, setUpdatedRewardPoints] = useState("");
-    const [updatingRewardId, setUpdatingRewardId] = useState(null);
-    const [selectedTab, setSelectedTab] = useState("REWARD");
-    const rewardsCollectionRef = firestore.collection("rewards");
-    const [requestsList, setRequestsList] = useState([]);
-    const [completeRequestsList, setCompleteRequestsList] = useState([]);
-    const [selectedClaimTab, setSelectedClaimTab] = useState('CLAIMABLE');
-    const [claimableItems, setClaimableItems] = useState([]);
-    const [doneClaimedItems, setdoneClaimedItems] = useState([]);
-    
+function Reward() {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showCategoryCard, setShowCategoryCard] = useState(false);
+  const navigate = useNavigate();
+  const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
+  const [category, setCategory] = useState("");  
+  const [categories, setCategories] = useState([]); 
+  const [selectedCategory, setSelectedCategory] = useState(null); 
+  const [rewardsList, setRewardsList] = useState([]);
+  const formContainerRef = useRef(null);
+  const [updatingRewardId, setUpdatingRewardId] = useState(null);
+  const [selectedTab, setSelectedTab] = useState("REWARD");
+  const rewardsCollectionRef = firestore.collection("rewards");
+  const categoriesCollectionRef = firestore.collection("categories");
+  const [showRewardModal, setShowRewardModal] = useState(false);
+  const [newRewardName, setNewRewardName] = useState("");
+  const [newRewardPoints, setNewRewardPoints] = useState("");
+  const [newRewardQuantity, setNewRewardQuantity] = useState("");
+  const [showAddRewardForm, setShowAddRewardForm] = useState(false);
+  const [editRewardId, setEditRewardId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [categoryPoints, setCategoryPoints] = useState(""); 
+  const [categoryPointsInput, setCategoryPointsInput] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryPoints, setNewCategoryPoints] = useState("");
+  const [showCategoryUpdateForm, setShowCategoryUpdateForm] = useState(false);
+  const [showRewardUpdateForm, setShowRewardUpdateForm] = useState(false);
 
-    useEffect(() => {
-      const handleClickOutsideForm = (event) => {
-        if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
-          if (showAddForm) {
-            setShowAddForm(false);
-          }
-          if (updatingRewardId !== null) {
-            setUpdatingRewardId(null);
-          }
+  useEffect(() => {
+    const handleClickOutsideForm = (event) => {
+      if (formContainerRef.current && !formContainerRef.current.contains(event.target)) {
+        if (showAddForm) {
+          setShowAddForm(false);
         }
-      };
-      document.addEventListener("click", handleClickOutsideForm);
-      return () => {
-        document.removeEventListener("click", handleClickOutsideForm);
-      };
-    }, [showAddForm, updatingRewardId]);
-
-    useEffect(() => {
-      const checkLoggedInUser = async () => {
-        const user = firebase.auth().currentUser;
-        if (!user) {
-          toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
-          navigate('/login');
+        if (updatingRewardId !== null) {
+          setUpdatingRewardId(null);
         }
-      };
-      checkLoggedInUser();
-    }, [navigate]);
-    useEffect(() => {
-      const unsubscribeRewards = rewardsCollectionRef.onSnapshot((snapshot) => {
-        const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setRewardsList(rewardsData);
-      });
+      }
+    };
+    document.addEventListener("click", handleClickOutsideForm);
+    return () => {
+      document.removeEventListener("click", handleClickOutsideForm);
+    };
+  }, [showAddForm, updatingRewardId]);
+
+  useEffect(() => {
+    const checkLoggedInUser = async () => {
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        toast.error('Please login to access the rewards page.', { autoClose: 1500, hideProgressBar: true });
+        navigate('/login');
+      }
+    };
+    checkLoggedInUser();
+  }, [navigate]);
+
+  useEffect(() => {
+    const unsubscribeRewards = rewardsCollectionRef.onSnapshot((snapshot) => {
+      const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setRewardsList(rewardsData);
+    });
+    return () => {
+      unsubscribeRewards();
+    };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeCategories = categoriesCollectionRef.onSnapshot((snapshot) => {
+      const categoriesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCategories(categoriesData);
+    });
+    return () => {
+      unsubscribeCategories();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      const unsubscribeRewards = rewardsCollectionRef
+        .where("category", "==", selectedCategory)
+        .onSnapshot((snapshot) => {
+          const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setRewardsList(rewardsData);
+        });
       return () => {
         unsubscribeRewards();
       };
-    }, []);
+    }
+  }, [selectedCategory]);
 
+  const handleAddCategory = async () => {
+    if (!category) {
+      toast.error('Please fill in Category.', { autoClose: 1500, hideProgressBar: true });
+      return;
+    }
+    try {
+      const newCategory = {
+        category: category,
+        points: categoryPointsInput, // Use the input from the floating form
+      };
+      const newCategoryRef = await categoriesCollectionRef.add(newCategory);
+      setCategories([...categories, { ...newCategory, id: newCategoryRef.id }]);
+      setCategory("");
+      // Clear the category points input
+      setCategoryPointsInput("");
+      toast.success('Category added successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast.error('Failed to add category.', { autoClose: 1500, hideProgressBar: true });
+    }
+  }
 
-    const handleAddReward = async () => {
-      if (!rewardName || !points) {
-        setEmptyFieldWarning(true);
-        toast.error('Please fill in both Reward and Points.', { autoClose: 1500, hideProgressBar: true });
-        return;
-      }
+  const closeRewardModal = () => {
+    setShowRewardModal(false);
+  };
 
+  const addReward = async () => {
+    if (!newRewardName || !newRewardQuantity || !selectedCategory) {
+      setEmptyFieldWarning(true);
+      toast.error('Please fill in all required fields.', { autoClose: 1500, hideProgressBar: true });
+      return;
+    }
+    try {
+      const categoryPoints = categories.find((cat) => cat.category === selectedCategory).points;
+  
+      const newReward = {
+        category: selectedCategory,
+        rewardName: newRewardName,
+        points: categoryPoints, // Use the category's points for the reward
+        quantity: newRewardQuantity,
+      };
+  
+      const batch = firestore.batch();
+      const newRewardRef = rewardsCollectionRef.doc();
+      batch.set(newRewardRef, newReward);
+      await batch.commit();
+      setRewardsList([...rewardsList, { ...newReward, id: newRewardRef.id }]);
+      setNewRewardName("");
+      setNewRewardQuantity("");
+      closeRewardModal();
+      toast.success('Reward added successfully!', { autoClose: 1500, hideProgressBar: true });
+    } catch (error) {
+      console.error("Error adding reward:", error);
+      toast.error('Failed to add reward.', { autoClose: 1500, hideProgressBar: true });
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
+  }
+
+  const handleCategoryCardClick = (category) => {
+    setSelectedCategory(category.category);
+    setShowCategoryCard(true);
+    setShowAddRewardForm(false);
+    // Set category points when a category is selected
+    setCategoryPoints(category.points);
+  };
+
+  const closeCategoryCard = () => {
+    setSelectedCategory(null); 
+    setShowCategoryCard(false);
+  }
+
+  const tabStyle = {
+    fontSize: "18px",
+    fontWeight: "bold",
+    padding: "10px 40px",
+    margin: "0 1px",
+    marginBottom: "5px",
+    color: "white",
+    backgroundColor: "#659E64",
+    border: "none",
+    cursor: "pointer",
+    width: "160px",
+    height: "40px",
+  };
+  const activeTabStyle = {
+    ...tabStyle,
+    backgroundColor: "#3f5159",
+  };
+
+  const resetInputFields = () => {
+    setNewRewardName("");
+    setNewRewardPoints("");
+    setNewRewardQuantity("");
+  }
+
+  const updateReward = async () => {
+    if (!newRewardName || !newRewardQuantity || !selectedCategory) {
+      setEmptyFieldWarning(true);
+      toast.error('Please fill in all required fields.', { autoClose: 1500, hideProgressBar: true });
+      return;
+    }
+    try {
+      const updatedReward = {
+        category: selectedCategory,
+        rewardName: newRewardName,
+        points: newRewardPoints,
+        quantity: newRewardQuantity,
+      };
+      const rewardRef = rewardsCollectionRef.doc(editRewardId);
+      await rewardRef.update(updatedReward); 
+      toast.success('Reward updated successfully!', { autoClose: 1500, hideProgressBar: true });
+      setNewRewardName("");
+      setNewRewardPoints("");
+      setNewRewardQuantity("");
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating reward:", error);
+      toast.error('Failed to update reward.', { autoClose: 1500, hideProgressBar: true });
+    }
+  }
+
+  const handleUpdateReward = (e, reward) => {
+    e.stopPropagation();
+    setShowRewardUpdateForm(true);
+    setEditRewardId(reward.id);
+    setNewRewardName(reward.rewardName);
+    setNewRewardPoints(reward.points);
+    setNewRewardQuantity(reward.quantity);
+  };
+  
+  const handleDeleteReward = async (e, reward) => {
+    e.stopPropagation();
+    const confirmDelete = window.confirm(`Are you sure you want to delete the reward "${reward.rewardName}"?`); 
+    if (confirmDelete) {
       try {
-        const newReward = {
-          rewardName: rewardName,
-          points: points
-        };
-        const batch = firestore.batch();
-        const newRewardRef = rewardsCollectionRef.doc();
-        batch.set(newRewardRef, newReward);
-        await batch.commit();
-        setRewardsList([...rewardsList, { ...newReward, id: newRewardRef.id }]);
-        setRewardName("");
-        setPoints("");
-        setEmptyFieldWarning(false);
-        toast.success('Reward added successfully!', { autoClose: 1500, hideProgressBar: true });
-      } catch (error) {
-        console.error("Error adding reward:", error);
-        toast.error('Failed to add reward.', { autoClose: 1500, hideProgressBar: true });
-      }
-    };
-
-    const handleDeleteReward = async (id) => {
-      try {
-        const shouldDelete = window.confirm('Are you sure you want to delete this reward?');
-        if (!shouldDelete) {
-          return;
-        }
-        const batch = firestore.batch();
-        const rewardRef = rewardsCollectionRef.doc(id);
-        batch.delete(rewardRef);
-        await batch.commit();   
-        const updatedRewardsList = rewardsList.filter((reward) => reward.id !== id);
-        setRewardsList(updatedRewardsList);
+        const rewardRef = rewardsCollectionRef.doc(reward.id);
+        await rewardRef.delete();
         toast.success('Reward deleted successfully!', { autoClose: 1500, hideProgressBar: true });
       } catch (error) {
         console.error("Error deleting reward:", error);
         toast.error('Failed to delete reward.', { autoClose: 1500, hideProgressBar: true });
       }
-    };
-
-
-    const handleRewardClick = (id) => {
-      setSelectedRewardId((prevId) => (prevId === id ? null : id));
-    };
-
-    const handleRevealDeleteButton = (id) => {
-      setShowDeleteButtonId((prevId) => (prevId === id ? null : id));
-    };
-
-    const handleUpdateReward = async (id) => {
-      if (!updatedRewardName || !updatedRewardPoints) {
-        toast.error('Please fill in both Reward and Points.', { autoClose: 1500, hideProgressBar: true });
-        return;
-      }
-
-      try {
-        const batch = firestore.batch();
-
-        const rewardRef = rewardsCollectionRef.doc(id);
-        batch.update(rewardRef, {
-          rewardName: updatedRewardName,
-          points: updatedRewardPoints,
-        });
-
-        await batch.commit();
-
-        const updatedRewardsList = rewardsList.map((reward) => {
-          if (reward.id === id) {
-            return {
-              ...reward,
-              rewardName: updatedRewardName,
-              points: updatedRewardPoints,
-            };
-          }
-          return reward;
-        });
-
-        setRewardsList(updatedRewardsList);
-        setSelectedRewardId(id);
-        setUpdatingRewardId(null);
-        toast.success('Reward updated successfully!', { autoClose: 1500, hideProgressBar: true });
-      } catch (error) {
-        console.error("Error updating reward:", error);
-        toast.error('Failed to update reward.', { autoClose: 1500, hideProgressBar: true });
-      }
-    };
-
-    const handleTabChange = (tab) => {
-      setSelectedTab(tab);
-    };
-
-    const tabStyle = {
-      fontSize: "18px",
-      fontWeight: "bold",
-      padding: "10px 40px",
-      margin: "0 1px",
-      marginBottom: "5px",
-      color: "white",
-      backgroundColor: "#588157",
-      border: "none",
-      cursor: "pointer",
-      width: "160px",
-      height: "40px",
-    };
-
-    const activeTabStyle = {
-      ...tabStyle,
-      backgroundColor: "#34673d",
-    };
-
-    useEffect(() => {
-      const unsubscribeRequests = firestore.collection("rewardrequest").onSnapshot((snapshot) => {
-        const requestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setRequestsList(requestsData);
-      });
-    
-      return () => {
-        unsubscribeRequests();
-      };
-    }, []);
-
-    
-    const handleCancelRequest = async (id) => {
-      try {
-        const shouldDelete = window.confirm('Are you sure you want to cancel this request?');
-        if (!shouldDelete) {
-          return;
-        }   
-        const batch = firestore.batch();    
-        const requestRef = firestore.collection("rewardrequest").doc(id);
-        batch.delete(requestRef);   
-        await batch.commit();   
-        const updatedRequestsList = requestsList.filter((request) => request.id !== id);
-        setRequestsList(updatedRequestsList);
-        toast.success('Request deleted successfully!', { autoClose: 1500, hideProgressBar: true });
-      } catch (error) {
-        console.error("Error deleting request:", error);
-        toast.error('Failed to delete request.', { autoClose: 1500, hideProgressBar: true });
-      }
-    };
-
-
-    const handleConfirmRequest = async (requestId) => {
-      try {
-        const db = firebase.firestore();
-        const batch = db.batch();
-        const requestRef = db.collection('rewardrequest').doc(requestId);
-        const completeRequestRef = db.collection('complete_rewardreq').doc(requestId);
-        const requestDoc = await requestRef.get();       
-        if (requestDoc.exists) {
-          const requestData = requestDoc.data();       
-          if (requestData.pendingStatus) {
-            const userRef = db.collection('users').doc(requestData.userId);
-            const userDoc = await userRef.get();        
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              const currentPoints = userData.userpoints || 0;
-              const updatedPoints = currentPoints - requestData.rewardPoints;
-              batch.update(userRef, { userpoints: updatedPoints });
-            } else {
-              toast.error('User document not found.', { autoClose: 1500, hideProgressBar: true });
-              return;
-            }           
-            const completeRequestData = {
-              ...requestData,
-              isClaimable: true,
-              pendingStatus: false,
-              claimDate: firebase.firestore.FieldValue.serverTimestamp(),
-            };         
-            batch.update(requestRef, { pendingStatus: false });
-            batch.set(completeRequestRef, completeRequestData);
-            batch.delete(requestRef);
-            await batch.commit();           
-            const updatedRequestsList = requestsList.filter((request) => request.id !== requestId);
-            setRequestsList(updatedRequestsList);   
-            toast.success('Request confirmed successfully!', {
-              autoClose: 1500,
-              hideProgressBar: true,
-            });
-          } else {
-            toast.error('This request has already been confirmed.', { autoClose: 1500, hideProgressBar: true });
-          }
-        } else {
-          toast.error('Request document not found.', { autoClose: 1500, hideProgressBar: true });
-        }
-      } catch (error) {
-        console.error('Error confirming request:', error);
-        toast.error('Failed to confirm request.', { autoClose: 1500, hideProgressBar: true });
-      }
-    };
-    
-    
-    useEffect(() => {
-      const unsubscribeCompleteRequests = firestore.collection("complete_rewardreq").where("isClaimable", "==", true).onSnapshot((snapshot) => {
-        const completeRequestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setCompleteRequestsList(completeRequestsData);
-      });
-    
-      return () => {
-        unsubscribeCompleteRequests();
-      };
-    }, []);
-
-
-    const handleClaimRequest = async (claimRequestId) => {
-      try {
-        const db = firebase.firestore();
-        const batch = db.batch();
-        const claimRequestRef = db.collection('complete_rewardreq').doc(claimRequestId);
-        const claimDate = new Date();
-        batch.update(claimRequestRef, {
-          isClaimable: false,
-          claimDate: claimDate,
-          isDoneClaimed: true,
-        });
-        await batch.commit();
-        const updatedCompleteRequestsList = completeRequestsList.filter(
-          (completeRequest) => completeRequest.id !== claimRequestId
-        );
-        setCompleteRequestsList(updatedCompleteRequestsList);
-        toast.success('Claim successful!', { autoClose: 1500, hideProgressBar: true });
-      } catch (error) {
-        console.error('Error claiming request:', error);
-        toast.error('Failed to claim request.', { autoClose: 1500, hideProgressBar: true });
-      }
-    };
-    
-
-    useEffect(() => {
-      const unsubscribeCompleteRequests = firestore
-        .collection("complete_rewardreq")
-        .onSnapshot((snapshot) => {
-          const completeRequestsData = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          
-          const claimable = completeRequestsData.filter(
-            (completeRequest) => completeRequest.isClaimable === true
-          );
-          const claimed = completeRequestsData.filter(
-            (completeRequest) => completeRequest.isDoneClaimed === true
-          );
-          
-          setClaimableItems(claimable);
-          setdoneClaimedItems(claimed);
-        });
+    }
+  }
   
-      return () => {
-        unsubscribeCompleteRequests();
-      };
-    }, []);
+  const handleUpdateCategory = (e, category) => {
+    e.stopPropagation();
+    setShowCategoryUpdateForm(true);
+    setEditCategoryId(category.id);
+    setNewCategoryName(category.category);
+    setNewCategoryPoints(category.points);
+  };
 
+  const updateCategory = async () => {
+    if (!newCategoryName || !newCategoryPoints) {
+      toast.error('Please fill in both the new category name and points.', { autoClose: 1500, hideProgressBar: true });
+      return;
+    }
     
-    return (
-      <AnimatedPage>
-        <div className="home-container">
-          <div className="content">
-            <h1 className="card-view">REWARD PAGE</h1>
+    try {
+      const categoryRef = categoriesCollectionRef.doc(editCategoryId);
+      await categoryRef.update({
+        category: newCategoryName,
+        points: newCategoryPoints
+      });
+      toast.success('Category updated successfully!', { autoClose: 1500, hideProgressBar: true });
+      setShowUpdateForm(false);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error('Failed to update category.', { autoClose: 1500, hideProgressBar: true });
+    }
+  }
+  
+  const handleDeleteCategory = async (e, category) => {
+    e.stopPropagation();
+    const confirmDelete = window.confirm(`Are you sure you want to delete the category "${category.category}"?`);
+    if (confirmDelete) {
+      try {
+        const categoryId = category.id;
+        const categoryRef = categoriesCollectionRef.doc(categoryId);
+        await categoryRef.delete();
+        toast.success('Category deleted successfully!', { autoClose: 1500, hideProgressBar: true });
+      } catch (error) {
+        console.error("Error deleting category:", error);
+        toast.error('Failed to delete category.', { autoClose: 1500, hideProgressBar: true });
+      }
+    }
+  }
 
-            <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
+  return (
+    <AnimatedPage>
+      <div className="home-container">
+        <div className="content">
+          <h1 className="card-view">REWARD PAGE</h1>
+          <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
+            {showAddForm && ( 
               <div className="form-container">
                 <div className="form-group">
-                  <label htmlFor="rewardName">Reward:</label>
+                  <label htmlFor="category">Category:</label>
                   <input
-                    placeholder="Enter Reward"
+                    placeholder="Enter Category"
                     type="text"
-                    id="rewardName"
-                    value={rewardName}
-                    onChange={(e) => setRewardName(e.target.value)}
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                     className="form-control"
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="points">Points:</label>
+                  <label htmlFor="categoryPoints">Category Points:</label>
                   <input
-                    placeholder="Enter Points"
+                    placeholder="Enter Category Points"
                     type="number"
-                    id="points"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
+                    id="categoryPoints"
+                    value={categoryPointsInput}
+                    onChange={(e) => setCategoryPointsInput(e.target.value)}
                     className="form-control"
                   />
                 </div>
-                <button onClick={handleAddReward} className="btn btn-primary">
-                  Add Reward
+                <button onClick={handleAddCategory} className="btn btn-primary">
+                  Add Category
                 </button>
                 <button onClick={() => setShowAddForm(false)} className="btn btn-secondary">
                   Cancel
                 </button>
               </div>
-            </div>
+            )}
+          </div>
+          <div className="tabs">
+            <button
+              style={selectedTab === "REWARD" ? activeTabStyle : tabStyle}
+              onClick={() => handleTabChange("REWARD")}
+            >
+              Reward
+            </button>
+          </div>
+          {selectedTab === 'REWARD' && (
+            <div className="rewards-container">
+              <h2>Reward Category</h2>
+              <div className="rewards-list">
+                {categories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="reward-item"
+                    onClick={() => handleCategoryCardClick(category)}
+                  >
+                    <h3>{category.category}</h3>
+                    <button onClick={(e) => handleUpdateCategory(e, category)} className="btn btn-primary">Update</button>
+                    <button onClick={(e) => handleDeleteCategory(e, category)} className="btn btn-secondary">Delete</button>
+                  </div>
+                ))}
+              </div>
 
-            <div className="tabs">
-              <button
-                style={selectedTab === "REWARD" ? activeTabStyle : tabStyle}
-                onClick={() => handleTabChange("REWARD")}
-              >
-                Reward
-              </button>
-              <button
-                style={selectedTab === "REQUEST" ? activeTabStyle : tabStyle}
-                onClick={() => handleTabChange("REQUEST")}
-              >
-                Request
-              </button>
-              <button
-                style={selectedTab === "CLAIM" ? activeTabStyle : tabStyle}
-                onClick={() => handleTabChange("CLAIM")}
-              >
-                Claim
-              </button>
-            </div>
+              {showCategoryUpdateForm && (
+                <div className="category-update-form">
+                  <h3>Update Category</h3>
+                  <label htmlFor="newCategoryName">New Category Name:</label>
+                  <input
+                    className="add-input"
+                    type="text"
+                    id="newCategoryName"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                  <label htmlFor="newCategoryPoints"> Points:</label>
+                  <input
+                    className="add-input"
+                    type="number"
+                    id="newCategoryPoints"
+                    value={newCategoryPoints}
+                    onChange={(e) => setNewCategoryPoints(e.target.value)}
+                  />
+                  <button onClick={updateCategory} className="btn btn-primary">
+                    Update
+                  </button>
+                  <button onClick={() => setShowCategoryUpdateForm(false)} className="btn btn-secondary">
+                    Cancel
+                  </button>
 
-            {selectedTab === 'REWARD' && (
-        <>
-          <div className="rewards-container">
-            <h2>Rewards List</h2>
-            <div className="rewards-list">
-              {rewardsList.map((reward) => (
-                <div
-                  key={reward.id}
-                  className={`reward-item ${selectedRewardId === reward.id ? 'selected' : ''}`}
-                  onClick={() => handleRewardClick(reward.id)}
-                  onMouseEnter={() => handleRevealDeleteButton(reward.id)}
-                  onMouseLeave={() => handleRevealDeleteButton(null)}
-                >
-                  <h3>{reward.rewardName}</h3>
-                  <p>Points: {reward.points}</p>
-                  {selectedRewardId === reward.id && (
-                    <>
-                      <button
-                        onClick={() => handleDeleteReward(reward.id)}
-                        className={`delete-button ${showDeleteButtonId === reward.id ? 'visible' : ''}`}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => setUpdatingRewardId(reward.id)}
-                        className={`update-button ${showDeleteButtonId === reward.id ? 'visible' : ''}`}
-                      >
-                        Update
-                      </button>
-                    </>
-                  )}
-                  {updatingRewardId === reward.id && (
-                    <div className="update-form" onClick={(e) => e.stopPropagation()}>
-                      <div className="form-group">
-                        <input
-                          type="text"
-                          id="updatedRewardName"
-                          placeholder="Updated Reward"
-                          value={updatedRewardName}
-                          onChange={(e) => setUpdatedRewardName(e.target.value)}
-                          className="form-control"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <input
-                          type="number"
-                          id="updatedRewardPoints"
-                          placeholder="Updated Points"
-                          value={updatedRewardPoints}
-                          onChange={(e) => setUpdatedRewardPoints(e.target.value)}
-                          className="form-control"
-                        />
-                      </div>
-                      <button onClick={() => handleUpdateReward(reward.id)} className="btn btn-primary">
-                        Update
-                      </button>
-                      <button onClick={() => setUpdatingRewardId(null)} className="btn btn-secondary">
-                        Cancel
-                      </button>
+                </div>
+              )}
+            </div>
+          )}
+          {showCategoryCard && (
+            <>
+              <div className="overlay-background"></div>
+              <div className="category-card">
+                <button onClick={closeCategoryCard} className="close-category-card-button">
+                  X
+                </button>
+                <div className="category-card-content">
+                  <button onClick={() => {
+                      resetInputFields();
+                      setShowAddRewardForm(true);
+                    }} className="add-reward-button">
+                    ADD REWARD
+                    <span className="button__icon" style={{ color: 'white' }}>
+                      <FontAwesomeIcon icon={faPlus} />
+                    </span>
+                  </button>
+                  {showAddRewardForm && (
+                    <div className="reward-modal">
+                      <h3>Add New Reward</h3>
+                      <label htmlFor="newRewardName">Reward Name:</label>
+                      <input
+                        className="add-input"
+                        type="text"
+                        id="newRewardName"
+                        value={newRewardName}
+                        onChange={(e) => setNewRewardName(e.target.value)}
+                      />
+                      <label htmlFor="newRewardQuantity">Quantity:</label>
+                      <input
+                        className="add-input"
+                        type="number"
+                        id="newRewardQuantity"
+                        value={newRewardQuantity}
+                        onChange={(e) => setNewRewardQuantity(e.target.value)}
+                      />
+                      <button onClick={addReward} className="btn btn-primary">Add</button>
+                      <button onClick={() => setShowAddRewardForm(false)} className="btn btn-secondary">Cancel</button>
                     </div>
                   )}
+                  <div className="category-points">
+                    <h1 htmlFor="categoryPoints">{selectedCategory && `${selectedCategory}: ${categoryPoints}`}</h1>
+                  </div>
+                  {rewardsList.map((reward) => (
+                    <div key={reward.id} className="reward-item" onClick={() => handleCategoryCardClick(reward)}>
+                      <h3>{reward.rewardName}</h3>
+                      <p>Stock: {reward.quantity}</p>
+                      {editRewardId === reward.id && showRewardUpdateForm ? (
+                        <div className="update-form">
+                          <h3>Update Reward</h3>
+                          <label htmlFor="newRewardName">Reward Name:</label>
+                          <input
+                            className="add-input"
+                            type="text"
+                            id="newRewardName"
+                            value={newRewardName}
+                            onChange={(e) => setNewRewardName(e.target.value)}
+                          />
+                          <label htmlFor="newRewardQuantity">Quantity:</label>
+                          <input
+                            className="add-input"
+                            type="number"
+                            id="newRewardQuantity"
+                            value={newRewardQuantity}
+                            onChange={(e) => setNewRewardQuantity(e.target.value)}
+                          />
+                          <button onClick={updateReward} className="btn btn-primary">
+                            Update
+                          </button>
+                          <button onClick={() => setShowRewardUpdateForm(false)} className="btn btn-secondary">
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <button onClick={(e) => handleUpdateReward(e, reward)} className="btn btn-primary">
+                            Update
+                          </button>
+                          <button onClick={(e) => handleDeleteReward(e, reward)} className="btn btn-secondary">
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {rewardsList.length === 0 && <p>No rewards found.</p>}
-            </div>
-          </div>
-          <div className="floating-button-container">
+              </div>
+            </>
+          )}
+          <div className={`floating-button-container ${showCategoryCard ? 'unfocusable' : ''}`}>
             {showAddForm ? (
               <button onClick={() => setShowAddForm(false)} className="floating-add-button">
                 -
@@ -463,104 +485,13 @@
                 +
               </button>
             )}
+            <div className="indicator-animation">Add category here</div>
           </div>
-        </>
-      )}
-
-  {selectedTab === 'REQUEST' && (
-    <div className="request-container">
-      <h2>Request List</h2>
-      <div className="request-list">
-      {requestsList.map((request) => (
-    <div
-      key={request.id}
-      className={`request-item ${selectedRewardId === request.id ? 'selected' : ''}`}
-      onClick={() => handleRewardClick(request.id)}
-      onMouseEnter={() => handleRevealDeleteButton(request.id)}
-      onMouseLeave={() => handleRevealDeleteButton(null)}
-    >
-      <h3>{request.rewardName}</h3>
-      <p>User ID: {request.userId}</p>
-      <p>Email: {request.userEmail}</p>
-      <h3>Coupon Code: {request.couponuserCode}</h3>
-      {selectedRewardId === request.id && (
-        <>
-          <button
-            onClick={() => handleCancelRequest(request.id)}
-            className={`delete-button ${showDeleteButtonId === request.id ? 'visible' : ''}`}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => handleConfirmRequest(request.id)}
-            className={`update-button ${showDeleteButtonId === request.id ? 'visible' : ''}`}
-          >
-            Confirm
-          </button>
-        </>
-      )}
-    </div>
-  ))}
-        {requestsList.length === 0 && <p>No requests found.</p>}
-      </div>
-    </div>
-  )}
-
-  {selectedTab === 'CLAIM' && (
-    <div className="claim-container">
-      <h2>Claim List</h2>
-      <div className="tab-buttons">
-        <button
-          className={`tab-button ${selectedClaimTab === 'CLAIMABLE' ? 'active' : ''}`}
-          onClick={() => setSelectedClaimTab('CLAIMABLE')}
-        >
-          Claimable
-        </button>
-        <button
-          className={`tab-button ${selectedClaimTab === 'DONE_CLAIMED' ? 'active' : ''}`}
-          onClick={() => setSelectedClaimTab('DONE_CLAIMED')}
-        >
-          Claimed
-        </button>
-      </div>
-      <div className="claim-list">
-        {selectedClaimTab === 'CLAIMABLE' && (
-          <>
-            {claimableItems.map((completeRequest) => (
-              <div key={completeRequest.id} className="claim-item">
-                <h3>{completeRequest.rewardName}</h3>
-                <p>User ID: {completeRequest.userId}</p>
-                <p>Email: {completeRequest.userEmail}</p>
-                <h3 className="blue-highlight">Coupon Code: {completeRequest.couponuserCode}</h3>
-                <button onClick={() => handleClaimRequest(completeRequest.id)} className="claim-button">
-                  Claim
-                </button> 
-              </div>
-            ))}
-            {claimableItems.length === 0 && <p>No claimable items found.</p>}
-          </>
-        )}
-        {selectedClaimTab === 'DONE_CLAIMED' && (
-  <>
-    {doneClaimedItems.map((completeRequest) => (
-        <div key={completeRequest.id} className="claim-item">
-          <h3>{completeRequest.rewardName}</h3>
-          <p>User ID: {completeRequest.userId}</p>
-          <p>Email: {completeRequest.userEmail}</p>
-          <h3 className="red-highlight">Coupon Code: {completeRequest.couponuserCode}</h3>
-          <h3 className="red-highlight">Date: {completeRequest.claimDate ? completeRequest.claimDate.toDate().toLocaleString() : ''}</h3>
         </div>
-      ))}
-    {doneClaimedItems.length === 0 && <p>No non-claimable items found.</p>}
-  </>
-)}
+        <ToastContainer autoClose={1500} hideProgressBar />
       </div>
-    </div>
-  )}
-        </div>
-          <ToastContainer autoClose={1500} hideProgressBar />
-          </div>
-      </AnimatedPage>
-    );
-  }
-  export default React.memo(Reward);
+    </AnimatedPage>
+  );
+}
+
+export default React.memo(Reward);

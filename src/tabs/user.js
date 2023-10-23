@@ -152,7 +152,7 @@ function User() {
     margin: "0 1px",
     marginBottom: "5px",
     color: "white",
-    backgroundColor: "#588157",
+    backgroundColor: "#659E64",
     border: "none",
     cursor: "pointer",
     width: "210px",
@@ -161,7 +161,7 @@ function User() {
 
   const activeTabStyle = {
     ...tabStyle,
-    backgroundColor: "#34673d",
+    backgroundColor: "#3f5159",
   };
 
   useEffect(() => {

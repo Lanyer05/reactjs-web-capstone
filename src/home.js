@@ -3,6 +3,8 @@ import firebase from './config/firebase';
 import { useNavigate } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMedal, faClipboardList, faVideo, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ function Home() {
           ];
 
           setChartData(chartData);
-          setDataFetched(true); // Mark data as fetched
+          setDataFetched(true);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -225,56 +227,69 @@ function Home() {
   return (
     <AnimatedPage>
       <div className="home-container">
-        <div className="content">
-          <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
-          <div className="homepage-container">
-            {chartData && (
-              <div className="ui-item" onClick={() => handleItemClick('item1')}>
-                <h2>Explore Rewards Tab</h2>
-                <button className="explore-button" onClick={() => navigate('/reward')}>
-                  Explore
-                </button>
+  <div className="content">
+    <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
+    <div className="homepage-container">
+      <div className="ui-list">
+        {chartData && (
+          <div className="ui-group">
+            <div className="ui-item" onClick={() => handleItemClick('item1')}>
+              <div className="circle">
+                <FontAwesomeIcon icon={faMedal} size="5x" />
               </div>
-            )}
+              <h2>Explore Rewards Tab</h2>
+              <button className="explore-button" onClick={() => navigate('/reward')}>
+                Explore
+              </button>
+            </div>
+
             {revealedItems['item1'] && (
               <div className="ui-revealed-content">
                 <h2>Reward Chart</h2>
-                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center'}}>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                   <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                    background={{ fill: 'white', padding: 5 }}
                     width={700}
                     height={450}
-                    data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Rewards" fill="#8884d8" />
-                    <Bar dataKey="Reward Requests" fill="#ffc658" />
-                    <Bar dataKey="Complete Reward Requests" fill="#82ca9d" />
+                    <Bar dataKey="Reward Requests" fill="#82ca9d" />
+                    <Bar dataKey="Complete Reward Requests" fill="#ffc658" />
                   </BarChart>
                 </div>
               </div>
             )}
-    
-            {taskChartData && (
-              <div className="ui-item" onClick={() => handleItemClick('item2')}>
-                <h2>Explore Task Tab</h2>
-                <button className="explore-button" onClick={() => navigate('/task')}>
-                  Explore
-                </button>
+          </div>
+        )}
+
+        {taskChartData && (
+          <div className="ui-group">
+            <div className="ui-item" onClick={() => handleItemClick('item2')}>
+              <div className="circle">
+                <FontAwesomeIcon icon={faClipboardList} size="5x" />
               </div>
-            )}
+              <h2>Explore Task Tab</h2>
+              <button className="explore-button" onClick={() => navigate('/task')}>
+                Explore
+              </button>
+            </div>
             {revealedItems['item2'] && (
               <div className="ui-revealed-content">
                 <h2>Task Chart</h2>
-                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                   <BarChart
                     width={700}
                     height={450}
                     data={taskChartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                    background={{ fill: 'white' }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -284,60 +299,72 @@ function Home() {
                     <Bar dataKey="Available Tasks" fill="#8884d8" />
                     <Bar dataKey="Accepted Tasks" fill="#ff6f61" />
                     <Bar dataKey="To Review Tasks" fill="#82ca9d" />
-                    <Bar dataKey="Confirmed Tasks" fill="#ffc658" />        
+                    <Bar dataKey="Confirmed Tasks" fill="#ffc658" />
                   </BarChart>
                 </div>
               </div>
             )}
-  
-            {chartData && (
-              <div className="ui-item" onClick={() => handleItemClick('item3')}>
-                <h2>Explore CCTV Tab</h2>
-                <button className="explore-button" onClick={() => navigate('/cctv')}>
-                  Explore
-                </button>
-              </div>
-            )}
-  
-            {revealedItems['item3'] && (
-              <div className="ui-revealed-content">
-                <h2>This section monitors the ongoing tasks</h2>
-              </div>
-            )}
-  
-          {userChartData && (
-          <div className="ui-item" onClick={() => handleItemClick('item5')}>
-            <h2>Explore User Tab</h2>
-            <button className="explore-button" onClick={() => navigate('/user')}>
-              Explore
-            </button>
           </div>
         )}
 
-          {revealedItems['item5'] && (
-            <div className="ui-revealed-content">
-              <h2>User Chart</h2>
-              <div className="chart-container" style={{ display: 'flex', justifyContent: 'center' }}>
-                <BarChart
-                  width={700}
-                  height={450}
-                  data={userChartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="Users" fill="#8884d8" />
-                  <Bar dataKey="Registration Requests" fill="#ff6f61" />
-                </BarChart>
+        {chartData && (
+          <div className="ui-group">
+            <div className="ui-item" onClick={() => handleItemClick('item3')}>
+              <div className="circle">
+                <FontAwesomeIcon icon={faVideo} size="4x" />
               </div>
+              <h2>Explore CCTV Tab</h2>
+              <button className="explore-button" onClick={() => navigate('/cctv')}>
+                Explore
+              </button>
             </div>
-          )}           
+            {revealedItems['item3'] && (
+              <div className="ui-revealed-content">
+                <h1>This section monitors the ongoing tasks</h1>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {userChartData && (
+          <div className="ui-group">
+            <div className="ui-item" onClick={() => handleItemClick('item5')}>
+              <div className="circle">
+                <FontAwesomeIcon icon={faUserAlt} size="5x" />
+              </div>
+              <h2>Explore User Tab</h2>
+              <button className="explore-button" onClick={() => navigate('/user')}>
+                Explore
+              </button>
+            </div>
+            {revealedItems['item5'] && (
+              <div className="ui-revealed-content">
+                <h2>User Chart</h2>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+                  <BarChart
+                    width={700}
+                    height={450}
+                    data={userChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                    background={{ fill: 'white' }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis type="number" domain={[0, 100]} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Users" fill="#8884d8" />
+                    <Bar dataKey="Registration Requests" fill="#ff6f61" />
+                  </BarChart>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+    </div>
+  </div>
+</div>
     </AnimatedPage>
   );
 }
