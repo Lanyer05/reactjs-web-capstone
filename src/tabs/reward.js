@@ -37,6 +37,7 @@ function Reward() {
   const [newCategoryPoints, setNewCategoryPoints] = useState("");
   const [showCategoryUpdateForm, setShowCategoryUpdateForm] = useState(false);
   const [showRewardUpdateForm, setShowRewardUpdateForm] = useState(false);
+  const [categoryData, setCategoryData] = useState({});
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -87,17 +88,16 @@ function Reward() {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory) {
-      const unsubscribeRewards = rewardsCollectionRef
-        .where("category", "==", selectedCategory)
-        .onSnapshot((snapshot) => {
-          const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          setRewardsList(rewardsData);
-        });
-      return () => {
-        unsubscribeRewards();
-      };
-    }
+    const unsubscribeRewards = rewardsCollectionRef
+      .where("category", "==", selectedCategory)
+      .onSnapshot((snapshot) => {
+        const rewardsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setRewardsList(rewardsData);
+      });
+
+    return () => {
+      unsubscribeRewards();
+    };
   }, [selectedCategory]);
 
   const handleAddCategory = async () => {
@@ -108,12 +108,11 @@ function Reward() {
     try {
       const newCategory = {
         category: category,
-        points: categoryPointsInput, // Use the input from the floating form
+        points: categoryPointsInput,
       };
       const newCategoryRef = await categoriesCollectionRef.add(newCategory);
       setCategories([...categories, { ...newCategory, id: newCategoryRef.id }]);
       setCategory("");
-      // Clear the category points input
       setCategoryPointsInput("");
       toast.success('Category added successfully!', { autoClose: 1500, hideProgressBar: true });
     } catch (error) {
@@ -138,7 +137,7 @@ function Reward() {
       const newReward = {
         category: selectedCategory,
         rewardName: newRewardName,
-        points: categoryPoints, // Use the category's points for the reward
+        points: categoryPoints,
         quantity: newRewardQuantity,
       };
   
@@ -165,7 +164,6 @@ function Reward() {
     setSelectedCategory(category.category);
     setShowCategoryCard(true);
     setShowAddRewardForm(false);
-    // Set category points when a category is selected
     setCategoryPoints(category.points);
   };
 
@@ -260,8 +258,7 @@ function Reward() {
     if (!newCategoryName || !newCategoryPoints) {
       toast.error('Please fill in both the new category name and points.', { autoClose: 1500, hideProgressBar: true });
       return;
-    }
-    
+    } 
     try {
       const categoryRef = categoriesCollectionRef.doc(editCategoryId);
       await categoryRef.update({

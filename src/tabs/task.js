@@ -38,6 +38,8 @@ function Task() {
   const [selectedSubTab, setSelectedSubTab] = useState('COMPLETED');
   const [confirmedTasks, setConfirmedTasks] = useState([]);
   const [selectedConfirmedItemId, setSelectedConfirmedItemId] = useState(null);
+  const [selectedCamera, setSelectedCamera] = useState('1');
+  const [updatedCameraSlot, setUpdatedCameraSlot] = useState('');
 
 
   useEffect(() => {
@@ -109,8 +111,9 @@ function Task() {
           location: location,
           timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
           points: points,
+          camera: selectedCamera, // Include the selected camera
           isAccepted: false,
-        };   
+        };  
         const docRef = await firestore.collection('tasks').add(newTask);
         setTasksList([...tasksList, { id: docRef.id, ...newTask }]);  
         resetForm();
@@ -165,6 +168,10 @@ function Task() {
           location: updatedLocation,
           timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) },
           points: updatedPoints,
+          camera: {
+            slot: updatedCameraSlot,
+            number: selectedCamera.number,
+          },
       });
       await batch.commit();
       const updatedTasksList = tasksList.map((task) => {
@@ -492,6 +499,20 @@ function Task() {
                   className="form-control"
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="camera">Camera:</label>
+                <select
+                  id="camera"
+                  value={selectedCamera}
+                  onChange={(e) => setSelectedCamera(e.target.value)}
+                  className="form-control"
+                >
+                  <option value="1">Camera 1</option>
+                  <option value="2">Camera 2</option>
+                  <option value="3">Camera 3</option>
+                  <option value="4">Camera 4</option>
+                </select>
+              </div>
             <div className="form-group">
                <label htmlFor="hours">Time Frame (Hours):</label>
                 <input
@@ -555,41 +576,49 @@ function Task() {
           </div>
 
           {selectedTab === 'TASK' && (
-            <>
-              <div className="tasks-container">
-                  <h2>Tasks List</h2>
-                <div className="tasks-list">
-                {tasksList.map((task, index) => (
-                <div
-                  key={index}
-                  className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
-                  onClick={() => handleTaskItemClick(task.id)}
-                  onMouseEnter={() => handleRevealDeleteButton(task.id)}
-                  onMouseLeave={() => handleRevealDeleteButton(null)}
-                    >
-                      <div className="task-details">
-                        <h3>{task.taskName}</h3>
-                        <div className="divider"></div>
-                        <p>
-                          <span className="label">Description:</span>
-                          {task.description}
-                        </p>
-                        <div className="divider"></div>
-                        <p>
-                          <span className="label">Location:</span>
-                          {task.location}
-                        </p>
-                        <div className="divider"></div>
-                        <p>
-                          <span className="label">Time Frame:</span>
-                          {task.timeFrame?.hours || 0} hour/s {task.timeFrame?.minutes || 0} minute/s
-                        </p>
-                        <div className="divider"></div>
-                        <p>
-                          <span className="label">Points:</span>
-                          {task.points}
-                        </p>
-                      </div>
+  <>
+    <div className="tasks-container">
+      <h2>Tasks List</h2>
+      <div className="tasks-list">
+        {tasksList.map((task, index) => (
+          <div
+            key={index}
+            className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
+            onClick={() => handleTaskItemClick(task.id)}
+            onMouseEnter={() => handleRevealDeleteButton(task.id)}
+            onMouseLeave={() => handleRevealDeleteButton(null)}
+          >
+            <div className="task-details">
+              <h3>{task.taskName}</h3>
+              <div className="divider"></div>
+              <p>
+                <span className="label">Description:</span>
+                {task.description}
+              </p>
+              <div className="divider"></div>
+              <p>
+                <span className="label">Location:</span>
+                {task.location}
+              </p>
+              <div className="divider"></div>
+              <p>
+                <span className="label">Time Frame:</span>
+                {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes
+              </p>
+              <div className="divider"></div>
+              <p>
+                <span className="label">Points:</span>
+                {task.points}
+              </p>
+              <div className="divider"></div>
+              {/* Check if 'slot' is defined before accessing it */}
+              {task.camera && (
+                <p>
+                  <span className="label">Camera:</span>
+                  {task.camera}
+                </p>
+              )}
+            </div>
 
                       {selectedTaskId === task.id && (
                         <>
@@ -666,6 +695,16 @@ function Task() {
                               placeholder="0"
                               value={updatedPoints}
                               onChange={(e) => setUpdatedPoints(e.target.value)}
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <input
+                              type="text"
+                              id="updatedCameraSlot"
+                              placeholder="Update Camera Slot"
+                              value={updatedCameraSlot}
+                              onChange={(e) => setUpdatedCameraSlot(e.target.value)}
                               className="form-control"
                             />
                           </div>
