@@ -76,10 +76,14 @@ function Cctv() {
     backgroundColor: 'lightgray',
   };
 
-  const [revealedItem, setRevealedItem] = useState(null);
+  const [revealedItems, setRevealedItems] = useState([false, false, false, false]);
 
-  const handleItemClick = (itemId) => {
-    setRevealedItem(itemId === revealedItem ? null : itemId);
+  const handleItemClick = (index) => {
+    setRevealedItems((prevState) => {
+      const updatedItems = [...prevState];
+      updatedItems[index] = !updatedItems[index];
+      return updatedItems;
+    });
   };
 
   const [tasks, setTasks] = useState([]);
@@ -88,7 +92,7 @@ function Cctv() {
     // Fetch tasks from Firestore and update the state
     const fetchTasks = async () => {
       try {
-        const taskCollection = firestore.collection('tasks'); // Assuming 'tasks' is the collection name
+        const taskCollection = firestore.collection('user_acceptedTask');
         const querySnapshot = await taskCollection.get();
         const tasksData = [];
         querySnapshot.forEach((doc) => {
@@ -104,6 +108,22 @@ function Cctv() {
     fetchTasks();
   }, []);
 
+  useEffect(() => {
+    const taskCollection = firestore.collection('user_acceptedTask');
+    const unsubscribe = taskCollection.onSnapshot((querySnapshot) => {
+      const tasksData = [];
+      querySnapshot.forEach((doc) => {
+        const task = doc.data();
+        tasksData.push(task);
+      });
+      setTasks(tasksData);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -112,12 +132,33 @@ function Cctv() {
           <div className="homepage-container">
             {[1, 2, 3, 4].map((index) => (
               <div key={index}>
-                <div className="ui-item" onClick={() => handleItemClick(`item${index}`)}>
+                <div className="ui-item" onClick={() => handleItemClick(index)}>
                   <div className="circle">
                     <h1>{index}</h1>
                   </div>
-                  {revealedItem === `item${index}` && (
-                    <h2>{tasks.find((task) => task.camera === index.toString())?.taskName || ''}</h2>
+                  {revealedItems[index] && (
+                    <div>
+                      {tasks
+                        .filter((task) => task.camera === index.toString())
+                        .map((task, i) => (
+                          <div key={i} style={{ display: 'inline-block', margin: '10px' }}>
+                            <h2 className='reward-item'>
+                              {task.isStarted && <div className="ongoing-indicator"></div>}
+                              {task.taskName} | {task.acceptedByEmail}
+                            </h2>
+                          </div>
+                        ))
+                        .reduce((rows, element, index) => {
+                          if (index % 5 === 0) rows.push([]);
+                          rows[rows.length - 1].push(element);
+                          return rows;
+                        }, [])
+                        .map((row, rowIndex) => (
+                          <div key={rowIndex} style={{ margin: '10px 0' }}>
+                            {row}
+                          </div>
+                        ))}
+                    </div>
                   )}
                 </div>
                 <div className="video-wrapper" style={containerStyle}>

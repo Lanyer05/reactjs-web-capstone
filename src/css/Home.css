@@ -18,7 +18,6 @@
     align-items: flex-start; 
   }
 
-  
   .sidebar {
     position: fixed;
     top: 0;
@@ -32,8 +31,7 @@
     float: right;
     z-index: 1; 
   }
-  
-  
+   
   .sidebar--open {
     width: 250px;
     transition: all 0.5s ease;
@@ -46,7 +44,7 @@
     align-items: center;
     padding: 0 12px;
     text-align: left;
-    z-index: 1; /* Ensure sidebar position is above content */
+    z-index: 1; 
   }
   
   .sidebar-position:hover {
@@ -220,7 +218,7 @@
   word-break: break-word;
   box-sizing: border-box;
   transition: all 0.5s ease;
-  z-index: 0; /* Ensure content is below sidebar */
+  z-index: 0; 
 }
 .sidebar--open + .content {
   margin-left: 230px;
@@ -248,7 +246,7 @@
   border: none;
   cursor: pointer;
   transition: transform 0.2s ease;
-  position: relative; /* Added to make stacking work correctly */
+  position: relative;
 }
 
 .floating-add-button:hover {
@@ -266,7 +264,7 @@
   position: absolute;
   bottom: 90px;
   right: 0;
-  width: 105px;
+  width: 125px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
   font-size: 14px;
@@ -287,7 +285,6 @@
     opacity: 1;
   }
 }
-
 
 .floating-form {
   position: fixed;
@@ -319,7 +316,7 @@
 }
 
 .floating-form .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   margin-right: 20px;
 }
 
@@ -370,13 +367,11 @@
   background-color: #dad7cd;
 }
 
-
 @media (max-width: 768px) {
   .floating-form {
     max-width: 90%; 
   }
 }
-
 
 @media (max-width: 480px) {
   .floating-form {
@@ -416,7 +411,6 @@
     grid-template-columns: repeat(2, minmax(20px, 1fr));
   }
 }
-
 
 @media (max-width: 480px) {
   .rewards-list {
@@ -477,16 +471,13 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
-
-
-
 
 .update-button {
   background-color: #dad7cd; 
@@ -499,7 +490,6 @@
   margin-left: 20px; 
   display: inline-block;
 }
-
 
 .update-button:hover {
   background-color: #b1afab; 
@@ -536,10 +526,6 @@
   background-color: rgb(52, 103, 61); 
 }
 
-.form-group{
-  margin-top: 10px;
-}
-
 .loading {
   justify-content: center;
 }
@@ -553,10 +539,7 @@
 }
 
 .tasks-container h2 {
-  font-family: 'Microsoft Sans Serif';
   margin-bottom: 50px;
-  align-content: center;
-  text-align: center;
 }
 
 .tasks-list {
@@ -598,8 +581,7 @@
   color: #063a21;
   font-size: 1.2rem;
   margin: 10px 0;
-  line-height: 1.4;
-  text-align: center; 
+  line-height: 1.4; 
   font-family: 'Ebrima';
 }
 
@@ -758,14 +740,13 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2);
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
-
 
 .tasks-container {
   margin-top: 20px;
@@ -853,12 +834,12 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px); 
 }
 
 .reward-claim-item {
@@ -905,7 +886,6 @@
   background-color: #f8f8f8;
 }
 
-
 .add-input {
   flex: 1;
   padding: 10px;
@@ -945,7 +925,6 @@
   align-content: center;
   text-align: center;
 }
-
 
 .ui-item {
   --bg-color: white;
@@ -999,17 +978,17 @@
 
 @media (max-width: 600px) {
   .ui-item {
-    margin: 0 10px 10px; /* Adjust margin for smaller screens */
+    margin: 0 10px 10px; 
   }
 
   .ui-item .circle {
-    width: 80px; /* Adjust size for smaller screens */
-    height: 80px; /* Adjust size for smaller screens */
+    width: 80px; 
+    height: 80px; 
   }
 
   .ui-item h2 {
-    font-size: 14px; /* Adjust font size for smaller screens */
-    margin-top: 15px; /* Adjust margin for smaller screens */
+    font-size: 14px; 
+    margin-top: 15px; 
   }
 }
 
@@ -1148,7 +1127,6 @@ text p {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.5s ease, transform 0.5s ease, color 0.5s ease; 
-   
 }
 
 .accept-item h3 {
@@ -1158,6 +1136,7 @@ text p {
   margin-bottom: 10px;
   font-family: 'Microsoft Sans Serif';
   font-weight: 'bold';
+  text-align: center;
 }
 
 .accept-item p {
@@ -1190,12 +1169,12 @@ text p {
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2);
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
 
 .accept-buttons {
@@ -1274,12 +1253,12 @@ text p {
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
 
 .completed-buttons {  
@@ -1326,6 +1305,7 @@ text p {
   align-items: center;
   margin: 10px 0; 
 }
+
 .responsive-image {
   max-width: 100%;
   max-height: 100vh; 
@@ -1523,7 +1503,6 @@ text p {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.5s ease, transform 0.5s ease, color 0.5s ease; 
-   
 }
 
 .confirmed-item h3 {
@@ -1566,14 +1545,13 @@ text p {
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
-
 
 .confirmed-buttons {
   display: none;
@@ -1667,7 +1645,6 @@ text p {
   background-color: #34673d; 
 }
 
-
 .claim-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(auto-fit 1fr));
@@ -1685,7 +1662,6 @@ text p {
     grid-template-columns: repeat(2, minmax(20px, 1fr));
   }
 }
-
 
 @media (max-width: 480px) {
   .claim-list  {
@@ -1743,14 +1719,13 @@ text p {
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px); 
 }
-
 
 .red-highlight {
   color: rgb(250, 107, 107);
@@ -1760,14 +1735,17 @@ text p {
   color: #08bdff;
 }
 
+.green-highlight {
+  color: #5bba6f;
+}
 
 .video-list {
   list-style: none;
   padding-top: 40px;
   padding-left: -40px;
   display: flex;
-  justify-content: center; /* Center-align the video horizontally */
-  align-items: center; /* Center-align the video vertically */
+  justify-content: center; 
+  align-items: center; 
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -1858,12 +1836,12 @@ iframe {
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background-color: rgba(88, 129, 87, 0.2); /* Apply a green glass-like effect */
+  background-color: rgba(88, 129, 87, 0.2); 
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
   margin-right: 5px;
-  backdrop-filter: blur(10px); /* Apply the glass effect with a slight blur */
+  backdrop-filter: blur(10px);
 }
 
 .chart-container .recharts-surface {
@@ -1878,13 +1856,13 @@ iframe {
 .divider {
   width: 100%;
   height: 1px;
-  background-color: #ccc; /* Adjust the color as needed */
-  margin: 5px 0; /* Adjust the margin as needed */
+  background-color: #ccc; 
+  margin: 5px 0;
 }
 
 .label {
   font-weight: bold;
-  margin-right: 5px; /* Adjust the margin as needed */
+  margin-right: 5px;
 }
 
 .completed-details {
@@ -1949,21 +1927,17 @@ iframe {
   justify-content: center;
 }
 
-
 @media (max-width: 1000px) {
   .category-card {
     width: 80%; 
   }
 }
 
-
 @media (max-width: 600px) {
   .category-card {
     width: 80%;
   }
 }
-
-
 
 .unfocusable {
   pointer-events: none;

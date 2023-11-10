@@ -6,6 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
+import { v4 as uuidv4 } from 'uuid';
 
 function Task() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -40,6 +41,8 @@ function Task() {
   const [selectedConfirmedItemId, setSelectedConfirmedItemId] = useState(null);
   const [selectedCamera, setSelectedCamera] = useState('1');
   const [updatedCameraSlot, setUpdatedCameraSlot] = useState('');
+  const [maxUsers, setMaxUsers] = useState('');
+  const [updatedMaxUsers, setUpdatedMaxUsers] = useState('');
 
 
   useEffect(() => {
@@ -59,32 +62,43 @@ function Task() {
     };
   }, [showAddForm, updatingTaskId]);
 
+
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const tasksSnapshot = await tasksCollectionRef.get();
         const tasksData = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setTasksList(tasksData);
+  
+        // Filter tasks where acceptedByUsers is defined
+        const filteredTasks = tasksData.filter(task => {
+          return task.acceptedByUsers && task.acceptedByUsers.length < task.maxUsers;
+        });
+  
+        setTasksList(filteredTasks);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
-      };
+    };
+  
     const unsubscribe = tasksCollectionRef.onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         const taskData = { id: change.doc.id, ...change.doc.data() };
         if (change.type === 'added') {
-        } else if (change.type === 'modified' && taskData.isAccepted) {
-          tasksCollectionRef.doc(taskData.id).delete();
+          // Handle added tasks
+          if (taskData.acceptedByUsers && taskData.acceptedByUsers.length < taskData.maxUsers) {
+            // Update the UI
+          }
         }
       });
   
       fetchTasks();
     });
+  
     return () => {
       unsubscribe();
     };
   }, []);
-
+  
 
   useEffect(() => {
     const checkLoggedInUser = async () => {
@@ -98,30 +112,34 @@ function Task() {
     }, [navigate]);
 
 
-    const handleAddTask = async () => {
+   const handleAddTask = async () => {
       if (!taskName || !description || !location || !points) {
-        setEmptyFieldWarning(true);
-        toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
-        return;
-      }  
+      setEmptyFieldWarning(true);
+      toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
+      return;
+      } 
       try {
-        const newTask = {
-          taskName: taskName,
-          description: description,
-          location: location,
-          timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
-          points: points,
-          camera: selectedCamera, // Include the selected camera
-          isAccepted: false,
-        };  
-        const docRef = await firestore.collection('tasks').add(newTask);
-        setTasksList([...tasksList, { id: docRef.id, ...newTask }]);  
-        resetForm();
-        setShowAddForm(false);
-        toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
+      const newTask = {
+      taskId: uuidv4(),
+      taskName: taskName,
+      description: description,
+      location: location,
+      timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
+      points: points,
+      camera: selectedCamera,
+      isAccepted: false,
+      maxUsers: parseInt(maxUsers),
+      acceptedByUsers: [],
+      };
+      const docRef = await firestore.collection('tasks').add(newTask);
+      setTasksList([...tasksList, { id: docRef.id, ...newTask }]);
+      
+      resetForm();
+      setShowAddForm(false);
+      toast.success('Task added successfully!', { autoClose: 1500, hideProgressBar: true });
       } catch (error) {
-        console.error('Error adding task:', error);
-        toast.error('Failed to add task.', { autoClose: 1500, hideProgressBar: true });
+      console.error('Error adding task:', error);
+      toast.error('Failed to add task.', { autoClose: 1500, hideProgressBar: true });
       }
     };
     
@@ -154,48 +172,99 @@ function Task() {
       };
 
 
-  const handleUpdateTask = async (taskId) => {
-      if (!updatedTaskName || !updatedDescription || !updatedLocation || !updatedPoints) {
-      toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
-      return;
-    }
-    try {
-      const batch = firestore.batch();
-      const taskRef = tasksCollectionRef.doc(taskId);
-      batch.update(taskRef, {
-          taskName: updatedTaskName,
-          description: updatedDescription,
-          location: updatedLocation,
-          timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) },
-          points: updatedPoints,
-          camera: {
-            slot: updatedCameraSlot,
-            number: selectedCamera.number,
-          },
-      });
-      await batch.commit();
-      const updatedTasksList = tasksList.map((task) => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            taskName: updatedTaskName,
-            description: updatedDescription,
-            location: updatedLocation,
-            timeFrame: { hours: parseInt(updatedHours), minutes: parseInt(updatedMinutes) },
-            points: updatedPoints,
-          };
+      const handleUpdateTask = async (taskId) => {
+        try {
+          const batch = firestore.batch();
+          const taskRef = tasksCollectionRef.doc(taskId);
+          const updates = {};
+      
+          if (updatedTaskName) {
+            updates.taskName = updatedTaskName;
+          }
+          if (updatedDescription) {
+            updates.description = updatedDescription;
+          }
+          if (updatedLocation) {
+            updates.location = updatedLocation;
+          }
+          if (updatedPoints) {
+            updates.points = updatedPoints;
+          }
+          if (updatedHours || updatedMinutes) {
+            updates.timeFrame = {
+              hours: parseInt(updatedHours),
+              minutes: parseInt(updatedMinutes),
+            };
+          }
+          if (updatedCameraSlot) {
+            updates.camera = {
+              slot: updatedCameraSlot,
+              number: selectedCamera.number,
+            };
+          }
+          if (updatedMaxUsers) {
+            updates.maxUsers = parseInt(updatedMaxUsers);
+          }
+      
+          if (Object.keys(updates).length === 0) {
+            toast.error('Please fill in the fields.', { autoClose: 1500, hideProgressBar: true });
+            return;
+          }
+      
+          batch.update(taskRef, updates);
+          await batch.commit();
+      
+          const updatedTasksList = tasksList.map((task) => {
+            if (task.id === taskId) {
+              return {
+                ...task,
+                ...updates,
+              };
+            }
+            return task;
+          });
+          setTasksList(updatedTasksList);
+          setSelectedTaskId(taskId);
+          setUpdatingTaskId(null);
+          toast.success('Task updated successfully!', { autoClose: 1500, hideProgressBar: true });
+        } catch (error) {
+          console.error('Error updating task:', error);
+          toast.error('Failed to update task.', { autoClose: 1500, hideProgressBar: true });
         }
-        return task;
-      });
-      setTasksList(updatedTasksList);
-      setSelectedTaskId(taskId);
-      setUpdatingTaskId(null);
-      toast.success('Task updated successfully!', { autoClose: 1500, hideProgressBar: true });
-      } catch (error) {
-      console.error('Error updating task:', error);
-      toast.error('Failed to update task.', { autoClose: 1500, hideProgressBar: true });
-      }
-     };
+      };
+      
+
+      const handleTabChange = (tab) => {
+        setSelectedTab(tab);
+      };
+      const resetForm = () => {
+        setTaskName('');
+        setDescription('');
+        setLocation('');
+        setHours('');
+        setMinutes('');
+        setPoints('');
+        setMaxUsers('');
+        setEmptyFieldWarning(false);
+      };
+      
+      const tabStyle = {
+        fontSize: '18px',
+        fontWeight: 'bold',
+        padding: '10px 40px',
+        margin: '0 1px',
+        marginBottom: '5px',
+        color: 'white',
+        backgroundColor: '#659E64',
+        border: 'none',
+        cursor: 'pointer',
+        width: '170px',
+        height: '40px',
+        };
+      const activeTabStyle = {
+        ...tabStyle,
+        backgroundColor: '#3f5159',
+        };    
 
 
      useEffect(() => {
@@ -221,65 +290,13 @@ function Task() {
       };
     }, []);
 
-
-  const handleTabChange = (tab) => {
-    setSelectedTab(tab);
-  };
-  const resetForm = () => {
-    setTaskName('');
-    setDescription('');
-    setLocation('');
-    setHours('');
-    setMinutes('');
-    setPoints('');
-    setEmptyFieldWarning(false);
-  };
-  
-  const tabStyle = {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    padding: '10px 40px',
-    margin: '0 1px',
-    marginBottom: '5px',
-    color: 'white',
-    backgroundColor: '#659E64',
-    border: 'none',
-    cursor: 'pointer',
-    width: '170px',
-    height: '40px',
-    };
-  const activeTabStyle = {
-    ...tabStyle,
-    backgroundColor: '#3f5159',
-    };
-
-
-    const handleCancelTask = async (taskId) => {
+    
+    const handleCancelTask = async (taskName) => {
       try {
         const batch = firestore.batch();
-        const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskId);
-        const taskRef = tasksCollectionRef.doc(taskId);
-        const acceptedTaskSnapshot = await acceptedTaskRef.get();
-        const taskData = acceptedTaskSnapshot.data();
+        const acceptedTaskRef = firestore.collection('user_acceptedTask').doc(taskName);
         batch.delete(acceptedTaskRef);
-        const userTasksRef = firestore.collection('tasks').doc(taskId);
-        batch.set(userTasksRef, {
-          description: taskData.description,
-          isAccepted: false,
-          location: taskData.location,
-          points: taskData.points,
-          taskName: taskData.taskName,
-          timeFrame: {
-            hours: taskData.timeFrame.hours,
-            minutes: taskData.timeFrame.minutes,
-          },
-        });
-        batch.update(taskRef, {
-          isAccepted: false,
-        });
         await batch.commit();
-        const updatedUserAcceptedTasks = userAcceptedTasks.filter((task) => task.id !== taskId);
-        setUserAcceptedTasks(updatedUserAcceptedTasks);
         toast.success('Accepted Task Canceled!', {
           autoClose: 1500,
           hideProgressBar: true,
@@ -291,7 +308,7 @@ function Task() {
           hideProgressBar: true,
         });
       }
-    };    
+    };
     
 
   const handleCompletedItemClick = (itemId) => {
@@ -457,7 +474,6 @@ function Task() {
       }
     };
     
-  
 
   return (
     <AnimatedPage>
@@ -500,8 +516,20 @@ function Task() {
                 />
               </div>
               <div className="form-group">
+                <label htmlFor="maxUsers">Max Users:</label>
+                <input
+                  type="number"
+                  id="maxUsers"
+                  placeholder="Enter Max Users"
+                  value={maxUsers}
+                  onChange={(e) => setMaxUsers(e.target.value === '' ? '' : parseInt(e.target.value))}
+                  className="form-control"
+                />
+              </div>
+              <div className="form-group">
                 <label htmlFor="camera">Camera:</label>
                 <select
+                  type=""
                   id="camera"
                   value={selectedCamera}
                   onChange={(e) => setSelectedCamera(e.target.value)}
@@ -513,7 +541,7 @@ function Task() {
                   <option value="4">Camera 4</option>
                 </select>
               </div>
-            <div className="form-group">
+              <div className="form-group">
                <label htmlFor="hours">Time Frame (Hours):</label>
                 <input
                   type="number"
@@ -521,8 +549,7 @@ function Task() {
                   placeholder="00"
                   value={hours}
                   onChange={(e) => setHours(e.target.value === '' ? '' : Math.min(23, parseInt(e.target.value)))}
-                  className="form-control"
-                />
+                  className="form-control"/>
             </div>
             <div className="form-group">
               <label htmlFor="minutes">Time Frame (Minutes):</label>
@@ -532,8 +559,7 @@ function Task() {
                   placeholder="00"
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.min(59, parseInt(e.target.value)))}
-                  className="form-control"
-                />
+                  className="form-control"/>
             </div>
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
@@ -543,8 +569,7 @@ function Task() {
                   id="points"
                   value={points}
                   onChange={(e) => setPoints(e.target.value)}
-                  className="form-control"
-                />
+                  className="form-control"/>
               </div>
               <button onClick={handleAddTask} className="btn btn-primary">
                 Add Task
@@ -553,30 +578,27 @@ function Task() {
                 Cancel
               </button>
             </div>
-          </div>
-          <div className="tabs">
-            <button
-              style={selectedTab === 'TASK' ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange('TASK')}
-            >
-              Task
-            </button>
-            <button
-              style={selectedTab === 'ACCEPT' ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange('ACCEPT')}
-            >
-              Accept
-            </button>
-            <button
-              style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange('COMPLETE')}
-            >
-              Complete
-            </button>
-          </div>
+              </div>
+              <div className="tabs">
+                <button
+                  style={selectedTab === 'TASK' ? activeTabStyle : tabStyle}
+                  onClick={() => handleTabChange('TASK')}>
+                  Task
+                </button>
+                <button
+                  style={selectedTab === 'ACCEPT' ? activeTabStyle : tabStyle}
+                  onClick={() => handleTabChange('ACCEPT')}>
+                  Accept
+                </button>
+                <button
+                  style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
+                  onClick={() => handleTabChange('COMPLETE')}>
+                  Complete
+                </button>
+              </div>
 
           {selectedTab === 'TASK' && (
-  <>
+    <>
     <div className="tasks-container">
       <h2>Tasks List</h2>
       <div className="tasks-list">
@@ -586,128 +608,145 @@ function Task() {
             className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
             onClick={() => handleTaskItemClick(task.id)}
             onMouseEnter={() => handleRevealDeleteButton(task.id)}
-            onMouseLeave={() => handleRevealDeleteButton(null)}
-          >
-            <div className="task-details">
-              <h3>{task.taskName}</h3>
-              <div className="divider"></div>
-              <p>
-                <span className="label">Description:</span>
-                {task.description}
-              </p>
-              <div className="divider"></div>
-              <p>
-                <span className="label">Location:</span>
-                {task.location}
-              </p>
-              <div className="divider"></div>
-              <p>
-                <span className="label">Time Frame:</span>
-                {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes
-              </p>
-              <div className="divider"></div>
-              <p>
-                <span className="label">Points:</span>
-                {task.points}
-              </p>
-              <div className="divider"></div>
-              {/* Check if 'slot' is defined before accessing it */}
-              {task.camera && (
-                <p>
-                  <span className="label">Camera:</span>
-                  {task.camera}
-                </p>
-              )}
-            </div>
+            onMouseLeave={() => handleRevealDeleteButton(null)}>
+                <div className="task-details">
+                  <h3>{task.taskName}</h3>
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Description:</span>
+                    {task.description}
+                  </p>
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Location:</span>
+                    {task.location}
+                  </p>
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Time Frame:</span>
+                    {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes
+                  </p>
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Points:</span>
+                    {task.points}
+                  </p>
+                  <div className="divider"></div>
+                  {task.camera && (
+                    <p>
+                      <span className="label">Camera:</span>
+                      {task.camera}
+                    </p>
+                  )}
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Max Users:</span> 
+                    {task.acceptedByUsers.length}/{task.maxUsers || 'Not specified'}
+                  </p>
+                  <div className="divider"></div>
+                  <p>
+                    <span className="label">Task ID:</span> 
+                    {task.taskId || 'Not specified'}
+                  </p>
+                  <div className="divider"></div>
+                </div>
 
                       {selectedTaskId === task.id && (
                         <>
                           <button
                             onClick={() => setUpdatingTaskId(task.id)}
-                            className={`confirm-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
-                          >
+                            className={`confirm-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}>
                             Update
                           </button>
                           <button
                             onClick={() => handleDeleteTask(task.id)}
-                            className={`delete-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}
-                          >
+                            className={`delete-button ${showDeleteButtonId === task.id ? 'visible' : ''}`}>
                             Delete
                           </button>
                         </>
                       )}
                       {updatingTaskId === task.id && (
                         <div className="update-form" onClick={(e) => e.stopPropagation()}>
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              id="updatedTaskName"
-                              placeholder="Update Task Name"
-                              value={updatedTaskName}
-                              onChange={(e) => setUpdatedTaskName(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              id="updatedDescription"
-                              placeholder="Update Description"
-                              value={updatedDescription}
-                              onChange={(e) => setUpdatedDescription(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              id="updatedLocation"
-                              placeholder="Update Location"
-                              value={updatedLocation}
-                              onChange={(e) => setUpdatedLocation(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="number"
-                              id="updatedHours"
-                              placeholder="0"
-                              value={updatedHours === 0 ? '' : updatedHours}
-                              onChange={(e) => setUpdatedHours(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="number"
-                              id="updatedMinutes"
-                              placeholder="0"
-                              value={updatedMinutes === 0 ? '' : updatedMinutes}
-                              onChange={(e) => setUpdatedMinutes(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="number"
-                              id="updatedPoints"
-                              placeholder="0"
-                              value={updatedPoints}
-                              onChange={(e) => setUpdatedPoints(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              id="updatedCameraSlot"
-                              placeholder="Update Camera Slot"
-                              value={updatedCameraSlot}
-                              onChange={(e) => setUpdatedCameraSlot(e.target.value)}
-                              className="form-control"
-                            />
-                          </div>
+                        <div className="form-group">
+                          <input
+                            type="text"
+                            id="updatedTaskName"
+                            placeholder="Update Task Name"
+                            value={updatedTaskName}
+                            onChange={(e) => setUpdatedTaskName(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="text"
+                            id="updatedDescription"
+                            placeholder="Update Description"
+                            value={updatedDescription}
+                            onChange={(e) => setUpdatedDescription(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="text"
+                            id="updatedLocation"
+                            placeholder="Update Location"
+                            value={updatedLocation}
+                            onChange={(e) => setUpdatedLocation(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="number"
+                            id="updatedHours"
+                            placeholder="Hours"
+                            value={updatedHours === 0 ? '' : updatedHours}
+                            onChange={(e) => setUpdatedHours(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="number"
+                            id="updatedMinutes"
+                            placeholder="Minutes"
+                            value={updatedMinutes === 0 ? '' : updatedMinutes}
+                            onChange={(e) => setUpdatedMinutes(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="number"
+                            id="updatedPoints"
+                            placeholder="Points"
+                            value={updatedPoints}
+                            onChange={(e) => setUpdatedPoints(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="text"
+                            id="updatedCameraSlot"
+                            placeholder="Update Camera Slot"
+                            value={updatedCameraSlot}
+                            onChange={(e) => setUpdatedCameraSlot(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="number"
+                            id="updatedMaxUsers"
+                            placeholder="Max Users"
+                            value={updatedMaxUsers}
+                            onChange={(e) => setUpdatedMaxUsers(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
                           <button onClick={() => handleUpdateTask(task.id)} className="confirm-button">
                             Update
                           </button>
@@ -722,16 +761,22 @@ function Task() {
                 </div>
               </div>
               <div className="floating-button-container">
-                {showAddForm ? (
-                  <button onClick={() => setShowAddForm(false)} className="floating-add-button">
-                  <span style={{ fontSize: '24px' }}>-</span>
-                </button>
-                ) : (
-                  <button onClick={() => setShowAddForm(true)} className="floating-add-button">
-                  <span style={{ fontSize: '24px' }}>+</span>
-                </button>
-                )}
-              </div>
+                  {showAddForm ? (
+                    <button onClick={() => setShowAddForm(false)} className="floating-add-button">
+                      <span style={{ fontSize: '24px' }}>-</span>
+                    </button>
+                    ) : (
+                    <div className="button-container">
+                      <button
+                        onClick={() => setShowAddForm(true)}
+                        className="floating-add-button"
+                      >
+                        <span style={{ fontSize: '24px' }}>+</span>
+                      </button>
+                      <div className="indicator-animation">Click me to add task!</div>
+                    </div>
+                  )}
+                </div>
             </>
           )}
 
@@ -761,8 +806,7 @@ function Task() {
             <p>
               <span className="label">Time Frame:</span>
               {accepted.timeFrame
-                ? `${accepted.timeFrame.hours} hours ${accepted.timeFrame.minutes} minutes`
-                : 'N/A'}
+                ? `${accepted.timeFrame.hours} hours ${accepted.timeFrame.minutes} minutes`: 'N/A'}
             </p>
             <div className="divider"></div>
             <p>
@@ -776,25 +820,39 @@ function Task() {
             </p>
             <div className="divider"></div>
             <p>
-              <span className="label">Accepted By:</span>
-              {accepted.acceptedByEmail}
+              <span className='label'>Max User:</span>
+              {`${accepted.maxUsers}`}
             </p>
+            <div className="divider"></div>
+          <p>
+            <span className='label'>Accepted By:</span> 
+            {accepted.acceptedByEmail}
+          </p>
+            <div className="divider"></div>
+              {accepted.camera && (
+                <p>
+                  <span className="label">Camera:</span>
+                  {accepted.camera}
+                </p>
+              )}
             <div className="divider"></div>
             <p>
               <span className="label">Time Accepted:</span>
               <span className="blue-highlight">{accepted.acceptedDateTime}</span>
             </p>
-          </div>
+            <div className="divider"></div>
+            <p>
+              <span className="label">Task ID:</span>
+              {accepted.taskId}
+            </p>
+            </div>
             {selectedAcceptedItemId === accepted.id && !accepted.isStarted && (
-                  <button
+              <button
                   onClick={() => handleCancelTask(accepted.id)}
-                  className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}
-                  >
+                  className={`delete-button ${showCancelButtonId === accepted.id ? 'visible' : ''}`}>
                   Cancel
-                  </button>
-                  )}
-                  </div>
-                  ))}
+              </button>)}
+              </div>))}
                 {userAcceptedTasks.length === 0 && <p>No Accepted tasks found.</p>}
           </div>
       </div>
@@ -806,14 +864,12 @@ function Task() {
     <div className="tab-buttons">
       <button
         className={`tab-button ${selectedSubTab === 'COMPLETED' ? 'active' : ''}`}
-        onClick={() => handleSubTabChange('COMPLETED')}
-      >
+        onClick={() => handleSubTabChange('COMPLETED')}>
         Completed
       </button>
       <button
         className={`tab-button ${selectedSubTab === 'CONFIRMED' ? 'active' : ''}`}
-        onClick={() => handleSubTabChange('CONFIRMED')}
-      >
+        onClick={() => handleSubTabChange('CONFIRMED')}>
         Confirmed
       </button>
     </div>
@@ -828,8 +884,7 @@ function Task() {
                 className={`completed-item ${selectedCompletedItemId === completed.id ? 'selected' : ''}`}
                 onClick={() => handleCompletedItemClick(completed.id)}
                 onMouseEnter={() => handleRevealDeleteButton(completed.id)}
-                onMouseLeave={() => handleRevealDeleteButton(null)}
-              >
+                onMouseLeave={() => handleRevealDeleteButton(null)}>
                 <div className="completed-details">
                     <h3>{completed.taskName}</h3>
                     <div className="divider"></div>
@@ -841,6 +896,11 @@ function Task() {
                     <p>
                       <span className="label">Time Frame:</span>
                       {completed.timeFrame ? `${completed.timeFrame.hours.toString().padStart(2, '0')}:${completed.timeFrame.minutes.toString().padStart(2, '0')}:00` : 'N/A'}
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Time Completed:</span>
+                      {completed.remainingTime}
                     </p>
                     <div className="divider"></div>
                     <p>
@@ -859,11 +919,6 @@ function Task() {
                     </p>
                     <div className="divider"></div>
                     <p>
-                      <span className="label">Remaining Timeframe:</span>
-                      {completed.remainingTime}
-                    </p>
-                    <div className="divider"></div>
-                    <p>
                       <span className="label">Accepted Time:</span>
                       <span className="blue-highlight">{completed.acceptedDateTime}</span>
                     </p>
@@ -871,6 +926,11 @@ function Task() {
                     <p>
                       <span className="label">Completed Time:</span>
                       <span className="red-highlight">{completed.completedDateTime}</span>
+                    </p>
+                    <div className="divider"></div>
+                    <p>
+                      <span className="label">Task ID:</span>
+                      {completed.taskId}
                     </p>
                   </div>
 
@@ -881,9 +941,8 @@ function Task() {
                         <img
                           src={completed.imageUrl}
                           alt="Completed Task"
-                          className="responsive-image"
-                        />
-                      )}
+                          className="responsive-image"/>
+                        )}
                     </div>
                     <button onClick={() => handleConfirmCompletedTask(completed.id)} className="confirm-button">
                       Confirm
@@ -911,8 +970,7 @@ function Task() {
           className={`confirmed-item ${selectedConfirmedItemId === confirmed.id ? 'selected' : ''}`}
           onClick={() => handleConfirmedItemClick(confirmed.id)}
           onMouseEnter={() => handleRevealConfirmButton(confirmed.id)}
-          onMouseLeave={() => handleRevealConfirmButton(null)}
-        >
+          onMouseLeave={() => handleRevealConfirmButton(null)}>
           <div className="confirmed-details">
             <h3>{confirmed.taskName}</h3>
             <div className="divider"></div>
@@ -958,7 +1016,10 @@ function Task() {
             <span className="red-highlight">{confirmed.completedDateTime}</span>
             </p>
             <div className="divider"></div>
-            <p className="blue-highlight">Status: Confirmed</p>
+            <p>
+            <span className="label">Task ID:</span>
+            <span className="green-highlight">{confirmed.taskId} || VERIFIED </span>
+            </p>
           </div>
           {selectedConfirmedItemId === confirmed.id && (
             <div className={`confirmed-item-actions ${showDeleteButtonId === confirmed.id ? 'visible' : ''}`}>
@@ -967,8 +1028,7 @@ function Task() {
                   <img
                     src={confirmed.imageUrl}
                     alt="Confirmed Task"
-                    className="responsive-image"
-                  />
+                    className="responsive-image"/>
                 )}
               </div>
             </div>

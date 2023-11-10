@@ -482,7 +482,7 @@ function Reward() {
                 +
               </button>
             )}
-            <div className="indicator-animation">Add category here</div>
+            <div className="indicator-animation">Click me to category!</div>
           </div>
         </div>
         <ToastContainer autoClose={1500} hideProgressBar />
