@@ -6,10 +6,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnimatedPage from "./AnimatedPage";
 import Logo from "./ecotaskreward_logo.png"
+import { faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -96,13 +99,24 @@ const Register = () => {
             />
           </div>
           <div className="input-field">
-            <input
-              type="password"
-              placeholder=" Enter Registration Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter Admin Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setShowPassword(true)}
+                onBlur={() => setShowPassword(false)}
+              />
+              <div
+                className={`eye-icon ${showPassword ? 'visible' : ''}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setShowPassword((prevShowPassword) => !prevShowPassword);
+                }}
+              >
+                <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+              </div>
+            </div>
         </div>
         <div className="button-container">
           <button className="login-button" type="submit">

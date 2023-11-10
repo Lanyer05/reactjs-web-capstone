@@ -108,12 +108,7 @@ body {
     transform: translateY(-40%);
     cursor: pointer;
     font-size: 15px;
-    color: #777;
-    visibility: hidden; 
-  }
-  
-  .visible {
-    visibility: visible;
+    color: #777; 
   }
   
   .eye-icon:focus {

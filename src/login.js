@@ -143,21 +143,24 @@ const Login = () => {
             </div>
             </div>
             <div className="input-field">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Enter Admin Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setShowPassword(true)}
-              onBlur={() => setShowPassword(false)}
-            />
-            <div
-              className={`eye-icon ${showPassword ? 'visible' : ''}`}
-              onClick={() => setShowPassword((prevShowPassword) => !prevShowPassword)}
-            >
-              <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter Admin Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setShowPassword(true)}
+                onBlur={() => setShowPassword(false)}
+              />
+              <div
+                className={`eye-icon ${showPassword ? 'visible' : ''}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setShowPassword((prevShowPassword) => !prevShowPassword);
+                }}
+              >
+                <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+              </div>
             </div>
-          </div>
           <div className="button-container">
             <button className="login-button" type="submit">
               LOGIN
