@@ -6,6 +6,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnimatedPage from "./AnimatedPage";
 import Logo from "./ecotaskreward_logo.png"
+import { faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const showLoginSuccessToast = () => {
   toast.success('Login Successful!', {
@@ -22,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +56,7 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
+
     try {
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -106,7 +110,6 @@ const Login = () => {
         <img className="welcome-image" src={Logo} alt="Welcome" />
         <div className="welcome-message">Go Green, Go Clean!</div>
 
-
         {isLoading && (
           <div className="loader">
             <div className="circle">
@@ -133,18 +136,26 @@ const Login = () => {
             <div className="input-field">
               <input
                 type="email"
-                placeholder=" Enter Admin Email"
+                placeholder="Enter Admin Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            </div>
             <div className="input-field">
-              <input
-                type="password"
-                placeholder=" Enter Admin Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter Admin Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setShowPassword(true)}
+              onBlur={() => setShowPassword(false)}
+            />
+            <div
+              className={`eye-icon ${showPassword ? 'visible' : ''}`}
+              onClick={() => setShowPassword((prevShowPassword) => !prevShowPassword)}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
             </div>
           </div>
           <div className="button-container">
@@ -153,7 +164,7 @@ const Login = () => {
             </button>
           </div>
           <p className="forgot-password">
-            Dont have an admin account? <Link className="forgot-password" to="/register">Register here</Link>.
+            Don't have an admin account? <Link className="forgot-password" to="/register">Register here</Link>.
           </p>
         </form>
         <ToastContainer />

@@ -37,7 +37,17 @@ self.addEventListener('notificationclick', function (event) {
   const data = event.notification.data;
   if (data && data.url) {
     event.waitUntil(
-      clients.openWindow(data.url)
+      clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true
+      }).then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === `${self.origin}${data.url}` && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        return clients.openWindow(`${self.origin}${data.url}`);
+      })
     );
   }
 });

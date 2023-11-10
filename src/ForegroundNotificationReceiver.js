@@ -75,7 +75,16 @@ const ForegroundNotificationReceiver = () => {
   };
 
   const handleClick = () => {
-    navigate('task', { screen: 'COMPLETED' });
+    const currentURL = window.location.href;
+
+    if (currentURL.includes('/task') && currentURL.includes('screen=COMPLETE')) {
+      // Page is already running, navigate directly to the Task component
+      window.location.href = `${currentURL}?screen=COMPLETE`;
+      return;
+    }
+
+    // Task component is not open, navigate to it
+    navigate('task', { screen: 'COMPLETE' });
   };
 
   return (

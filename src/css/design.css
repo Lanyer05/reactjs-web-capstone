@@ -100,6 +100,29 @@ body {
     top: 13px;
     left: 32px;
   }
+
+  .eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 60%;
+    transform: translateY(-40%);
+    cursor: pointer;
+    font-size: 15px;
+    color: #777;
+    visibility: hidden; 
+  }
+  
+  .visible {
+    visibility: visible;
+  }
+  
+  .eye-icon:focus {
+    outline: none;
+  }
+  
+  .eye-icon:active {
+    outline: none;
+  }
   
   .forgot-password {
     text-align: center;

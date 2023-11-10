@@ -6,6 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from "../config/firebase";
 import AnimatedPage from "../AnimatedPage";
+import emailjs from '@emailjs/browser';
 
 function User() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -78,33 +79,39 @@ function User() {
     setSelectedTab(tab);
   };
 
+
   const handleApproveRequest = async (requestId) => {
     try {
       const shouldApprove = window.confirm('Are you sure you want to approve this request?');
       if (!shouldApprove) {
         return;
       }
-  
       const requestRef = firestore.collection("registration_requests").doc(requestId);
       const approvedRequestSnapshot = await requestRef.get();
       const approvedRequestData = approvedRequestSnapshot.data();
-  
       if (approvedRequestData) {
         await requestRef.delete();
-  
         const userRef = firestore.collection("users").doc(approvedRequestData.Uid);
-  
         const userData = {
           ...approvedRequestData,
-          userpoints: 0, 
+          userpoints: 0,
           isApproved: true,
         };
-  
         await userRef.set(userData);
+  
+        const emailServiceId = 'service_d5y2lkk';
+        const emailTemplateId = 'template_p73t06c';
+        const publicKey = '5kY0O_JTs3pjxp8WC';
+  
+        const emailParams = {
+          to_email: approvedRequestData.email,
+          subject: 'Request Approval Notification',
+          message: 'Your account registration request has been approved.',
+        };
+        await emailjs.send(emailServiceId, emailTemplateId, emailParams, publicKey);
       }
   
       setUserRequests((prevRequests) => prevRequests.filter((request) => request.id !== requestId));
-  
       toast.success("Request approved successfully!", {
         autoClose: 1500,
         hideProgressBar: true,
@@ -125,13 +132,8 @@ function User() {
       if (!shouldDelete) {
         return;
       }
-
-      // Delete user document from Firestore
       await firestore.collection('users').doc(userId).delete();
-
-      // Update the userApproved state to remove the deleted user
       setUserApproved(userApproved.filter((user) => user.id !== userId));
-
       toast.success('User deleted successfully!', {
         autoClose: 1500,
         hideProgressBar: true,

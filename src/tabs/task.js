@@ -69,7 +69,7 @@ function Task() {
         const tasksSnapshot = await tasksCollectionRef.get();
         const tasksData = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   
-        // Filter tasks where acceptedByUsers is defined
+        // Filter tasks where acceptedByUsers is defined 
         const filteredTasks = tasksData.filter(task => {
           return task.acceptedByUsers && task.acceptedByUsers.length < task.maxUsers;
         });
@@ -343,26 +343,30 @@ function Task() {
   }, []);
 
 
-    const handleDeleteCompletedTask = async (taskId) => {
-      try {
-        const batch = firestore.batch();
-        const completedTaskRef = firestore.collection('completed_task').doc(taskId);
-        batch.delete(completedTaskRef);
-        await batch.commit();
-        const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
-        setCompletedTasks(updatedCompletedTasks);
-        toast.success('Completed task denied!', {
-          autoClose: 1500,
-          hideProgressBar: true,
-        });
-      } catch (error) {
-        console.error('Error deleting completed task:', error);
-        toast.error('Failed to delete completed task.', {
-          autoClose: 1500,
-          hideProgressBar: true,
-        });
+  const handleDeleteCompletedTask = async (taskId) => {
+    try {
+      const shouldDelete = window.confirm('Once denied, the user cannot resubmit the task');
+      if (!shouldDelete) {
+        return;
       }
-    };
+      const batch = firestore.batch();
+      const completedTaskRef = firestore.collection('completed_task').doc(taskId);
+      batch.delete(completedTaskRef);
+      await batch.commit();
+      const updatedCompletedTasks = completedTasks.filter((completed) => completed.id !== taskId);
+      setCompletedTasks(updatedCompletedTasks);
+      toast.success('Completed task denied!', {
+        autoClose: 1500,
+        hideProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error deleting completed task:', error);
+      toast.error('Failed to delete completed task.', {
+        autoClose: 1500,
+        hideProgressBar: true,
+      });
+    }
+  };
 
 
   const handleAcceptItemClick = (itemId) => {
