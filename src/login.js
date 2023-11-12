@@ -24,7 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -148,7 +148,7 @@ const Login = () => {
                 placeholder="Enter Admin Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setShowPassword(true)}
+                onFocus={() => setShowPassword(false)}
                 onBlur={() => setShowPassword(false)}
               />
               <div

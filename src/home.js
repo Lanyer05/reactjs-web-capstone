@@ -224,6 +224,28 @@ function Home() {
     }));
   };
 
+   const deleteExpiredTasks = async () => {
+    try {
+      const tasksSnapshot = await firebase.firestore().collection('tasks').get();
+      const currentTime = new Date();
+
+      tasksSnapshot.forEach(async (doc) => {
+        const expirationDateTime = doc.data().expirationDateTime.toDate(); 
+
+        if (expirationDateTime < currentTime) {
+          await firebase.firestore().collection('tasks').doc(doc.id).delete();
+          console.log(`Task ${doc.id} has expired and has been deleted.`);
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting expired tasks:', error);
+    }
+  };
+
+  useEffect(() => {
+    deleteExpiredTasks();
+  }, []);
+
   return (
     <AnimatedPage>
       <div className="home-container">

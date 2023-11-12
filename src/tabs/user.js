@@ -16,8 +16,6 @@ function User() {
   const [selectedTab, setSelectedTab] = useState("REQUEST");
   const [userRequests, setUserRequests] = useState([]);
   const [userApproved, setUserApproved] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -47,18 +45,6 @@ function User() {
     checkLoggedInUser();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchUserRequests = async () => {
-      try {
-        const userRequestsSnapshot = await firestore.collection("registration_requests").limit(itemsPerPage).get();
-        const userRequestsData = userRequestsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setUserRequests(userRequestsData);
-      } catch (error) {
-        console.error("Error fetching user requests:", error);
-      }
-    };
-    fetchUserRequests();
-  }, [currentPage]);
 
   useEffect(() => {
     const fetchUserApproved = async () => {
@@ -147,38 +133,14 @@ function User() {
     }
   };
 
-  const tabStyle = {
-    fontSize: "18px",
-    fontWeight: "bold",
-    padding: "10px 40px",
-    margin: "0 1px",
-    marginBottom: "5px",
-    color: "white",
-    backgroundColor: "#659E64",
-    border: "none",
-    cursor: "pointer",
-    width: "210px",
-    height: "40px",
-  };
-
-  const activeTabStyle = {
-    ...tabStyle,
-    backgroundColor: "#3f5159",
-  };
 
   useEffect(() => {
-    const userRequestsListener = firestore.collection("registration_requests").onSnapshot((snapshot) => {
-      const userRequestsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setUserRequests(userRequestsData);
-    });
-
     const userApprovedListener = firestore.collection("users").onSnapshot((snapshot) => {
       const userApprovedData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUserApproved(userApprovedData);
     });
 
     return () => {
-      userRequestsListener();
       userApprovedListener();
     };
   }, []);
@@ -188,52 +150,11 @@ function User() {
       <div className="home-container">
         <div className="content">
           <h1 className="card-view">USER PAGE</h1>
-
-          <div className="tabs">
-            <button
-              style={selectedTab === "REQUEST" ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange("REQUEST")}
-            >
-              User Request
-            </button>
-            <button
-              style={selectedTab === "APPROVED" ? activeTabStyle : tabStyle}
-              onClick={() => handleTabChange("APPROVED")}
-            >
-              User Approved
-            </button>
-          </div>
-
-          {selectedTab === "REQUEST" && (
-            <div className="request-container">
-              <h2>Request User List</h2>
-              <div className="user-request-list">
-                {userRequests.map((request) => (
-                  <div key={request.id} className="user-request-item">
-                    <h3>{request.name}</h3>
-                    <p>User ID: {request.Uid}</p>
-                    <p>Barangay: {request.Barangay}</p>
-                    <p>Email: {request.email}</p>
-                    {!request.isApproved && (
-                      <button
-                        onClick={() => handleApproveRequest(request.id)}
-                        className="delete-button">
-                        Approve
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {userRequests.length === 0 && <p>No User Request found.</p>}
-              </div>
-            </div>
-          )}
-
-          {selectedTab === 'APPROVED' && (
             <div className="approved-container">
               <h2>Approved Users List</h2>
               <div className="user-approved-list">
               {userApproved
-                   .filter((approved) => approved.isApproved === true && !approved.email.endsWith('@youradmin.com'))
+                   .filter((approved) => !approved.email.endsWith('@youradmin.com'))
                   .map((approved) => (
                   <div key={approved.id} className="user-approved-item">
                     <h3>{approved.name}</h3>
@@ -252,7 +173,6 @@ function User() {
                 {userApproved.length === 0 && <p>No User found.</p>}
               </div>
             </div>
-          )}
         </div>
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>

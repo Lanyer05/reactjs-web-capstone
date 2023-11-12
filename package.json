@@ -20,6 +20,7 @@
     "firebase": "^8.10.1",
     "firebase-admin": "^11.10.1",
     "framer-motion": "^10.15.0",
+    "moment-timezone": "^0.5.43",
     "nodemailer": "^6.9.7",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",

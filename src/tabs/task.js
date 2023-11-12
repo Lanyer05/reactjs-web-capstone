@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { firestore } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
 import { v4 as uuidv4 } from 'uuid';
+import moment from 'moment-timezone';
 
 function Task() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -43,7 +44,7 @@ function Task() {
   const [updatedCameraSlot, setUpdatedCameraSlot] = useState('');
   const [maxUsers, setMaxUsers] = useState('');
   const [updatedMaxUsers, setUpdatedMaxUsers] = useState('');
-
+  const [expirationDateTime, setExpirationDateTime] = useState('');
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -119,7 +120,8 @@ function Task() {
       return;
       } 
       try {
-      const newTask = {
+        const expirationTimestamp = moment.tz(expirationDateTime, 'Asia/Manila').valueOf();
+        const newTask = {
       taskId: uuidv4(),
       taskName: taskName,
       description: description,
@@ -130,6 +132,7 @@ function Task() {
       isAccepted: false,
       maxUsers: parseInt(maxUsers),
       acceptedByUsers: [],
+      expirationDateTime: firebase.firestore.Timestamp.fromMillis(expirationTimestamp),
       };
       const docRef = await firestore.collection('tasks').add(newTask);
       setTasksList([...tasksList, { id: docRef.id, ...newTask }]);
@@ -477,6 +480,29 @@ function Task() {
         console.error('Error updating user points:', error);
       }
     };
+
+
+    const deleteExpiredTasks = async () => {
+      try {
+        const tasksSnapshot = await firebase.firestore().collection('tasks').get();
+        const currentTime = new Date();
+  
+        tasksSnapshot.forEach(async (doc) => {
+          const expirationDateTime = doc.data().expirationDateTime.toDate(); 
+  
+          if (expirationDateTime < currentTime) {
+            await firebase.firestore().collection('tasks').doc(doc.id).delete();
+            console.log(`Task ${doc.id} has expired and has been deleted.`);
+          }
+        });
+      } catch (error) {
+        console.error('Error deleting expired tasks:', error);
+      }
+    };
+  
+    useEffect(() => {
+      deleteExpiredTasks();
+    }, []);
     
 
   return (
@@ -565,6 +591,18 @@ function Task() {
                   onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.min(59, parseInt(e.target.value)))}
                   className="form-control"/>
             </div>
+
+            <div className="form-group">
+              <label htmlFor="expirationDateTime">Expiration Date and Time:</label>
+              <input
+                type="datetime-local"
+                id="expirationDateTime"
+                value={expirationDateTime}
+                onChange={(e) => setExpirationDateTime(e.target.value)}
+                className="form-control"
+              />
+            </div>
+
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
                 <input
@@ -630,6 +668,13 @@ function Task() {
                     <span className="label">Time Frame:</span>
                     {task.timeFrame?.hours || 0} hours {task.timeFrame?.minutes || 0} minutes
                   </p>
+                  <div className="divider"></div>
+                    {task.expirationDateTime && (
+                      <p>
+                        <span className="label">Task Expiration:</span> 
+                        {new Date(task.expirationDateTime.toMillis()).toLocaleString()}
+                      </p>
+                      )}
                   <div className="divider"></div>
                   <p>
                     <span className="label">Points:</span>
