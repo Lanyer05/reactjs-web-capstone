@@ -44,6 +44,7 @@ function Task() {
   const [updatedCameraSlot, setUpdatedCameraSlot] = useState('');
   const [maxUsers, setMaxUsers] = useState('');
   const [updatedMaxUsers, setUpdatedMaxUsers] = useState('');
+  const [updatedExpirationDateTime, setUpdateExpirationDateTime] = useState('');
   const [expirationDateTime, setExpirationDateTime] = useState('');
 
   useEffect(() => {
@@ -69,8 +70,6 @@ function Task() {
       try {
         const tasksSnapshot = await tasksCollectionRef.get();
         const tasksData = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
-        // Filter tasks where acceptedByUsers is defined 
         const filteredTasks = tasksData.filter(task => {
           return task.acceptedByUsers && task.acceptedByUsers.length < task.maxUsers;
         });
@@ -85,9 +84,7 @@ function Task() {
       snapshot.docChanges().forEach((change) => {
         const taskData = { id: change.doc.id, ...change.doc.data() };
         if (change.type === 'added') {
-          // Handle added tasks
           if (taskData.acceptedByUsers && taskData.acceptedByUsers.length < taskData.maxUsers) {
-            // Update the UI
           }
         }
       });
@@ -207,6 +204,11 @@ function Task() {
           }
           if (updatedMaxUsers) {
             updates.maxUsers = parseInt(updatedMaxUsers);
+          }
+
+          if (updatedExpirationDateTime) {
+            const expirationTimestamp = moment.tz(updatedExpirationDateTime, 'Asia/Manila').valueOf();
+            updates.expirationDateTime = firebase.firestore.Timestamp.fromMillis(expirationTimestamp);
           }
       
           if (Object.keys(updates).length === 0) {
@@ -591,7 +593,6 @@ function Task() {
                   onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.min(59, parseInt(e.target.value)))}
                   className="form-control"/>
             </div>
-
             <div className="form-group">
               <label htmlFor="expirationDateTime">Expiration Date and Time:</label>
               <input
@@ -602,7 +603,6 @@ function Task() {
                 className="form-control"
               />
             </div>
-
               <div className="form-group">
                 <label htmlFor="points">Points:</label>
                 <input
@@ -763,6 +763,15 @@ function Task() {
                             placeholder="Minutes"
                             value={updatedMinutes === 0 ? '' : updatedMinutes}
                             onChange={(e) => setUpdatedMinutes(e.target.value)}
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <input
+                            type="datetime-local"
+                            id="expirationDateTime"
+                            value={updatedExpirationDateTime}
+                            onChange={(e) => setUpdateExpirationDateTime(e.target.value)}
                             className="form-control"
                           />
                         </div>
