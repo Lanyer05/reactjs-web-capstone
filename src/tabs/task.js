@@ -554,8 +554,10 @@ function Task() {
                   id="maxUsers"
                   placeholder="Enter Max Users"
                   value={maxUsers}
-                  onChange={(e) => setMaxUsers(e.target.value === '' ? '' : parseInt(e.target.value))}
+                  onChange={(e) => {const inputValue = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10));
+                  setMaxUsers(inputValue);}}
                   className="form-control"
+                  min="0"
                 />
               </div>
               <div className="form-group">
@@ -574,25 +576,31 @@ function Task() {
                 </select>
               </div>
               <div className="form-group">
-               <label htmlFor="hours">Time Frame (Hours):</label>
+                <label htmlFor="hours">Time Frame (Hours):</label>
                 <input
                   type="number"
                   id="hours"
                   placeholder="00"
                   value={hours}
-                  onChange={(e) => setHours(e.target.value === '' ? '' : Math.min(23, parseInt(e.target.value)))}
-                  className="form-control"/>
-            </div>
-            <div className="form-group">
-              <label htmlFor="minutes">Time Frame (Minutes):</label>
+                  onChange={(e) => setHours(e.target.value === '' ? '' : Math.max(0, Math.min(23, parseInt(e.target.value, 10))))}
+                  className="form-control"
+                  min="0"
+                  max="23"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="minutes">Time Frame (Minutes):</label>
                 <input
                   type="number"
                   id="minutes"
                   placeholder="00"
                   value={minutes}
-                  onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.min(59, parseInt(e.target.value)))}
-                  className="form-control"/>
-            </div>
+                  onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.max(0, Math.min(59, parseInt(e.target.value, 10))))}
+                  className="form-control"
+                  min="0"
+                  max="59"
+                />
+              </div>
             <div className="form-group">
               <label htmlFor="expirationDateTime">Expiration Date and Time:</label>
               <input
@@ -610,8 +618,10 @@ function Task() {
                   type="number"
                   id="points"
                   value={points}
-                  onChange={(e) => setPoints(e.target.value)}
-                  className="form-control"/>
+                  onChange={(e) => {const inputValue = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10));
+                  setPoints(inputValue);}}
+                  className="form-control"
+                  min="0"/>
               </div>
               <button onClick={handleAddTask} className="btn btn-primary">
                 Add Task
@@ -787,11 +797,16 @@ function Task() {
                         </div>
                         <div className="form-group">
                           <input
-                            type="text"
+                            type="number"
                             id="updatedCameraSlot"
                             placeholder="Update Camera Slot"
                             value={updatedCameraSlot}
-                            onChange={(e) => setUpdatedCameraSlot(e.target.value)}
+                            onChange={(e) => {
+                              const enteredValue = e.target.value;
+                              const filteredValue = enteredValue.replace(/[^1-4]/g, ''); 
+                              const newValue = filteredValue.length > 0 ? parseInt(filteredValue, 10) : '';
+                              setUpdatedCameraSlot(newValue);
+                            }}
                             className="form-control"
                           />
                         </div>

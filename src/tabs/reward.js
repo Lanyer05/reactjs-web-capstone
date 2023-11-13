@@ -37,7 +37,9 @@ function Reward() {
   const [newCategoryPoints, setNewCategoryPoints] = useState("");
   const [showCategoryUpdateForm, setShowCategoryUpdateForm] = useState(false);
   const [showRewardUpdateForm, setShowRewardUpdateForm] = useState(false);
-  const [categoryData, setCategoryData] = useState({});
+  const [coupons, setCoupons] = useState([]);
+  const couponsCollectionRef = firestore.collection("coupons");
+  const [expandedCouponId, setExpandedCouponId] = useState(null);
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -138,7 +140,7 @@ function Reward() {
         category: selectedCategory,
         rewardName: newRewardName,
         points: categoryPoints,
-        quantity: newRewardQuantity,
+        quantity: parseInt(newRewardQuantity, 10),
       };
   
       const batch = firestore.batch();
@@ -155,6 +157,7 @@ function Reward() {
       toast.error('Failed to add reward.', { autoClose: 1500, hideProgressBar: true });
     }
   };
+  
 
   const handleTabChange = (tab) => {
     setSelectedTab(tab);
@@ -182,7 +185,7 @@ function Reward() {
     backgroundColor: "#659E64",
     border: "none",
     cursor: "pointer",
-    width: "160px",
+    width: "165px",
     height: "40px",
   };
   const activeTabStyle = {
@@ -209,6 +212,7 @@ function Reward() {
         points: newRewardPoints,
         quantity: newRewardQuantity,
       };
+  
       const rewardRef = rewardsCollectionRef.doc(editRewardId);
       await rewardRef.update(updatedReward); 
       toast.success('Reward updated successfully!', { autoClose: 1500, hideProgressBar: true });
@@ -221,6 +225,7 @@ function Reward() {
       toast.error('Failed to update reward.', { autoClose: 1500, hideProgressBar: true });
     }
   }
+  
 
   const handleUpdateReward = (e, reward) => {
     e.stopPropagation();
@@ -289,6 +294,60 @@ function Reward() {
     }
   }
 
+  useEffect(() => {
+    const unsubscribeCoupons = couponsCollectionRef.onSnapshot((snapshot) => {
+      const couponsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        selectedItems: doc.data().selectedItems || [], 
+      }));
+      setCoupons(couponsData);
+    });
+
+    return () => {
+      unsubscribeCoupons();
+    };
+  }, []);
+
+
+  const handleToggle = (couponId) => {
+    setExpandedCouponId((prevId) => (prevId === couponId ? null : couponId));
+  };
+
+
+  const claimReward = async (couponCode) => {
+    try {
+      const couponRef = couponsCollectionRef.where("couponCode", "==", couponCode).limit(1);
+      const snapshot = await couponRef.get();
+
+      if (!snapshot.empty) {
+        const couponDoc = snapshot.docs[0];
+        const couponId = couponDoc.id;
+
+        await couponsCollectionRef.doc(couponId).update({
+          isClaimed: true,
+        });
+
+        toast.success(`Reward claimed successfully!`, {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      } else {
+        toast.error(`Coupon with code ${couponCode} not found.`, {
+          autoClose: 1500,
+          hideProgressBar: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error claiming reward:", error);
+      toast.error(`Failed to claim reward for coupon: ${couponCode}`, {
+        autoClose: 1500,
+        hideProgressBar: true,
+      });
+    }
+  };
+
+
   return (
     <AnimatedPage>
       <div className="home-container">
@@ -315,8 +374,9 @@ function Reward() {
                     type="number"
                     id="categoryPoints"
                     value={categoryPointsInput}
-                    onChange={(e) => setCategoryPointsInput(e.target.value)}
+                    onChange={(e) => setCategoryPointsInput(Math.max(0, parseInt(e.target.value, 10)))}
                     className="form-control"
+                    min="0"
                   />
                 </div>
                 <button onClick={handleAddCategory} className="btn btn-primary">
@@ -334,6 +394,16 @@ function Reward() {
               onClick={() => handleTabChange("REWARD")}
             >
               Reward
+            </button>
+            <button
+                  style={selectedTab === 'REDEEM' ? activeTabStyle : tabStyle}
+                  onClick={() => handleTabChange('REDEEM')}>
+                  Redeem
+            </button>
+            <button
+                  style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
+                  onClick={() => handleTabChange('COMPLETE')}>
+                  Complete
             </button>
           </div>
           {selectedTab === 'REWARD' && (
@@ -412,13 +482,14 @@ function Reward() {
                         onChange={(e) => setNewRewardName(e.target.value)}
                       />
                       <label htmlFor="newRewardQuantity">Quantity:</label>
-                      <input
-                        className="add-input"
-                        type="number"
-                        id="newRewardQuantity"
-                        value={newRewardQuantity}
-                        onChange={(e) => setNewRewardQuantity(e.target.value)}
-                      />
+                        <input
+                          className="add-input"
+                          type="number"
+                          id="newRewardQuantity"
+                          value={newRewardQuantity}
+                          onChange={(e) => setNewRewardQuantity(Math.max(0, parseInt(e.target.value, 10)))}
+                          min="0" 
+                        />
                       <button onClick={addReward} className="btn btn-primary">Add</button>
                       <button onClick={() => setShowAddRewardForm(false)} className="btn btn-secondary">Cancel</button>
                     </div>
@@ -442,13 +513,14 @@ function Reward() {
                             onChange={(e) => setNewRewardName(e.target.value)}
                           />
                           <label htmlFor="newRewardQuantity">Quantity:</label>
-                          <input
-                            className="add-input"
-                            type="number"
-                            id="newRewardQuantity"
-                            value={newRewardQuantity}
-                            onChange={(e) => setNewRewardQuantity(e.target.value)}
-                          />
+                            <input
+                              className="add-input"
+                              type="number"
+                              id="newRewardQuantity"
+                              value={newRewardQuantity}
+                              onChange={(e) => setNewRewardQuantity(Math.max(0, parseInt(e.target.value, 10)))}
+                              min="0" 
+                            />
                           <button onClick={updateReward} className="btn btn-primary">
                             Update
                           </button>
@@ -472,19 +544,125 @@ function Reward() {
               </div>
             </>
           )}
-          <div className={`floating-button-container ${showCategoryCard ? 'unfocusable' : ''}`}>
-            {showAddForm ? (
-              <button onClick={() => setShowAddForm(false)} className="floating-add-button">
-                -
-              </button>
-            ) : (
-              <button onClick={() => setShowAddForm(true)} className="floating-add-button">
-                +
-              </button>
+          {selectedTab === 'REWARD' && (
+              <div className={`floating-button-container ${showCategoryCard ? 'unfocusable' : ''}`}>
+                {showAddForm ? (
+                  <button onClick={() => setShowAddForm(false)} className="floating-add-button">
+                    -
+                  </button>
+                ) : (
+                  <button onClick={() => setShowAddForm(true)} className="floating-add-button">
+                    +
+                  </button>
+                )}
+                <div className="indicator-animation">Click me to category!</div>
+              </div>
             )}
-            <div className="indicator-animation">Click me to category!</div>
+
+        {selectedTab === 'REDEEM' && (
+          <div className="claim-container">
+            <h2>Redeem Rewards</h2>
+            <div className="claim-list">
+            {coupons
+              .filter((coupon) => !coupon.isClaimed)
+              .map((coupon) => (
+            <div key={coupon.id} className="claim-item" onClick={() => handleToggle(coupon.id)}>
+                  <div className="claim-details">
+                    <h3>{coupon.couponCode}</h3>
+                    <p>
+                      <span className="label">Email:</span>
+                      {coupon.email}
+                    </p>
+                    <p>
+                      <span className="label">User ID:</span>
+                      {coupon.userId}
+                    </p>
+                    {coupon.selectedItems && coupon.selectedItems.length > 0 && (
+                      <>
+                        <p className="label">Rewards: </p>
+                        {expandedCouponId === coupon.id && (
+                          <table className="reward-table">
+                            <thead>
+                              <tr>
+                                <th>Reward Name</th>
+                                <th>Quantity</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {coupon.selectedItems.map((item, index) => (
+                                <tr key={index}>
+                                  <td>{item.rewardId}</td>
+                                  <td>{item.selectedQuantity}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {expandedCouponId === coupon.id && (
+                    <div className="claim-actions">
+                      <button onClick={() => claimReward(coupon.couponCode)} className="confirm-button">
+                          Claim
+                        </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {selectedTab === 'COMPLETE' && (
+          <div className="claim-container">
+            <h2>Claim Completion</h2>
+            <div className="claim-list">
+            {coupons
+              .filter((coupon) => coupon.isClaimed)
+              .map((coupon) => (
+            <div key={coupon.id} className="reward-claim-item" onClick={() => handleToggle(coupon.id)}>
+                  <div className="reward-claim-details">
+                    <h3 className="red-highlight">{coupon.couponCode}</h3>
+                    <p>
+                      <span className="label">Email:</span>
+                      {coupon.email}
+                    </p>
+                    <p>
+                      <span className="label">User ID:</span>
+                      {coupon.userId}
+                    </p>
+                    {coupon.selectedItems && coupon.selectedItems.length > 0 && (
+                      <>
+                        <p className="label">Rewards: </p>
+                        {expandedCouponId === coupon.id && (
+                          <table className="reward-table">
+                            <thead>
+                              <tr>
+                                <th>Reward Name</th>
+                                <th>Quantity</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {coupon.selectedItems.map((item, index) => (
+                                <tr key={index}>
+                                  <td>{item.rewardId}</td>
+                                  <td>{item.selectedQuantity}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+       </div>  
         <ToastContainer autoClose={1500} hideProgressBar />
       </div>
     </AnimatedPage>

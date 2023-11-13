@@ -857,39 +857,61 @@
 }
 
 .reward-claim-item {
-  background-color: #fff;
+  position: relative;
+  background-color: rgba(88, 129, 87, 0.2); 
+  color: #588157; 
   padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: background-color 0.5s ease, transform 0.5s ease; 
-}
-
-.reward-claim-item {
-  margin: 0;
-}
-
-.reward-claim-item {
-  margin: 5px 0;
   margin-bottom: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.5s ease, transform 0.5s ease, color 0.5s ease; 
 }
 
-.reward-claim-item {
-  background-color: #3f5159;
+.reward-claim-item h3{
+  font-size: 1.7rem;
+  margin: 0;
+  margin-bottom: 10px;
+  font-family: 'Microsoft Sans Serif';
+  font-weight: 'bold';
+  text-align: center;
+}
+
+.reward-claim-item p {
+  color: #063a21;
+  font-size: 1rem;
+  margin: 10px 0;
+  line-height: 1.4;
+  font-family: 'Ebrima';
+}
+
+.reward-claim-item:hover {
+  background-color: rgba(88, 129, 87, 0.2);
   transform: scale(1.03);
-}
-.reward-claim-item {
-  background-color: #588157; 
-  color: white; 
-  padding: 10px; 
-  margin-bottom: 10px; 
-  border-radius: 4px; 
-  cursor: pointer; 
+  color: #588157; 
+  box-shadow: 0px 0px 30px 2px #588157;
+  transition: background-color 0.5s ease, transform 0.5s ease, color 0.5s ease;
 }
 
-.reward-claim-item {
-  background-color: #34673d; 
+.reward-claim-item.selected {
+  background-color: rgba(88, 129, 87, 0.2); 
+}
+
+.reward-claim-item.selected .claim-item-actions {
+  display: block;
+}
+
+.reward-claim-item-actions {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: rgba(88, 129, 87, 0.2); 
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-right: 5px;
+  backdrop-filter: blur(10px); 
 }
 
 .claim-container {
@@ -897,7 +919,12 @@
   padding: 40px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: #f8f8f8;
+  background-color: rgba(88, 129, 87, 0.2);
+}
+
+.claim-container h2 {
+  font-family: 'Microsoft Sans Serif';
+  z-index: 1000;
 }
 
 .add-input {
@@ -1661,27 +1688,22 @@ text p {
 
 .claim-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(auto-fit 1fr));
-  grid-gap: 30px;
+  grid-template-columns: repeat(1, minmax(250px, 1fr));
+  gap: 20px;
 }
 
-@media (min-width: 768px) {
-  .claim-list  {
-    grid-template-columns: repeat(3, minmax(20px, 1fr));
+@media screen and (min-width: 768px) {
+  .claim-list {
+    grid-template-columns: repeat(2, minmax(250px, 2fr));
   }
 }
 
-@media (max-width: 500px) {
-  .claim-list  {
-    grid-template-columns: repeat(2, minmax(20px, 1fr));
+@media (max-width: 768px) {
+  .tasks-list {
+    grid-template-columns: 2fr;
   }
 }
 
-@media (max-width: 480px) {
-  .claim-list  {
-    grid-template-columns: repeat(1, minmax(20px, 1fr));
-  }
-}
 
 .claim-item {
   position: relative;
@@ -1696,16 +1718,17 @@ text p {
 
 .claim-item h3 {
   color: #063a21;
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   margin: 0;
   margin-bottom: 10px;
   font-family: 'Microsoft Sans Serif';
   font-weight: 'bold';
+  text-align: center;
 }
 
 .claim-item p {
   color: #063a21;
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin: 10px 0;
   line-height: 1.4;
   font-family: 'Ebrima';
@@ -1889,6 +1912,16 @@ iframe {
   flex-direction: column;
 }
 
+.claim-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-claim-details {
+  display: flex;
+  flex-direction: column;
+}
+
 .overlay-background {
   position: fixed;
   top: 0;
@@ -2024,4 +2057,21 @@ iframe {
 
 .add-reward-button:active {
   border: 1px solid #2e8644;
+}
+
+.reward-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reward-table th, .reward-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.reward-table th {
+  background-color: #f2f2f2;
 }
