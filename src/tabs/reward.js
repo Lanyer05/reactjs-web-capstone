@@ -319,15 +319,20 @@ function Reward() {
     try {
       const couponRef = couponsCollectionRef.where("couponCode", "==", couponCode).limit(1);
       const snapshot = await couponRef.get();
-
+  
       if (!snapshot.empty) {
         const couponDoc = snapshot.docs[0];
         const couponId = couponDoc.id;
-
+  
+        // Get the current date and time
+        const currentDateTime = new Date();
+        const formattedDateTime = `${currentDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} | ${currentDateTime.toLocaleDateString()}`;
+  
         await couponsCollectionRef.doc(couponId).update({
           isClaimed: true,
+          claimDateTime: formattedDateTime,
         });
-
+  
         toast.success(`Reward claimed successfully!`, {
           autoClose: 1500,
           hideProgressBar: true,
@@ -346,6 +351,7 @@ function Reward() {
       });
     }
   };
+  
 
 
   return (
@@ -631,6 +637,10 @@ function Reward() {
                     <p>
                       <span className="label">User ID:</span>
                       {coupon.userId}
+                    </p>
+                    <p>
+                      <span className="label">Claim Date</span>
+                      {coupon.claimDateTime}
                     </p>
                     {coupon.selectedItems && coupon.selectedItems.length > 0 && (
                       <>
