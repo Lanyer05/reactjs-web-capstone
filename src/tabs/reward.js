@@ -139,7 +139,7 @@ function Reward() {
       const newReward = {
         category: selectedCategory,
         rewardName: newRewardName,
-        points: categoryPoints,
+        points: categoryPoints.toString(),
         quantity: parseInt(newRewardQuantity, 10),
       };
   
