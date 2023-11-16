@@ -103,7 +103,7 @@ function Reward() {
   }, [selectedCategory]);
 
   const handleAddCategory = async () => {
-    if (!category) {
+    if (!category || !categoryPointsInput) {
       toast.error('Please fill in Category.', { autoClose: 1500, hideProgressBar: true });
       return;
     }

@@ -111,7 +111,7 @@ function Task() {
 
 
    const handleAddTask = async () => {
-      if (!taskName || !description || !location || !points) {
+      if (!taskName || !description || !location || !points || !maxUsers || !expirationDateTime || !hours || !minutes) {
       setEmptyFieldWarning(true);
       toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
       return;
