@@ -50,7 +50,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
 
       <div className="sidebar-position" onClick={() => navigate('/reward')}>
         <FontAwesomeIcon icon={faMedal} />
-        <span>REWARD</span>
+        <span>REWARDS</span>
       </div>
 
       <div className="sidebar-position" onClick={() => navigate('/task')}>

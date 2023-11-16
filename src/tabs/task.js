@@ -846,7 +846,7 @@ function Task() {
                       >
                         <span style={{ fontSize: '24px' }}>+</span>
                       </button>
-                      <div className="indicator-animation">Click me to add task!</div>
+                      <div className="indicator-animation">Click to add task!</div>
                     </div>
                   )}
                 </div>
@@ -865,9 +865,11 @@ function Task() {
           onMouseEnter={() => handleRevealCancelButton(accepted.id)}
           onMouseLeave={() => handleRevealCancelButton(null)}
          >
-             {accepted.isStarted ? (
-             <div className="ongoing-indicator"></div>
-             ) : null}
+             <div className="cards-container">
+                <div className="ongoing-indicator-container">
+                  <div className={`ongoing-indicator ${accepted.isStarted ? '' : 'not-started'}`}></div>
+                </div>
+              </div>
           <div className="accepted-details">
             <h3>{accepted.taskName}</h3>
             <div className="divider"></div>

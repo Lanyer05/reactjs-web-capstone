@@ -242,8 +242,27 @@ function Home() {
     }
   };
 
+  const deleteZeroQuantityRewards = async () => {
+    try {
+      const rewardsSnapshot = await firebase.firestore().collection('rewards').get();
+  
+      rewardsSnapshot.forEach(async (doc) => {
+        const quantity = doc.data().quantity;
+  
+        if (quantity === 0) {
+          await firebase.firestore().collection('rewards').doc(doc.id).delete();
+          console.log(`Reward ${doc.id} with quantity 0 has been deleted.`);
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting rewards with quantity 0:', error);
+    }
+  };
+  
+
   useEffect(() => {
     deleteExpiredTasks();
+    deleteZeroQuantityRewards();
   }, []);
 
   return (
@@ -273,8 +292,8 @@ function Home() {
                     data={chartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     background={{ fill: 'white', padding: 5 }}
-                    width={700}
-                    height={450}
+                    width={500}
+                    height={300}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -307,8 +326,8 @@ function Home() {
                 <h2>Task Chart</h2>
                 <div className="chart-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                   <BarChart
-                    width={700}
-                    height={450}
+                    width={500}
+                    height={300}
                     data={taskChartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     background={{ fill: 'white' }}
@@ -342,7 +361,7 @@ function Home() {
             </div>
             {revealedItems['item3'] && (
               <div className="ui-revealed-content">
-                <h1>This section monitors the ongoing tasks</h1>
+                <h2>This section monitors the ongoing tasks</h2>
               </div>
             )}
           </div>
@@ -364,8 +383,8 @@ function Home() {
                 <h2>User Chart</h2>
                 <div className="chart-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                   <BarChart
-                    width={700}
-                    height={450}
+                    width={500}
+                    height={300}
                     data={userChartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     background={{ fill: 'white' }}

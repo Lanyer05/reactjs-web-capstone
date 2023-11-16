@@ -281,18 +281,54 @@ function Reward() {
   const handleDeleteCategory = async (e, category) => {
     e.stopPropagation();
     const confirmDelete = window.confirm(`Are you sure you want to delete the category "${category.category}"?`);
+    
     if (confirmDelete) {
       try {
         const categoryId = category.id;
         const categoryRef = categoriesCollectionRef.doc(categoryId);
+  
+        const rewardsQuerySnapshot = await rewardsCollectionRef
+          .where('category', '==', category.category)
+          .where('points', '==', category.points)
+          .get();
+  
+        const deletePromises = rewardsQuerySnapshot.docs.map(async (rewardDoc) => {
+          const rewardId = rewardDoc.id;
+          const rewardRef = rewardsCollectionRef.doc(rewardId);
+          await rewardRef.delete();
+        });
+  
+        await Promise.all(deletePromises);
+  
         await categoryRef.delete();
-        toast.success('Category deleted successfully!', { autoClose: 1500, hideProgressBar: true });
+        toast.success('Category and associated rewards deleted successfully!', { autoClose: 1500, hideProgressBar: true });
       } catch (error) {
-        console.error("Error deleting category:", error);
-        toast.error('Failed to delete category.', { autoClose: 1500, hideProgressBar: true });
+        console.error("Error deleting category and associated rewards:", error);
+        toast.error('Failed to delete category and associated rewards.', { autoClose: 1500, hideProgressBar: true });
       }
     }
-  }
+  };
+
+
+  const deleteZeroQuantityRewards = async () => {
+    try {
+      const rewardsSnapshot = await firebase.firestore().collection('rewards').get();
+      rewardsSnapshot.forEach(async (doc) => {
+        const quantity = doc.data().quantity;
+        if (quantity === 0) {
+          await firebase.firestore().collection('rewards').doc(doc.id).delete();
+          console.log(`Reward ${doc.id} with quantity 0 has been deleted.`);
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting rewards with quantity 0:', error);
+    }
+  };
+  
+  useEffect(() => {
+    deleteZeroQuantityRewards();
+  }, []);
+  
 
   useEffect(() => {
     const unsubscribeCoupons = couponsCollectionRef.onSnapshot((snapshot) => {
@@ -421,6 +457,7 @@ function Reward() {
                     key={category.id}
                     className="reward-item"
                     onClick={() => handleCategoryCardClick(category)}
+                    title="Click to add rewards" 
                   >
                     <h3>{category.category}</h3>
                     <button onClick={(e) => handleUpdateCategory(e, category)} className="btn btn-primary">Update</button>
@@ -428,7 +465,6 @@ function Reward() {
                   </div>
                 ))}
               </div>
-
               {showCategoryUpdateForm && (
                 <div className="category-update-form">
                   <h3>Update Category</h3>
@@ -561,7 +597,7 @@ function Reward() {
                     +
                   </button>
                 )}
-                <div className="indicator-animation">Click me to category!</div>
+                <div className="indicator-animation">Add Category!</div>
               </div>
             )}
 
@@ -572,49 +608,59 @@ function Reward() {
             {coupons
               .filter((coupon) => !coupon.isClaimed)
               .map((coupon) => (
-            <div key={coupon.id} className="claim-item" onClick={() => handleToggle(coupon.id)}>
-                  <div className="claim-details">
-                    <h3>{coupon.couponCode}</h3>
-                    <p>
-                      <span className="label">Email:</span>
-                      {coupon.email}
-                    </p>
-                    <p>
-                      <span className="label">User ID:</span>
-                      {coupon.userId}
-                    </p>
-                    {coupon.selectedItems && coupon.selectedItems.length > 0 && (
-                      <>
-                        <p className="label">Rewards: </p>
-                        {expandedCouponId === coupon.id && (
-                          <table className="reward-table">
-                            <thead>
-                              <tr>
-                                <th>Reward Name</th>
-                                <th>Quantity</th>
+                <div key={coupon.id} className="claim-item" onClick={() => handleToggle(coupon.id)}>
+                <div className="claim-details">
+                  <h3>{coupon.couponCode}</h3>
+                  <p>
+                    <span className="label">Email:</span>
+                    {coupon.email}
+                  </p>
+                  <p>
+                    <span className="label">User ID:</span>
+                    {coupon.userId}
+                  </p>
+                  {coupon.selectedItems && coupon.selectedItems.length > 0 && (
+                    <>
+                      <p className="label">
+                        Rewards: {' '}
+                        <span
+                          className="expand-indicator"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggle(coupon.id);
+                          }}>
+                          {expandedCouponId === coupon.id ? '▼ Collapse' : '▶▶ Expand'}
+                        </span>
+                      </p>
+                      {expandedCouponId === coupon.id && (
+                        <table className="reward-table">
+                          <thead>
+                            <tr>
+                              <th>Reward Name</th>
+                              <th>Quantity</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {coupon.selectedItems.map((item, index) => (
+                              <tr key={index}>
+                                <td>{item.rewardId}</td>
+                                <td>{item.selectedQuantity}</td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {coupon.selectedItems.map((item, index) => (
-                                <tr key={index}>
-                                  <td>{item.rewardId}</td>
-                                  <td>{item.selectedQuantity}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  {expandedCouponId === coupon.id && (
-                    <div className="claim-actions">
-                      <button onClick={() => claimReward(coupon.couponCode)} className="confirm-button">
-                          Claim
-                        </button>
-                    </div>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </>
                   )}
                 </div>
+                {expandedCouponId === coupon.id && (
+                  <div className="claim-actions">
+                    <button onClick={() => claimReward(coupon.couponCode)} className="confirm-button">
+                      Claim
+                    </button>
+                  </div>
+                )}
+              </div>              
               ))}
             </div>
           </div>
@@ -644,7 +690,17 @@ function Reward() {
                     </p>
                     {coupon.selectedItems && coupon.selectedItems.length > 0 && (
                       <>
-                        <p className="label">Rewards: </p>
+                        <p className="label">
+                        Rewards: {' '}
+                        <span
+                          className="expand-indicator"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggle(coupon.id);
+                          }}>
+                          {expandedCouponId === coupon.id ? ' ▼ Collapse' : ' ▶▶ Expand'}
+                        </span>
+                      </p>
                         {expandedCouponId === coupon.id && (
                           <table className="reward-table">
                             <thead>

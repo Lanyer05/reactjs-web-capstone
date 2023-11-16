@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import firebase from '../config/firebase';
 import { toast } from 'react-toastify';
 import "../css/Home.css";
-import { firestore } from '../config/firebase'; // Import your Firebase Firestore instance here
+import { firestore } from '../config/firebase';
 
 const YOUTUBE_API_KEY = 'AIzaSyBRPSMC0ekzqQUgE8hcG5hKa3Fe9kHWsY0';
 const CHANNEL_ID = 'UC3MVj4c1s5oZuvxlqm_OB7Q';
@@ -31,7 +31,6 @@ function Cctv() {
   useEffect(() => {
     const fetchLiveStreamLinks = async () => {
       try {
-        // Get all live streams from the YouTube channel
         const response = await fetch(
           `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&eventType=live&type=video&part=snippet`
         );
@@ -40,12 +39,10 @@ function Cctv() {
           const data = await response.json();
           const liveStreamItems = data.items;
 
-          // Filter the live streams to only include those with the titles "1", "2", "3", or "4"
           const filteredLiveStreamItems = liveStreamItems.filter((item) => {
             return item.snippet.title === '1' || item.snippet.title === '2' || item.snippet.title === '3' || item.snippet.title === '4';
           });
 
-          // Create a map of live stream links, grouped by slot number
           const slotToLiveStreamLinkMap = new Map();
           for (const item of filteredLiveStreamItems) {
             const videoId = item.id.videoId;
@@ -58,7 +55,7 @@ function Cctv() {
             });
           }
 
-          // Set the live stream links state
+         
           setLiveStreamLinks([...slotToLiveStreamLinkMap.values()]);
         } else {
           console.error('Error fetching live stream data');
@@ -72,7 +69,7 @@ function Cctv() {
   }, []);
 
   const containerStyle = {
-    margin: '10px auto 40px',
+    margin: '10px auto 10px',
     backgroundColor: 'lightgray',
   };
 
@@ -89,7 +86,6 @@ function Cctv() {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    // Fetch tasks from Firestore and update the state
     const fetchTasks = async () => {
       try {
         const taskCollection = firestore.collection('user_acceptedTask');
@@ -130,9 +126,10 @@ function Cctv() {
         <div className="content">
           <h1 className="card-view">CCTV LIVE STREAM</h1>
           <div className="homepage-container">
+          <div className="ui-list">
             {[1, 2, 3, 4].map((index) => (
               <div key={index}>
-                <div className="ui-item" onClick={() => handleItemClick(index)}>
+                <div className="ui-item2" onClick={() => handleItemClick(index)}>
                   <div className="circle">
                     <h1>{index}</h1>
                   </div>
@@ -141,11 +138,21 @@ function Cctv() {
                       {tasks
                         .filter((task) => task.camera === index.toString())
                         .map((task, i) => (
-                          <div key={i} style={{ display: 'inline-block', margin: '10px' }}>
-                            <h2 className='reward-item'>
-                              {task.isStarted && <div className="ongoing-indicator"></div>}
-                              {task.taskName} | {task.acceptedByEmail}
-                            </h2>
+                          <div key={i} style={{ display: 'inline-block'}}>
+                            <div className="task-container">
+                              <h2 className="user-request-item">
+                                <div className="content-container">
+                                <div className="card-container">
+                                  <div className="ongoing-indicator-container">
+                                    <div className={`ongoing-indicator ${task.isStarted ? '' : 'not-started'}`}></div>
+                                  </div>
+                                </div>
+                                  <div className="text-container">
+                                    {task.taskName} | {task.acceptedByEmail}
+                                  </div>
+                                </div>
+                              </h2>
+                            </div>
                           </div>
                         ))
                         .reduce((rows, element, index) => {
@@ -154,7 +161,7 @@ function Cctv() {
                           return rows;
                         }, [])
                         .map((row, rowIndex) => (
-                          <div key={rowIndex} style={{ margin: '10px 0' }}>
+                          <div key={rowIndex}>
                             {row}
                           </div>
                         ))}
@@ -183,6 +190,7 @@ function Cctv() {
           </div>
         </div>
       </div>
+    </div>
     </AnimatedPage>
   );
 }
