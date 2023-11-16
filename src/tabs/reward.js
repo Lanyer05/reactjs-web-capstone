@@ -263,21 +263,36 @@ function Reward() {
     if (!newCategoryName || !newCategoryPoints) {
       toast.error('Please fill in both the new category name and points.', { autoClose: 1500, hideProgressBar: true });
       return;
-    } 
+    }
     try {
       const categoryRef = categoriesCollectionRef.doc(editCategoryId);
+      const categorySnapshot = await categoryRef.get();
+      const currentCategoryData = categorySnapshot.data();
       await categoryRef.update({
         category: newCategoryName,
-        points: newCategoryPoints
+        points: newCategoryPoints,
       });
-      toast.success('Category updated successfully!', { autoClose: 1500, hideProgressBar: true });
+      const updatedCategoryName = newCategoryName;
+      const pointsBatch = firebase.firestore().batch();
+      const rewardsQueryPoints = await rewardsCollectionRef.where('category', '==', currentCategoryData.category).get();
+  
+      rewardsQueryPoints.forEach((rewardDoc) => {
+        const rewardRef = rewardsCollectionRef.doc(rewardDoc.id);
+        pointsBatch.update(rewardRef, {
+          points: newCategoryPoints,
+          category: updatedCategoryName,
+        });
+      });
+      await pointsBatch.commit();
+      toast.success('Category and associated rewards updated!', { autoClose: 1500, hideProgressBar: true });
       setShowUpdateForm(false);
     } catch (error) {
-      console.error("Error updating category:", error);
-      toast.error('Failed to update category.', { autoClose: 1500, hideProgressBar: true });
+      console.error("Error updating category and associated rewards:", error);
+      toast.error('Failed to update category and associated rewards.', { autoClose: 1500, hideProgressBar: true });
     }
-  }
+  };
   
+
   const handleDeleteCategory = async (e, category) => {
     e.stopPropagation();
     const confirmDelete = window.confirm(`Are you sure you want to delete the category "${category.category}"?`);
