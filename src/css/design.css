@@ -88,6 +88,7 @@ body {
     letter-spacing: 0.90px;
     word-wrap: break-word;
     margin-bottom: 10px;
+    display: flex;
   }
   
   .input-label {

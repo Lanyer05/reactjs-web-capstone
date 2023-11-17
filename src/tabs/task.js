@@ -18,7 +18,6 @@ function Task() {
   const [location, setLocation] = useState('');
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
-  const [points, setPoints] = useState('');
   const [tasksList, setTasksList] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const tasksCollectionRef = firestore.collection('tasks');
@@ -46,6 +45,9 @@ function Task() {
   const [updatedMaxUsers, setUpdatedMaxUsers] = useState('');
   const [updatedExpirationDateTime, setUpdateExpirationDateTime] = useState('');
   const [expirationDateTime, setExpirationDateTime] = useState('');
+  const [difficulty, setDifficulty] = useState('easy');
+  const [points, setPoints] = useState(20);
+
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -125,6 +127,7 @@ function Task() {
       location: location,
       timeFrame: { hours: parseInt(hours), minutes: parseInt(minutes) },
       points: points,
+      difficulty: difficulty,
       camera: selectedCamera,
       isAccepted: false,
       maxUsers: parseInt(maxUsers),
@@ -188,7 +191,7 @@ function Task() {
             updates.location = updatedLocation;
           }
           if (updatedPoints) {
-            updates.points = updatedPoints;
+            updates.points = parseInt(updatedPoints);
           }
           if (updatedHours || updatedMinutes) {
             updates.timeFrame = {
@@ -205,20 +208,16 @@ function Task() {
           if (updatedMaxUsers) {
             updates.maxUsers = parseInt(updatedMaxUsers);
           }
-
           if (updatedExpirationDateTime) {
             const expirationTimestamp = moment.tz(updatedExpirationDateTime, 'Asia/Manila').valueOf();
             updates.expirationDateTime = firebase.firestore.Timestamp.fromMillis(expirationTimestamp);
-          }
-      
+          }    
           if (Object.keys(updates).length === 0) {
             toast.error('Please fill in the fields.', { autoClose: 1500, hideProgressBar: true });
             return;
           }
-      
           batch.update(taskRef, updates);
-          await batch.commit();
-      
+          await batch.commit(); 
           const updatedTasksList = tasksList.map((task) => {
             if (task.id === taskId) {
               return {
@@ -459,20 +458,39 @@ function Task() {
       }
     };
 
+    
     const updatePointsFromCompletedTasks = async (taskId) => {
       try {
         const completedTaskDoc = await firestore.collection('completed_task').doc(taskId).get();
         const completedTaskData = completedTaskDoc.data();
         const userId = completedTaskData.acceptedBy;
         const userDoc = await firestore.collection('users').doc(userId).get();
-        
+    
         if (userDoc.exists) {
           const userData = userDoc.data();
           const currentPoints = userData.userpoints || 0;
           const taskPoints = parseInt(completedTaskData.points, 10);
           const remainingTime = completedTaskData.remainingTime;
-          const hasNegativeTime = remainingTime.includes('-');
-          const updatedPoints = hasNegativeTime ? currentPoints + taskPoints - 1 : currentPoints + taskPoints;
+          const [hours, minutes, seconds] = remainingTime.split(':').map(Number);
+          const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          const readableRemainingTime = new Date(totalSeconds * 1000).toISOString().substr(11, 8);
+          let pointsToDeduct = 0;
+    
+          if (totalSeconds <= -3600) {
+            pointsToDeduct = -10;
+          } else if (totalSeconds <= -2400) {
+            pointsToDeduct = -8;
+          } else if (totalSeconds <= -1800) {
+            pointsToDeduct = -6;
+          } else if (totalSeconds <= -1200) {
+            pointsToDeduct = -4;
+          } else if (totalSeconds <= -600) {
+            pointsToDeduct = -2;
+          } else if (totalSeconds <= 0) {
+            pointsToDeduct = -1;
+          }
+          pointsToDeduct = Math.min(pointsToDeduct, currentPoints);
+          const updatedPoints = currentPoints + taskPoints + pointsToDeduct;
           await firestore.collection('users').doc(userId).update({
             userpoints: updatedPoints,
           });
@@ -481,7 +499,7 @@ function Task() {
       } catch (error) {
         console.error('Error updating user points:', error);
       }
-    };
+    };    
 
 
     const deleteExpiredTasks = async () => {
@@ -505,6 +523,56 @@ function Task() {
     useEffect(() => {
       deleteExpiredTasks();
     }, []);
+
+
+    const deleteUserExpiredTasks = async () => {
+      try {
+        const tasksSnapshot = await firebase.firestore().collection('user_acceptedTask').get();
+        const currentTime = new Date();
+    
+        tasksSnapshot.forEach(async (doc) => {
+          const expirationDateTime = doc.data().expirationDateTime.toDate();
+          const isStarted = doc.data().isStarted || false;
+    
+          if (!isStarted && expirationDateTime < currentTime) {
+            await firebase.firestore().collection('user_acceptedTask').doc(doc.id).delete();
+            console.log(`Task ${doc.id} has expired and has been deleted.`);
+          }
+        });
+      } catch (error) {
+        console.error('Error deleting expired tasks:', error);
+      }
+    };
+    
+    useEffect(() => {
+      deleteUserExpiredTasks();
+    }, []);
+
+
+    const handleDifficultyChange = (e) => {
+      const selectedDifficulty = e.target.value;
+      setDifficulty(selectedDifficulty);
+
+      switch (selectedDifficulty) {
+        case 'easy':
+          setPoints(20);
+          break;
+        case 'moderate':
+          setPoints(40);
+          break;
+        case 'hard':
+          setPoints(60);
+          break;
+        case 'difficult':
+          setPoints(80);
+          break;
+        case 'veryDifficult':
+          setPoints(100);
+          break;
+        default:
+          setPoints(20);
+      }
+    };
     
 
   return (
@@ -547,7 +615,8 @@ function Task() {
                   className="form-control"
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ marginRight: '40px' }}>
                 <label htmlFor="maxUsers">Max Users:</label>
                 <input
                   type="number"
@@ -560,6 +629,46 @@ function Task() {
                   min="0"
                 />
               </div>
+              <div style={{ marginLeft: '40px' }}>
+              <label htmlFor="expirationDateTime">Expiration Date and Time:</label>
+              <input
+                type="datetime-local"
+                id="expirationDateTime"
+                value={expirationDateTime}
+                onChange={(e) => setExpirationDateTime(e.target.value)}
+                className="form-control"
+              />
+            </div>
+            </div>
+              <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ marginRight: '40px' }}>
+                    <label htmlFor="hours">Time Frame (Hours):</label>
+                    <input
+                      type="number"
+                      id="hours"
+                      placeholder="00"
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value === '' ? '' : Math.max(0, Math.min(23, parseInt(e.target.value, 10))))}
+                      className="form-control"
+                      min="0"
+                      max="23"
+                    />
+                  </div>
+
+                  <div style={{ marginLeft: '40px' }}>
+                    <label htmlFor="minutes">Time Frame (Minutes):</label>
+                    <input
+                      type="number"
+                      id="minutes"
+                      placeholder="00"
+                      value={minutes}
+                      onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.max(0, Math.min(59, parseInt(e.target.value, 10))))}
+                      className="form-control"
+                      min="0"
+                      max="59"
+                    />
+                  </div>
+                </div>
               <div className="form-group">
                 <label htmlFor="camera">Camera:</label>
                 <select
@@ -575,53 +684,33 @@ function Task() {
                   <option value="4">Camera 4</option>
                 </select>
               </div>
-              <div className="form-group">
-                <label htmlFor="hours">Time Frame (Hours):</label>
-                <input
-                  type="number"
-                  id="hours"
-                  placeholder="00"
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value === '' ? '' : Math.max(0, Math.min(23, parseInt(e.target.value, 10))))}
+               <div className="form-group">
+                <label htmlFor="difficulty">Task Point Allocation by Difficulty</label>
+                <select
+                  id="difficulty"
+                  value={difficulty}
+                  onChange={handleDifficultyChange}
                   className="form-control"
-                  min="0"
-                  max="23"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="minutes">Time Frame (Minutes):</label>
-                <input
-                  type="number"
-                  id="minutes"
-                  placeholder="00"
-                  value={minutes}
-                  onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.max(0, Math.min(59, parseInt(e.target.value, 10))))}
-                  className="form-control"
-                  min="0"
-                  max="59"
-                />
-              </div>
-            <div className="form-group">
-              <label htmlFor="expirationDateTime">Expiration Date and Time:</label>
-              <input
-                type="datetime-local"
-                id="expirationDateTime"
-                value={expirationDateTime}
-                onChange={(e) => setExpirationDateTime(e.target.value)}
-                className="form-control"
-              />
-            </div>
-              <div className="form-group">
+                >
+                  <option value="easy">Easy</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="hard">Hard</option>
+                  <option value="difficult">Difficult</option>
+                  <option value="veryDifficult">Very Difficult</option>
+                </select>
                 <label htmlFor="points">Points:</label>
                 <input
-                  placeholder="Enter Points"
+                  placeholder="Points"
                   type="number"
                   id="points"
                   value={points}
-                  onChange={(e) => {const inputValue = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10));
-                  setPoints(inputValue);}}
+                  onChange={(e) => {
+                    const inputValue = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10));
+                    setPoints(inputValue);
+                  }}
                   className="form-control"
-                  min="0"/>
+                  min="0"
+                />
               </div>
               <button onClick={handleAddTask} className="btn btn-primary">
                 Add Task
