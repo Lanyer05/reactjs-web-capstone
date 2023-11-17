@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMedal, faClipboardList, faVideo, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { faGift, faClipboardList, faVideo, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
   const navigate = useNavigate();
@@ -276,7 +276,7 @@ function Home() {
           <div className="ui-group">
             <div className="ui-item" onClick={() => handleItemClick('item1')}>
               <div className="circle">
-                <FontAwesomeIcon icon={faMedal} size="5x" />
+                <FontAwesomeIcon icon={faGift} size="5x" />
               </div>
               <h2>Explore Rewards Tab</h2>
               <button className="explore-button" onClick={() => navigate('/reward')}>

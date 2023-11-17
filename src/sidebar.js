@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faTimes, faMedal, faClipboardList, faVideo, faUserAlt, faSignOutAlt, faHome, faBullhorn } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faTimes, faGift, faClipboardList, faVideo, faUserAlt, faSignOutAlt, faHome, faBullhorn } from "@fortawesome/free-solid-svg-icons";
 import firebase from "firebase/app";
 import "firebase/auth";
 import LogoImage from "./logowhite.png"; 
@@ -33,7 +33,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
       </div>
 
-      <div className={"sidebar-position"}>
+      <div className="sidebar-position" data-tooltip={currentUser ? currentUser.email : "Guest"}>
         <img
           className="user-avatar"
           src={LogoImage}
@@ -43,32 +43,32 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <span>{currentUser ? getUsernameFromEmail(currentUser.email) : "Guest"}</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/home')}>
-        <FontAwesomeIcon icon={faHome} />
-        <span>HOME</span>
-      </div>
+      <div className="sidebar-position" data-tooltip="Home" onClick={() => navigate('/home')}>
+          <FontAwesomeIcon icon={faHome} />
+          <span>HOME</span>
+        </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/reward')}>
-        <FontAwesomeIcon icon={faMedal} />
+      <div className="sidebar-position" data-tooltip="Rewards" onClick={() => navigate('/reward')}>
+        <FontAwesomeIcon icon={faGift} />
         <span>REWARDS</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/task')}>
+      <div className="sidebar-position" data-tooltip="Task" onClick={() => navigate('/task')}>
         <FontAwesomeIcon icon={faClipboardList} />
         <span>TASK</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/cctv')}>
+      <div className="sidebar-position" data-tooltip="Camera" onClick={() => navigate('/cctv')}>
         <FontAwesomeIcon icon={faVideo} />
         <span>CAMERA</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/user')}>
+      <div className="sidebar-position" data-tooltip="Users" onClick={() => navigate('/user')}>
         <FontAwesomeIcon icon={faUserAlt} />
         <span>USERS</span>
       </div>
 
-      <div className="sidebar-position" onClick={() => navigate('/announcement')}>
+      <div className="sidebar-position" data-tooltip="Announcement" onClick={() => navigate('/announcement')}>
         <FontAwesomeIcon icon={faBullhorn} />
         <span>ANNOUNCEMENT</span>
       </div>

@@ -45,11 +45,45 @@
     padding: 0 12px;
     text-align: left;
     z-index: 1; 
+    position: relative; 
+  }
+
+  .sidebar-position:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    background-color: #3f5159;
+    color: #dad7cd;
+    padding: 8px;
+    border-radius: 5px;
+    margin-left: 10px;
+    top: 50%; 
+    left: 100%; 
+    transform: translateY(-50%); 
+    white-space: nowrap;
+    font-size: 14px;
   }
   
   .sidebar-position:hover {
     background-color: #3f5159;
     border-right: 5px #dad7cd solid;
+  }
+
+  .sidebar-position span {
+    width: 0;
+    height: 0;
+    padding: 0 15px;
+    transition: width 0.3s ease;
+    color: #c9c9c9;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar--open .sidebar-position span {
+    display: block;
+    width: 100%;
+    height: auto;
   }
   
   .sidebar svg {
