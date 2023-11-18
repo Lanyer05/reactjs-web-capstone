@@ -164,7 +164,9 @@ function Home() {
       }
     };
     checkLoggedInUser();
-  }, []); const checkLoggedInUser = async () => {
+  }, []); 
+  
+  const checkLoggedInUser = async () => {
     try {
       const user = firebase.auth().currentUser;
       if (user) {
@@ -192,17 +194,17 @@ function Home() {
   };
   
   useEffect(() => {
-    const requestPermission = () => {
-      console.log('Requesting permission...');
-      Notification.requestPermission().then((permission) => {
+    const requestPermission = async () => {
+      try {
+        const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           console.log('Notification permission granted.');
-        } else if (permission === 'denied') {
-          console.log('Notification permission denied.');
         } else {
-          console.log('Notification permission dismissed.');
+          console.log('Notification permission denied.');
         }
-      });
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+      }
     };
     requestPermission();
   }, []);

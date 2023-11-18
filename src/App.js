@@ -20,6 +20,26 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const messaging = firebase.messaging();
+
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const token = await messaging.getToken();
+          console.log('FCM Token:', token);
+        } else {
+          console.log('Notification permission denied.');
+        }
+      } catch (error) {
+        console.error('Error checking notification permission:', error);
+      }
+    };
+
+    checkNotificationPermission();
+  }, [messaging]);
+
 
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
