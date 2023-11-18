@@ -6,6 +6,7 @@ import Register from './register';
 import Reward from './tabs/reward';
 import Task from './tabs/task';
 import User from './tabs/user';
+import Guest from './tabs/guest';
 import Announcement from './tabs/announcement';
 import Sidebar from './sidebar';
 import PrivateRoute from './PrivateRoute';
@@ -18,7 +19,6 @@ function App() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -54,6 +54,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           {isLoggedIn ? (
             <Route element={<PrivateRoute isLogged={true}/>}>
+              <Route path='/guest' element={<Guest/>}/>
               <Route path="/home" element={<Home />} /> 
               <Route path="/reward" element={<Reward />} /> 
               <Route path="/task" element={<Task />} /> 

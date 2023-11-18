@@ -2402,3 +2402,21 @@ iframe {
     opacity: 1;
   }
 }
+
+.users-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(auto-fit 1fr));
+  grid-gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .users-list {
+    grid-template-columns: repeat(3, minmax(20px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .users-list {
+    grid-template-columns: repeat(1, minmax(20px, 1fr));
+  }
+}

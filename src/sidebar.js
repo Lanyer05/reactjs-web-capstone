@@ -33,7 +33,7 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
       </div>
 
-      <div className="sidebar-position" data-tooltip={currentUser ? currentUser.email : "Guest"}>
+      <div className="sidebar-position" data-tooltip={currentUser ? currentUser.email : "Guest"} onClick={() => navigate('/guest')}>
         <img
           className="user-avatar"
           src={LogoImage}
