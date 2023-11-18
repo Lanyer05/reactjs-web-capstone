@@ -2379,7 +2379,7 @@ iframe {
 }
 
 .accept-list .cards-container:hover::before {
-  content: 'Task Started Signal';
+  content: 'Task Started Indicator';
   position: absolute;
   top: -30px;
   left: 50%;
@@ -2402,4 +2402,3 @@ iframe {
     opacity: 1;
   }
 }
-

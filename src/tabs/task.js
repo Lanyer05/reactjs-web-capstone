@@ -573,7 +573,7 @@ function Task() {
           setPoints(20);
       }
     };
-    
+
 
   return (
     <AnimatedPage>
@@ -720,23 +720,28 @@ function Task() {
               </button>
             </div>
               </div>
+              
               <div className="tabs">
-                <button
-                  style={selectedTab === 'TASK' ? activeTabStyle : tabStyle}
-                  onClick={() => handleTabChange('TASK')}>
-                  Task
-                </button>
-                <button
-                  style={selectedTab === 'ACCEPT' ? activeTabStyle : tabStyle}
-                  onClick={() => handleTabChange('ACCEPT')}>
-                  Accept
-                </button>
-                <button
-                  style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
-                  onClick={() => handleTabChange('COMPLETE')}>
-                  Complete
-                </button>
-              </div>
+              <button
+                style={selectedTab === 'TASK' ? activeTabStyle : tabStyle}
+                onClick={() => handleTabChange('TASK')}
+              >
+                Task
+              </button>
+              <button
+                style={selectedTab === 'ACCEPT' ? activeTabStyle : tabStyle}
+                onClick={() => handleTabChange('ACCEPT')}
+              >
+                Accept
+              </button>
+              <button
+                style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
+                onClick={() => handleTabChange('COMPLETE')}
+              >
+                Complete
+              </button>
+            </div>
+
 
           {selectedTab === 'TASK' && (
     <>
