@@ -479,6 +479,7 @@ function Reward() {
                     <button onClick={(e) => handleDeleteCategory(e, category)} className="btn btn-secondary">Delete</button>
                   </div>
                 ))}
+                {categories.length === 0 && <p>No categories found.</p>}
               </div>
               {showCategoryUpdateForm && (
                 <div className="category-update-form">
@@ -597,6 +598,7 @@ function Reward() {
                       )}
                     </div>
                   ))}
+                  {rewardsList.length === 0 && <p>No Rewards found.</p>}
                 </div>
               </div>
             </>
@@ -677,6 +679,7 @@ function Reward() {
                 )}
               </div>              
               ))}
+              {coupons.length === 0 && <p>No Coupons found.</p>}
             </div>
           </div>
         )}
@@ -739,6 +742,7 @@ function Reward() {
                   </div>
                 </div>
               ))}
+              {coupons.length === 0 && <p>No claimed coupons found.</p>}
             </div>
           </div>
         )}
