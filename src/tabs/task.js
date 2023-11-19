@@ -290,7 +290,6 @@ function Task() {
           }
         });
       });
-    
       return () => {
         unsubscribe();
       };
@@ -467,7 +466,6 @@ function Task() {
         const completedTaskData = completedTaskDoc.data();
         const userId = completedTaskData.acceptedBy;
         const userDoc = await firestore.collection('users').doc(userId).get();
-    
         if (userDoc.exists) {
           const userData = userDoc.data();
           const currentPoints = userData.userpoints || 0;
@@ -477,7 +475,6 @@ function Task() {
           const totalSeconds = hours * 3600 + minutes * 60 + seconds;
           const readableRemainingTime = new Date(totalSeconds * 1000).toISOString().substr(11, 8);
           let pointsToDeduct = 0;
-    
           if (totalSeconds <= -3600) {
             pointsToDeduct = -10;
           } else if (totalSeconds <= -2400) {
