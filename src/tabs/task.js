@@ -322,7 +322,7 @@ function Task() {
   
 
   useEffect(() => {
-    const fetchCompletedTasks = async () => {
+    const fetchCompletedTasks = () => {
       try {
         const completedTasksRef = firestore.collection('completed_task');
         const unsubscribe = completedTasksRef.onSnapshot((snapshot) => {
@@ -336,8 +336,10 @@ function Task() {
             };
           });
           setCompletedTasks(completedTasksData);
+        }, (error) => {
+          console.error('Error fetching completed tasks:', error);
         });
-        return () => { 
+        return () => {
           unsubscribe();
         };
       } catch (error) {
@@ -411,21 +413,24 @@ function Task() {
 
 
   useEffect(() => {
-    const fetchConfirmedTasks = async () => {
-      try {
-        const confirmedTasksSnapshot = await firestore.collection('completed_task').get();
-        const confirmedTasksData = confirmedTasksSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setConfirmedTasks(confirmedTasksData);
-      } catch (error) {
-        console.error('Error fetching confirmed tasks:', error);
-      }
+    const fetchConfirmedTasks = () => {
+      const unsubscribe = firestore.collection('completed_task')
+        .where('isConfirmed', '==', true)
+        .onSnapshot((querySnapshot) => {
+          const confirmedTasksData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setConfirmedTasks(confirmedTasksData);
+        }, (error) => {
+          console.error('Error fetching confirmed tasks:', error);
+        });
+
+      return () => unsubscribe();
     };
+
     fetchConfirmedTasks();
   }, []);
-
 
  const handleConfirmCompletedTask = async (taskId) => {
       try {
