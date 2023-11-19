@@ -112,12 +112,14 @@ function Task() {
     }, [navigate]);
 
 
-   const handleAddTask = async () => {
-      if (!taskName || !description || !location || !points || !maxUsers || !expirationDateTime || !hours || !minutes) {
-      setEmptyFieldWarning(true);
-      toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
-      return;
-      } 
+    const handleAddTask = async () => {
+      if (
+        !taskName || !description || !location || !points || !maxUsers || !expirationDateTime || (parseInt(hours) === 0 && parseInt(minutes) === 0)
+      ) {
+        setEmptyFieldWarning(true);
+        toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
+        return;
+      }
       try {
         const expirationTimestamp = moment.tz(expirationDateTime, 'Asia/Manila').valueOf();
         const newTask = {
