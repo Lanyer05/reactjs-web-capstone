@@ -19,38 +19,40 @@ function Home() {
       const fetchData = async () => {
         try {
           const rewardsSnapshot = await firebase.firestore().collection('rewards').get();
-          const completeRewardReqSnapshot = await firebase.firestore().collection('complete_rewardreq').get();
-          const rewardRequestSnapshot = await firebase.firestore().collection('rewardrequest').get();
-
+          const completeRewardReqSnapshot = await firebase.firestore().collection('coupons').get();
+  
           const rewardsData = rewardsSnapshot.docs.map((doc) => doc.data());
           const completeRewardReqData = completeRewardReqSnapshot.docs.map((doc) => doc.data());
-          const rewardRequestData = rewardRequestSnapshot.docs.map((doc) => doc.data());
-
+  
+          const rewardRequestsCount = completeRewardReqData.filter((item) => item.isClaimed === false).length;
+          const completeRewardRequestsCount = completeRewardReqData.filter((item) => item.isClaimed === true).length;
+  
           const chartData = [
             {
               name: 'Rewards',
               Rewards: rewardsData.length,
             },
             {
-              name: 'Reward Requests',
-              'Reward Requests': rewardRequestData.length,
+              name: 'Coupons',
+              Coupons: rewardRequestsCount,
             },
             {
-              name: 'Complete Reward Requests',
-              'Complete Reward Requests': completeRewardReqData.length,
+              name: 'Claimed Coupons',
+              Coupons : completeRewardRequestsCount,
             },
           ];
-
+  
           setChartData(chartData);
           setDataFetched(true);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
       };
-
+  
       fetchData();
     }
   }, [dataFetched]);
+  
 
   useEffect(() => {
     const fetchTaskData = async () => {
@@ -304,8 +306,8 @@ function Home() {
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Rewards" fill="#8884d8" />
-                    <Bar dataKey="Reward Requests" fill="#82ca9d" />
-                    <Bar dataKey="Complete Reward Requests" fill="#ffc658" />
+                    <Bar dataKey="Coupons" fill="#82ca9d" />
+                    <Bar dataKey="Claimed Coupons" fill="#ffc658" />
                   </BarChart>
                 </div>
               </div>
