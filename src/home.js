@@ -158,40 +158,15 @@ function Home() {
             });
           }
           await batch.commit();
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error while retrieving or updating FCM token:', error);
       }
     };
     checkLoggedInUser();
-  }, []); 
+  }, []);
   
-  const checkLoggedInUser = async () => {
-    try {
-      const user = firebase.auth().currentUser;
-      if (user) {
-        console.log('User is logged in:', user.uid);
-        await user.getIdToken(true);
-        const fcmToken_admin = await firebase.messaging().getToken(); 
-        const userRef = firebase.firestore().collection('users').doc(user.uid);
-        const userDoc = await userRef.get(); 
-        if (userDoc.exists && userDoc.data().fcmToken_admin !== fcmToken_admin) {
-          const batch = firebase.firestore().batch();
-          batch.update(userRef, {
-            fcmToken_admin: fcmToken_admin, 
-            email: user.email,
-            uid: user.uid,
-          });
-          await batch.commit();
-          console.log('FCM token updated:', fcmToken_admin);
-        }
-        
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('Error while retrieving or updating FCM token:', error);
-    }
-  };
   
   useEffect(() => {
     const requestPermission = async () => {
