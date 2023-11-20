@@ -414,7 +414,7 @@ function Reward() {
             {showAddForm && ( 
               <div className="form-container">
                 <div className="form-group">
-                  <label htmlFor="category">Category:</label>
+                  <label htmlFor="category">Category Name:</label>
                   <input
                     placeholder="Enter Category"
                     type="text"
@@ -679,7 +679,7 @@ function Reward() {
                 )}
               </div>              
               ))}
-              {coupons.length === 0 && <p>No Coupons found.</p>}
+              {coupons.filter((coupon) => !coupon.isClaimed).length === 0 && <p>No Coupons found.</p>}
             </div>
           </div>
         )}
@@ -742,7 +742,7 @@ function Reward() {
                   </div>
                 </div>
               ))}
-              {coupons.length === 0 && <p>No claimed coupons found.</p>}
+              {coupons.filter((coupon) => coupon.isClaimed).length === 0 && <p>No claimed coupons found.</p>}
             </div>
           </div>
         )}

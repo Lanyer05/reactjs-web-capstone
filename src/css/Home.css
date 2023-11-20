@@ -446,7 +446,7 @@
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
   animation: fade-in 0.8s ease; 
 }
 
@@ -692,7 +692,7 @@
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
   animation: fade-in 0.8s ease; 
 }
 
@@ -1704,7 +1704,7 @@ text p {
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
   animation: fade-in 0.8s ease; 
 }
 
@@ -2350,7 +2350,7 @@ iframe {
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .ui-list .ui-item:hover::before {
@@ -2365,7 +2365,7 @@ iframe {
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
   animation: fade-in 0.8s ease; 
 }
 
@@ -2390,7 +2390,23 @@ iframe {
   border-radius: 5px;
   display: block;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
+  animation: fade-in 0.8s ease; 
+}
+
+.tasks-list .task-item:hover::before {
+  content: 'Click to update and delete';
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  display: block;
+  z-index: 1;
+  font-size: 14px;
   animation: fade-in 0.8s ease; 
 }
 
