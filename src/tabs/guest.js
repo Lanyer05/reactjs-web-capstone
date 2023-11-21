@@ -53,7 +53,7 @@ const Guest = ({ userEmail }) => {
                     {user.email}
                  </p>
                  <p>
-                    <span className="label">User ID: </span>
+                    <span className="label">Admin ID: </span>
                     {user.uid}
                  </p>
                 </div>
