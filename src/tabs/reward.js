@@ -422,6 +422,7 @@ function Reward() {
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="form-control"
+                    style={{ backgroundColor: 'white' }}
                   />
                 </div>
                 <div className="form-group">
@@ -434,6 +435,7 @@ function Reward() {
                     onChange={(e) => setCategoryPointsInput(Math.max(0, parseInt(e.target.value, 10)))}
                     className="form-control"
                     min="0"
+                    style={{ backgroundColor: 'white' }}
                   />
                 </div>
                 <button onClick={handleAddCategory} className="btn btn-primary">
@@ -491,6 +493,7 @@ function Reward() {
                     id="newCategoryName"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
+                    style={{ backgroundColor: 'white' }}
                   />
                   <label htmlFor="newCategoryPoints"> Points:</label>
                   <input
@@ -499,6 +502,7 @@ function Reward() {
                     id="newCategoryPoints"
                     value={newCategoryPoints}
                     onChange={(e) => setNewCategoryPoints(e.target.value)}
+                    style={{ backgroundColor: 'white' }}
                   />
                   <button onClick={updateCategory} className="btn btn-primary">
                     Update
@@ -538,6 +542,7 @@ function Reward() {
                         id="newRewardName"
                         value={newRewardName}
                         onChange={(e) => setNewRewardName(e.target.value)}
+                        style={{ backgroundColor: 'white' }}
                       />
                       <label htmlFor="newRewardQuantity">Quantity:</label>
                         <input
@@ -546,7 +551,8 @@ function Reward() {
                           id="newRewardQuantity"
                           value={newRewardQuantity}
                           onChange={(e) => setNewRewardQuantity(Math.max(0, parseInt(e.target.value, 10)))}
-                          min="0" 
+                          min="0"
+                          style={{ backgroundColor: 'white' }}
                         />
                       <button onClick={addReward} className="btn btn-primary">Add</button>
                       <button onClick={() => setShowAddRewardForm(false)} className="btn btn-secondary">Cancel</button>
@@ -569,6 +575,7 @@ function Reward() {
                             id="newRewardName"
                             value={newRewardName}
                             onChange={(e) => setNewRewardName(e.target.value)}
+                            style={{ backgroundColor: 'white' }}
                           />
                           <label htmlFor="newRewardQuantity">Quantity:</label>
                             <input
@@ -577,7 +584,8 @@ function Reward() {
                               id="newRewardQuantity"
                               value={newRewardQuantity}
                               onChange={(e) => setNewRewardQuantity(Math.max(0, parseInt(e.target.value, 10)))}
-                              min="0" 
+                              min="0"
+                              style={{ backgroundColor: 'white' }}
                             />
                           <button onClick={updateReward} className="btn btn-primary">
                             Update

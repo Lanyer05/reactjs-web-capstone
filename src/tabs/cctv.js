@@ -46,7 +46,7 @@ function Cctv() {
           const slotToLiveStreamLinkMap = new Map();
           for (const item of filteredLiveStreamItems) {
             const videoId = item.id.videoId;
-            const videoUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&controls=1&showinfo=0&autohide=1&iv_load_policy=3`;
+            const videoUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&controls=1&showinfo=0&autohide=1&iv_load_policy=3&autoplay=1`;
             const title = item.snippet.title;
 
             slotToLiveStreamLinkMap.set(title, {
@@ -175,7 +175,7 @@ function Cctv() {
                         title={`Live Stream Camera ${index}`}
                         width="100%"
                         height="100%"
-                        src={liveStreamLinks.find((link) => link.title === `${index}`).videoUrl}
+                        src={`${liveStreamLinks.find((link) => link.title === `${index}`).videoUrl}&autoplay=1`}
                         frameBorder="0"
                         allowFullScreen
                       ></iframe>

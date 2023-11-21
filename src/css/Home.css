@@ -1082,7 +1082,7 @@
 }
 
 .ui-item:hover {
-  background: linear-gradient(rgba(184, 249, 211, 0.48), rgba(150, 150, 150, 0.25));
+  background: linear-gradient(rgba(184, 249, 211, 0.7), rgba(150, 150, 150, 0.4));
   background-color: var(--bg-color);
   transform: scale(1.03);
   color: var(--text-color-hover);
@@ -2268,7 +2268,7 @@ iframe {
 }
 
 .ui-item2:hover {
-  background: linear-gradient(rgba(184, 249, 211, 0.48), rgba(150, 150, 150, 0.25));
+  background: linear-gradient(rgba(184, 249, 211, 0.7), rgba(150, 150, 150, 0.4));
   background-color: var(--bg-color);
   transform: scale(1.03);
   color: var(--text-color-hover);

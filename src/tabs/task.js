@@ -247,8 +247,8 @@ function Task() {
         setTaskName('');
         setDescription('');
         setLocation('');
-        setHours('');
-        setMinutes('');
+        setHours(0);
+        setMinutes(0);
         setPoints('');
         setMaxUsers('');
         setEmptyFieldWarning(false);
@@ -595,6 +595,7 @@ function Task() {
                   value={taskName}
                   onChange={(e) => setTaskName(e.target.value)}
                   className="form-control"
+                  style={{ backgroundColor: 'white' }}
                 />
               </div>
               <div className="form-group">
@@ -606,6 +607,7 @@ function Task() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="form-control"
+                  style={{ backgroundColor: 'white' }}
                 />
               </div>
               <div className="form-group">
@@ -617,6 +619,7 @@ function Task() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="form-control"
+                  style={{ backgroundColor: 'white' }}
                 />
               </div>
               <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -631,6 +634,7 @@ function Task() {
                   setMaxUsers(inputValue);}}
                   className="form-control"
                   min="0"
+                  style={{ backgroundColor: 'white' }}
                 />
               </div>
               <div style={{ marginLeft: '40px' }}>
@@ -641,6 +645,7 @@ function Task() {
                 value={expirationDateTime}
                 onChange={(e) => setExpirationDateTime(e.target.value)}
                 className="form-control"
+                style={{ backgroundColor: 'white' }}
               />
             </div>
             </div>
@@ -650,12 +655,13 @@ function Task() {
                     <input
                       type="number"
                       id="hours"
-                      placeholder="00"
+                      placeholder='Enter Hours'
                       value={hours}
                       onChange={(e) => setHours(e.target.value === '' ? '' : Math.max(0, Math.min(23, parseInt(e.target.value, 10))))}
                       className="form-control"
                       min="0"
                       max="23"
+                      style={{ backgroundColor: 'white' }}
                     />
                   </div>
 
@@ -664,12 +670,13 @@ function Task() {
                     <input
                       type="number"
                       id="minutes"
-                      placeholder="00"
+                      placeholder='Enter Minutes'
                       value={minutes}
                       onChange={(e) => setMinutes(e.target.value === '' ? '' : Math.max(0, Math.min(59, parseInt(e.target.value, 10))))}
                       className="form-control"
                       min="0"
                       max="59"
+                      style={{ backgroundColor: 'white' }}
                     />
                   </div>
                 </div>
@@ -714,6 +721,7 @@ function Task() {
                   }}
                   className="form-control"
                   min="0"
+                  style={{ backgroundColor: 'white' }}
                 />
               </div>
               <button onClick={handleAddTask} className="btn btn-primary">

@@ -104,18 +104,16 @@ function Home() {
     const fetchUserData = async () => {
       try {
         const usersSnapshot = await firebase.firestore().collection('users').get();
-        const registrationRequestsSnapshot = await firebase.firestore().collection('registration_requests').get();
   
-        const usersData = usersSnapshot.docs
-        .map((doc) => doc.data())
-        .filter((user) => user.email.endsWith('@gmail.com'));
-
-        const registrationRequestsData = registrationRequestsSnapshot.docs.map((doc) => doc.data());
+        const userData = usersSnapshot.docs
+          .map((doc) => doc.data());
   
+        const adminsData = userData.filter((user) => user.email.endsWith('@youradmin.com'));
+        const usersData = userData.filter((user) => user.email.endsWith('@gmail.com'));
         const userChartData = [
           {
-            name: 'Registration Requests',
-            'Registration Requests': registrationRequestsData.length,
+            name: 'Admins',
+            Admins: adminsData.length,
           },
           {
             name: 'Users',
@@ -133,6 +131,7 @@ function Home() {
       fetchUserData();
     }
   }, [dataFetched]);
+  
 
   
   useEffect(() => {
@@ -400,7 +399,7 @@ function Home() {
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Users" fill="#8884d8" />
-                    <Bar dataKey="Registration Requests" fill="#ff6f61" />
+                    <Bar dataKey="Admins" fill="#ff6f61" />
                   </BarChart>
                 </div>
               </div>

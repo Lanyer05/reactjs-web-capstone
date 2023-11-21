@@ -127,7 +127,33 @@ const AnnouncementForm = () => {
         <div className="content">
           <h1 className="card-view">WELCOME TO ANNOUNCEMENTS</h1>
           <div className="annoucement-container">
-            <h2>Announcement List</h2>
+            <div className="centered-container">
+            <h2>{currentAnnouncement ? 'Update Announcement' : 'Add Announcement'}</h2>
+            <div>
+              <input
+                className="form-control"
+                type="text"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <textarea
+                className="input-field"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <button
+              className="login-button"
+              onClick={handleAddAnnouncement}
+              style={{ marginBottom: '15px' }}
+            >
+              {currentAnnouncement ? 'Update' : 'Add'}
+            </button>
+          </div>
             <div className="announcement-list">
               {announcements.map((announcement) => (
                 <div key={announcement.id} className="announcement-item">
@@ -148,29 +174,6 @@ const AnnouncementForm = () => {
                 </div>
               ))}
             </div>
-          </div>
-          <div className="centered-container">
-            <h2>{currentAnnouncement ? 'Update Announcement' : 'Add Announcement'}</h2>
-            <div>
-              <input
-                className="form-control"
-                type="text"
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-            <div>
-              <textarea
-                className="input-field"
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-            <button className="login-button" onClick={handleAddAnnouncement}>
-              {currentAnnouncement ? 'Update' : 'Add'}
-            </button>
           </div>
         </div>
         <ToastContainer autoClose={1500} hideProgressBar />
