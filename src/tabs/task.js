@@ -985,6 +985,11 @@ function Task() {
             </p>
             <div className="divider"></div>
             <p>
+              <span className="label">Location:</span>
+              {accepted.location}
+            </p>
+            <div className="divider"></div>
+            <p>
               <span className="label">Time Frame:</span>
               {accepted.timeFrame
                 ? `${accepted.timeFrame.hours} hours ${accepted.timeFrame.minutes} minutes`: 'N/A'}
