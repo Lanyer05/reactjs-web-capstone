@@ -952,7 +952,7 @@ function Task() {
                       >
                         <span style={{ fontSize: '24px' }}>+</span>
                       </button>
-                      <div className="indicator-animation">Add task!</div>
+                      <div className="indicator-animation">Add Task</div>
                     </div>
                   )}
                 </div>

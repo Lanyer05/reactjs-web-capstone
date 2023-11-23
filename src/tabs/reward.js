@@ -685,7 +685,7 @@ function Reward() {
                 +
               </button>
             )}
-            <div className="indicator-animation">Add Rewards!</div>
+            <div className="indicator-animation">Add Rewards</div>
           </div>
         )}
 
