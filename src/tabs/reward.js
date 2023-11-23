@@ -16,7 +16,7 @@ function Reward() {
   const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const [category, setCategory] = useState("");  
   const [categories, setCategories] = useState([]); 
-  const [selectedCategory, setSelectedCategory] = useState(null); 
+  const [selectedCategory, setSelectedCategory] = useState(''); 
   const [rewardsList, setRewardsList] = useState([]);
   const formContainerRef = useRef(null);
   const [updatingRewardId, setUpdatingRewardId] = useState(null);
@@ -128,9 +128,9 @@ function Reward() {
   };
 
   const addReward = async () => {
-    if (!newRewardName || !newRewardQuantity || !selectedCategory) {
+    if (!newRewardName || isNaN(newRewardQuantity) || !selectedCategory) {
       setEmptyFieldWarning(true);
-      toast.error('Please fill in all required fields.', { autoClose: 1500, hideProgressBar: true });
+      toast.error('Please fill in all required fields with valid values.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
     try {
@@ -176,16 +176,16 @@ function Reward() {
   }
 
   const tabStyle = {
-    fontSize: "18px",
+    fontSize: "16px",
     fontWeight: "bold",
-    padding: "10px 40px",
+    padding: "10px 20px",
     margin: "0 1px",
     marginBottom: "5px",
     color: "white",
     backgroundColor: "#659E64",
     border: "none",
     cursor: "pointer",
-    width: "165px",
+    width: "170px",
     height: "40px",
   };
   const activeTabStyle = {
@@ -200,24 +200,25 @@ function Reward() {
   }
 
   const updateReward = async () => {
-    if (!newRewardName || !newRewardQuantity || !selectedCategory) {
+    const parsedQuantity = parseInt(newRewardQuantity, 10);
+    if (!newRewardName || isNaN(parsedQuantity) || parsedQuantity < 0 || !selectedCategory) {
       setEmptyFieldWarning(true);
-      toast.error('Please fill in all required fields.', { autoClose: 1500, hideProgressBar: true });
+      toast.error('Please fill in all required fields with valid values.', { autoClose: 1500, hideProgressBar: true });
       return;
     }
+  
     try {
       const updatedReward = {
         category: selectedCategory,
         rewardName: newRewardName,
-        points: newRewardPoints,
-        quantity: newRewardQuantity,
+        points: categoryPoints, 
+        quantity: parsedQuantity,
       };
   
       const rewardRef = rewardsCollectionRef.doc(editRewardId);
-      await rewardRef.update(updatedReward); 
+      await rewardRef.update(updatedReward);
       toast.success('Reward updated successfully!', { autoClose: 1500, hideProgressBar: true });
       setNewRewardName("");
-      setNewRewardPoints("");
       setNewRewardQuantity("");
       setShowUpdateForm(false);
     } catch (error) {
@@ -233,7 +234,7 @@ function Reward() {
     setEditRewardId(reward.id);
     setNewRewardName(reward.rewardName);
     setNewRewardPoints(reward.points);
-    setNewRewardQuantity(reward.quantity);
+    setNewRewardQuantity(reward.quantity.toString());
   };
   
   const handleDeleteReward = async (e, reward) => {
@@ -410,43 +411,56 @@ function Reward() {
       <div className="home-container">
         <div className="content">
           <h1 className="card-view">REWARD PAGE</h1>
-          <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
-            {showAddForm && ( 
-              <div className="form-container">
-                <div className="form-group">
-                  <label htmlFor="category">Category Name:</label>
-                  <input
-                    placeholder="Enter Category"
-                    type="text"
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="form-control"
-                    style={{ backgroundColor: 'white' }}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="categoryPoints">Category Points:</label>
-                  <input
-                    placeholder="Enter Category Points"
-                    type="number"
-                    id="categoryPoints"
-                    value={categoryPointsInput}
-                    onChange={(e) => setCategoryPointsInput(Math.max(0, parseInt(e.target.value, 10)))}
-                    className="form-control"
-                    min="0"
-                    style={{ backgroundColor: 'white' }}
-                  />
-                </div>
-                <button onClick={handleAddCategory} className="btn btn-primary">
-                  Add Category
-                </button>
-                <button onClick={() => setShowAddForm(false)} className="btn btn-secondary">
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
+          <div className={`floating-form ${showAddRewardForm ? 'visible' : ''}`} ref={formContainerRef}>
+  {showAddRewardForm && (
+    <div className="reward-modal">
+      <h3 style={{ textAlign: 'center' }}>Add Reward</h3>
+      <label htmlFor="newRewardCategory">Category:</label>
+      <select style={{marginBottom:'10px'}}
+        id="newRewardCategory"
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        className="add-input"
+      >
+        <option value="" disabled>
+          Select a category
+        </option>
+        {categories.map((cat) => (
+          <option key={cat.category} value={cat.category}>
+            {cat.category}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="newRewardName">Reward Name:</label>
+      <input
+        placeholder="Enter Reward"
+        className="add-input"
+        type="text"
+        id="newRewardName"
+        value={newRewardName}
+        onChange={(e) => setNewRewardName(e.target.value)}
+        style={{ backgroundColor: 'white' }}
+      />
+      <label htmlFor="newRewardQuantity">Quantity:</label>
+      <input
+        placeholder="Enter Quantity"
+        className="add-input"
+        type="number"
+        id="newRewardQuantity"
+        value={isNaN(newRewardQuantity) ? '' : newRewardQuantity.toString()}
+        onChange={(e) => setNewRewardQuantity(Math.max(0, parseInt(e.target.value, 10)))}
+        min="0"
+        style={{ backgroundColor: 'white' }}
+      />
+      <button onClick={addReward} className="btn btn-primary">
+        Add Reward
+      </button>
+      <button onClick={() => setShowAddRewardForm(false)} className="btn btn-secondary">
+        Cancel
+      </button>
+    </div>
+  )}
+</div>
           <div className="tabs">
             <button
               style={selectedTab === "REWARD" ? activeTabStyle : tabStyle}
@@ -457,7 +471,7 @@ function Reward() {
             <button
                   style={selectedTab === 'REDEEM' ? activeTabStyle : tabStyle}
                   onClick={() => handleTabChange('REDEEM')}>
-                  Redeem
+                  Coupon Code
             </button>
             <button
                   style={selectedTab === 'COMPLETE' ? activeTabStyle : tabStyle}
@@ -474,7 +488,7 @@ function Reward() {
                     key={category.id}
                     className="reward-item"
                     onClick={() => handleCategoryCardClick(category)}
-                    title="Click to add rewards" 
+                    title="Click to add rewards"
                   >
                     <h3>{category.category}</h3>
                     <button onClick={(e) => handleUpdateCategory(e, category)} className="btn btn-primary">Update</button>
@@ -482,11 +496,62 @@ function Reward() {
                   </div>
                 ))}
                 {categories.length === 0 && <p>No categories found.</p>}
+                  
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <button
+                    onClick={setShowAddForm}
+                    className="btn btn-primary"
+                    style={{ fontSize: '2em', padding: '10px 20px' ,borderRadius:'15px'}}
+                  >
+                    +
+                  </button>
+                  <span>Add Reward Category</span>
+                </div>
+                
+                <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
+                  {showAddForm && ( 
+                    <div className="form-container">
+                      <div className="form-group">
+                      <h3 style={{textAlign:'center'}}>Add Reward Category</h3>
+                        <label htmlFor="category">Category Name:</label>
+                        <input
+                          placeholder="Enter Category"
+                          type="text"
+                          id="category"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="form-control"
+                          style={{ backgroundColor: 'white' }}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="categoryPoints">Category Points:</label>
+                        <input
+                          placeholder="Enter Category Points"
+                          type="number"
+                          id="categoryPoints"
+                          value={categoryPointsInput}
+                          onChange={(e) => setCategoryPointsInput(Math.max(0, parseInt(e.target.value, 10)))}
+                          className="form-control"
+                          min="0"
+                          style={{ backgroundColor: 'white' }}
+                        />
+                      </div>
+                      <button onClick={handleAddCategory} className="btn btn-primary">
+                        Add Category
+                      </button>
+                      <button onClick={() => setShowAddForm(false)} className="btn btn-secondary">
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
+
               {showCategoryUpdateForm && (
                 <div className="category-update-form">
-                  <h3>Update Category</h3>
-                  <label htmlFor="newCategoryName">New Category Name:</label>
+                  <h3>Update Reward Category</h3>
+                  <label htmlFor="newCategoryName">New Reward Category Name:</label>
                   <input
                     className="add-input"
                     type="text"
@@ -534,7 +599,7 @@ function Reward() {
                   </button>
                   {showAddRewardForm && (
                     <div className="reward-modal">
-                      <h3>Add New Reward</h3>
+                      <h3>Add Reward</h3>
                       <label htmlFor="newRewardName">Reward Name:</label>
                       <input
                         className="add-input"
@@ -612,19 +677,19 @@ function Reward() {
             </>
           )}
           {selectedTab === 'REWARD' && (
-              <div className={`floating-button-container ${showCategoryCard ? 'unfocusable' : ''}`}>
-                {showAddForm ? (
-                  <button onClick={() => setShowAddForm(false)} className="floating-add-button">
-                    -
-                  </button>
-                ) : (
-                  <button onClick={() => setShowAddForm(true)} className="floating-add-button">
-                    +
-                  </button>
-                )}
-                <div className="indicator-animation">Add Category!</div>
-              </div>
+          <div className={`floating-button-container ${showCategoryCard ? 'unfocusable' : ''}`}>
+            {showAddRewardForm ? (
+              <button onClick={() => setShowAddRewardForm(false)} className="floating-add-button" style={{ fontSize: '3em'}}>
+                -
+              </button>
+            ) : (
+              <button onClick={() => setShowAddRewardForm(true)} className="floating-add-button" style={{ fontSize: '2em'}}>
+                +
+              </button>
             )}
+            <div className="indicator-animation">Add Rewards!</div>
+          </div>
+        )}
 
         {selectedTab === 'REDEEM' && (
           <div className="claim-container">

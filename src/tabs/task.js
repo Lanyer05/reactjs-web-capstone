@@ -570,7 +570,7 @@ function Task() {
         case 'difficult':
           setPoints(80);
           break;
-        case 'veryDifficult':
+        case 'VeryDifficult':
           setPoints(100);
           break;
         default:

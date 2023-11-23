@@ -2436,3 +2436,10 @@ iframe {
     grid-template-columns: repeat(1, minmax(20px, 1fr));
   }
 }
+
+.reward-modal h2 {
+  font-family: 'Microsoft Sans Serif';
+  font-weight: 'bold';
+  color: #063a21;
+  text-align: center;
+}
