@@ -282,7 +282,7 @@ function Home() {
               <div className="circle">
                 <FontAwesomeIcon icon={faGift} size="5x" />
               </div>
-              <h2>Explore Rewards Tab</h2>
+              <h2>REWARDS TAB</h2>
               <button className="explore-button" onClick={() => navigate('/reward')}>
                 Explore
               </button>
@@ -320,7 +320,7 @@ function Home() {
               <div className="circle">
                 <FontAwesomeIcon icon={faClipboardList} size="5x" />
               </div>
-              <h2>Explore Task Tab</h2>
+              <h2>TASK TAB</h2>
               <button className="explore-button" onClick={() => navigate('/task')}>
                 Explore
               </button>
@@ -358,7 +358,7 @@ function Home() {
               <div className="circle">
                 <FontAwesomeIcon icon={faVideo} size="4x" />
               </div>
-              <h2>Explore CCTV Tab</h2>
+              <h2>CCTV TAB</h2>
               <button className="explore-button" onClick={() => navigate('/cctv')}>
                 Explore
               </button>
@@ -377,7 +377,7 @@ function Home() {
               <div className="circle">
                 <FontAwesomeIcon icon={faUserAlt} size="5x" />
               </div>
-              <h2>Explore User Tab</h2>
+              <h2>USERS TAB</h2>
               <button className="explore-button" onClick={() => navigate('/user')}>
                 Explore
               </button>

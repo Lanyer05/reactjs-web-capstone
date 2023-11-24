@@ -136,6 +136,7 @@ const AnnouncementForm = () => {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                style={{ backgroundColor: 'white' }}
               />
             </div>
             <div>

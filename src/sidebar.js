@@ -33,15 +33,15 @@ function Sidebar({ isOpen, handleTrigger, navigate, handleLogout }) {
         <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
       </div>
 
-      <div className="sidebar-position" data-tooltip={currentUser ? currentUser.email : "Guest"} onClick={() => navigate('/guest')}>
-        <img
-          className="user-avatar"
-          src={LogoImage}
-          alt="User Avatar"
-          style={{ width: "30px", height: "30px" }}
-        />
-        <span>{currentUser ? getUsernameFromEmail(currentUser.email) : "Guest"}</span>
-      </div>
+      <div className="sidebar-position" data-tooltip={currentUser ? currentUser.email : "Guest"} onClick={() => navigate('/guest')} style={{ marginBottom: "50px" }}>
+  <img
+    className="user-avatar"
+    src={LogoImage}
+    alt="User Avatar"
+    style={{ width: "30px", height: "30px" }}
+  />
+  <span>{currentUser ? getUsernameFromEmail(currentUser.email) : "Guest"}</span>
+</div>
 
       <div className="sidebar-position" data-tooltip="Home" onClick={() => navigate('/home')}>
           <FontAwesomeIcon icon={faHome} />

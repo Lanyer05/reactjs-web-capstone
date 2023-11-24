@@ -696,7 +696,7 @@ function Task() {
                 </select>
               </div>
                <div className="form-group">
-                <label htmlFor="difficulty">Task Point Allocation by Difficulty</label>
+                <label htmlFor="difficulty">Task Difficulty:</label>
                 <select
                   id="difficulty"
                   value={difficulty}
@@ -707,7 +707,7 @@ function Task() {
                   <option value="moderate">Moderate</option>
                   <option value="hard">Hard</option>
                   <option value="difficult">Difficult</option>
-                  <option value="veryDifficult">Very Difficult</option>
+                  <option value="VeryDifficult">Very Difficult</option>
                 </select>
                 <label htmlFor="points">Points:</label>
                 <input

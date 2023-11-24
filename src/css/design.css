@@ -42,8 +42,17 @@ body {
   .welcome-image {
     width: 100%;
     height: auto;
-    max-width: 450px;
+    max-width: 100%;
+    max-height: 80vh; /* Set max height relative to viewport height */
     margin-top: 10px;
+    transition: max-width 0.5s ease, max-height 0.5s ease; /* Add transition for smooth resizing */
+  }
+  
+  @media screen and (min-width: 400px) {
+    .welcome-image {
+      max-width: 400px;
+      max-height: none; /* Reset max height for larger screens */
+    }
   }
   
   .welcome-message {
@@ -337,10 +346,7 @@ body {
   }
 
   @media (max-width: 480px) {
-    .welcome-image {
-      max-width: 100%; 
-    }
-  
+    
     .input-field {
       width: 100%;
     }

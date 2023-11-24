@@ -483,7 +483,7 @@ function Reward() {
           </div>
           {selectedTab === 'REWARD' && (
             <div className="rewards-container">
-              <h2>Reward Category</h2>
+              <h2>Category & Rewards</h2>
               <div className="rewards-list">
                 {categories.map((category) => (
                   <div
@@ -503,7 +503,7 @@ function Reward() {
                       <span style={{ fontSize: '4em', cursor: 'pointer', fontWeight: 'bold' }}>
                         +
                       </span>
-                    <h3>Add Category</h3>
+                    <h3>ADD CATEGORY</h3>
                   </div>
                 </div> 
                 <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
@@ -717,7 +717,7 @@ function Reward() {
                             e.stopPropagation();
                             handleToggle(coupon.id);
                           }}>
-                          {expandedCouponId === coupon.id ? '▶ Collapse ◀' : '▼ Expand ▼'}
+                          {expandedCouponId === coupon.id ? '▲ Collapse ▲' : '▼ Expand ▼'}
                         </span>
                       </p>
                       {expandedCouponId === coupon.id && (
@@ -757,7 +757,7 @@ function Reward() {
 
         {selectedTab === 'COMPLETE' && (
           <div className="claim-container">
-            <h2>Claim Completion</h2>
+            <h2>Complete Redemption</h2>
             <div className="claim-list">
             {coupons
               .filter((coupon) => coupon.isClaimed)
@@ -787,7 +787,7 @@ function Reward() {
                             e.stopPropagation();
                             handleToggle(coupon.id);
                           }}>
-                          {expandedCouponId === coupon.id ? '▶ Collapse ◀' : '▼ Expand ▼'}
+                          {expandedCouponId === coupon.id ? '▲ Collapse ▲' : '▼ Expand ▼'}
                         </span>
                       </p>
                         {expandedCouponId === coupon.id && (
