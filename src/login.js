@@ -106,7 +106,7 @@ const Login = () => {
   return (
     <AnimatedPage>
       <div className="login-container">
-        <h1 className="welcome-text">WELCOME</h1>
+        <h1 className="welcome-text">LOGIN</h1>
         <img className="welcome-image" src={Logo} alt="Welcome" />
         <div className="welcome-message">Go Green, Go Clean!</div>
 
