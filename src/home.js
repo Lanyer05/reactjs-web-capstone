@@ -5,6 +5,10 @@ import AnimatedPage from './AnimatedPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faClipboardList, faVideo, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import Logo from "./imgae-removebg.png";
+import Logo1 from "./image2.png"
+import Logo2 from "./Environment-bro.png"
+import Logos from './5333978.jpg';
 
 function Home() {
   const navigate = useNavigate();
@@ -272,9 +276,13 @@ function Home() {
   return (
     <AnimatedPage>
       <div className="home-container">
-  <div className="content">
-    <h1 className="card-view">WELCOME TO HOMEPAGE</h1>
-    <div className="homepage-container">
+      <div className="content">
+      <img src={Logos} alt="Welcome"style={{position: 'fixed',bottom: 0,left: 0,width: '100%',height: 'auto',objectFit: 'cover',zIndex: -1,opacity: 0.4,}}/>
+      <img src={Logo}alt="Welcome"style={{position: 'fixed',bottom: 0,left: 50,width: '30%',height: 'auto',objectFit: 'cover',zIndex: -1,}}/>
+      <img src={Logo1}alt="Welcome"style={{position: 'fixed',bottom:-50,right: 0,width: '30%',height: 'auto',objectFit: 'cover',zIndex: -1,}}/>
+      <img src={Logo2}alt="Welcome"style={{position: 'fixed',bottom: -150,left: '50%',transform: 'translateX(-50%)',width: '35%',height: 'auto',objectFit: 'cover',zIndex: -1,}}/>
+    <h1 className="card-view">WELCOME TO ECOTASKREWARD</h1>
+     <div className="homepage-container">
       <div className="ui-list">
         {chartData && (
           <div className="ui-group">

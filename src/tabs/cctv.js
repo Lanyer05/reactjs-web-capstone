@@ -5,6 +5,7 @@ import firebase from '../config/firebase';
 import { toast } from 'react-toastify';
 import "../css/Home.css";
 import { firestore } from '../config/firebase';
+import Logos from '../5333978.jpg';
 
 const YOUTUBE_API_KEY = 'AIzaSyBRPSMC0ekzqQUgE8hcG5hKa3Fe9kHWsY0';
 const CHANNEL_ID = 'UC3MVj4c1s5oZuvxlqm_OB7Q';
@@ -88,7 +89,7 @@ function Cctv() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const taskCollection = firestore.collection('user_acceptedTask');
+        const taskCollection = firestore.collection('tasks');
         const querySnapshot = await taskCollection.get();
         const tasksData = [];
         querySnapshot.forEach((doc) => {
@@ -105,7 +106,7 @@ function Cctv() {
   }, []);
 
   useEffect(() => {
-    const taskCollection = firestore.collection('user_acceptedTask');
+    const taskCollection = firestore.collection('tasks');
     const unsubscribe = taskCollection.onSnapshot((querySnapshot) => {
       const tasksData = [];
       querySnapshot.forEach((doc) => {
@@ -120,10 +121,48 @@ function Cctv() {
     };
   }, []);
 
+  const [acceptedTasks, setAcceptedTasks] = useState([]);
+
+    useEffect(() => {
+      const fetchOtherTasks = async () => {
+        try {
+          const acceptedTaskCollection = firestore.collection('user_acceptedTask');
+          const querySnapshot = await acceptedTaskCollection.get();
+          const acceptedTasksData = [];
+          querySnapshot.forEach((doc) => {
+            const acceptedtask = doc.data();
+            acceptedTasksData.push(acceptedtask);
+          });
+          setAcceptedTasks(acceptedTasksData);
+        } catch (error) {
+          console.error('Error fetching other tasks:', error);
+        }
+      };
+
+      fetchOtherTasks();
+    }, []);
+
+    useEffect(() => {
+      const acceptedTaskCollection = firestore.collection('user_acceptedTask');
+      const unsubscribe = acceptedTaskCollection.onSnapshot((querySnapshot) => {
+        const acceptedTasksData = [];
+        querySnapshot.forEach((doc) => {
+          const acceptedtask = doc.data();
+          acceptedTasksData.push(acceptedtask);
+        });
+        setAcceptedTasks(acceptedTasksData);
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }, []);
+
   return (
     <AnimatedPage>
       <div className="home-container">
         <div className="content">
+        <img src={Logos} alt="Welcome"style={{position: 'fixed',bottom: 0,left: 0,width: '100%',height: 'auto',objectFit: 'cover',zIndex: -1,opacity: 0.4,}}/>
           <h1 className="card-view">CCTV LIVE STREAM</h1>
           <div className="homepage-container">
           <div className="ui-list">
@@ -135,39 +174,66 @@ function Cctv() {
                   </div>
                   {revealedItems[index] && (
                     <div>
-                      {tasks
-                        .filter((task) => task.camera === index.toString())
-                        .map((task, i) => (
-                          <div key={i} style={{ display: 'inline-block'}}>
-                            <div className="task-container">
-                              <h2 className="user-request-item">
-                                <div className="content-container">
-                                <div className="card-container">
-                                  <div className="ongoing-indicator-container">
-                                    <div className={`ongoing-indicator ${task.isStarted ? '' : 'not-started'}`}></div>
+                     {tasks
+                    .filter((task) => task.camera === index.toString())
+                    .map((task, i) => (
+                      <div key={i} style={{ display: 'inline-block' }}>
+                        <div className="task-container">
+                          <h2 className="user-request-item" style={{ marginLeft: '8px' }}>
+                            <div className="content-container">
+                              <div className="text-container" style={{ flexDirection: 'column' }}>
+                              <table className="task-info-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Task</th>
+                                      <th>Points</th>
+                                      <th>Location</th>
+                                      <th>Users</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td>{task.taskName}</td>
+                                      <td>{task.points}</td>
+                                      <td>{task.location}</td>
+                                      <td>{task.acceptedByUsers.length}/{task.maxUsers || 'Not specified'}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <hr style={{ width: '100%', margin: '5px 0' }} />
+                                {acceptedTasks
+                                .filter((acceptedTask) => acceptedTask.camera === index.toString() && acceptedTask.taskId === task.taskId)
+                                .map((acceptedTask, j) => (
+                                  <div key={j} style={{ display: 'flex' }}>
+                                    <div className="card-container">
+                                      <div className="ongoing-indicator-container">
+                                        <div className={`ongoing-indicator ${acceptedTask.isStarted ? '' : 'not-started'}`}></div>
+                                      </div>
+                                    </div>
+                                    <div className="text-container">
+                                      {acceptedTask.acceptedByEmail}
+                                    </div>
                                   </div>
-                                </div>
-                                  <div className="text-container">
-                                    {task.taskName} | {task.acceptedByEmail}
-                                  </div>
-                                </div>
-                              </h2>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))
-                        .reduce((rows, element, index) => {
-                          if (index % 5 === 0) rows.push([]);
-                          rows[rows.length - 1].push(element);
-                          return rows;
-                        }, [])
-                        .map((row, rowIndex) => (
-                          <div key={rowIndex}>
-                            {row}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
+                          </h2>
+                        </div>
+                      </div>
+                    ))
+                    .reduce((rows, element, i) => {
+                      if (i % 5 === 0) rows.push([]);
+                      rows[rows.length - 1].push(element);
+                      return rows;
+                    }, [])
+                    .map((row, rowIndex) => (
+                      <div key={rowIndex}>
+                        {row}
+                      </div>
+                    ))}
+                      </div>
+                    )}
+                  </div>
                 <div className="video-wrapper" style={containerStyle}>
                   {liveStreamLinks.find((link) => link.title === `${index}`) ? (
                     <div>

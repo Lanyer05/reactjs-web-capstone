@@ -8,6 +8,7 @@ import { firestore } from '../config/firebase';
 import AnimatedPage from '../AnimatedPage';
 import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment-timezone';
+import Logos from '../5333978.jpg';
 
 function Task() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -261,8 +262,8 @@ function Task() {
         margin: '0 1px',
         marginBottom: '5px',
         color: 'white',
-        backgroundColor: '#659E64',
-        border: 'none',
+        backgroundColor: '#00A871',
+        border: '1px solid rgb(7, 110, 50)',
         cursor: 'pointer',
         width: '170px',
         height: '40px',
@@ -584,6 +585,7 @@ function Task() {
       <div className="home-container">
         <div className="content">
           <h1 className="card-view">TASK PAGE</h1>
+          <img src={Logos} alt="Welcome"style={{position: 'fixed',bottom: 0,left: 0,width: '100%',height: 'auto',objectFit: 'cover',zIndex: -1,opacity: 0.4,}}/>
           <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
             <div className="form-container">
               <div className="form-group">
@@ -760,7 +762,7 @@ function Task() {
     <div className="tasks-container">
       <h2>Tasks List</h2>
       <div className="tasks-list">
-        {tasksList.map((task, index) => (
+        {tasksList.slice().reverse().map((task, index) => (
           <div
             key={index}
             className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
@@ -963,7 +965,7 @@ function Task() {
         <div className="accept-container">
         <h2>Accept List</h2>
         <div className="accept-list">
-        {userAcceptedTasks.map((accepted) => (
+        {userAcceptedTasks.slice().reverse().map((accepted) => (
         <div
           key={accepted.id}
           className={`accept-item ${selectedAcceptedItemId === accepted.id ? 'selected' : ''}`}
@@ -1063,8 +1065,7 @@ function Task() {
       {selectedSubTab === 'COMPLETED' && (
         <>
           {completedTasks
-            .filter((completed) => !completed.isConfirmed)
-            .map((completed) => (
+            .filter((completed) => !completed.isConfirmed).slice().reverse().map((completed) => (
               <div
                 key={completed.id}
                 className={`completed-item ${selectedCompletedItemId === completed.id ? 'selected' : ''}`}
@@ -1149,8 +1150,7 @@ function Task() {
       {selectedSubTab === 'CONFIRMED' && (
   <div className="confirmed-list">
     {confirmedTasks
-      .filter((confirmed) => confirmed.isConfirmed)
-      .map((confirmed) => (
+        .filter((confirmed) => confirmed.isConfirmed).slice().reverse().map((confirmed) => (
         <div
           key={confirmed.id}
           className={`confirmed-item ${selectedConfirmedItemId === confirmed.id ? 'selected' : ''}`}

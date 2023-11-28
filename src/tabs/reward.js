@@ -8,6 +8,7 @@ import { firestore } from "../config/firebase";
 import AnimatedPage from "../AnimatedPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import Logos from '../5333978.jpg';
 
 function Reward() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -184,8 +185,8 @@ function Reward() {
     margin: "0 1px",
     marginBottom: "5px",
     color: "white",
-    backgroundColor: "#659E64",
-    border: "none",
+    backgroundColor: '#00A871',
+    border: "1px solid rgb(7, 110, 50)",
     cursor: "pointer",
     width: "170px",
     height: "40px",
@@ -412,6 +413,7 @@ function Reward() {
     <AnimatedPage>
       <div className="home-container">
         <div className="content">
+        <img src={Logos} alt="Welcome"style={{position: 'fixed',bottom: 0,left: 0,width: '100%',height: 'auto',objectFit: 'cover',zIndex: -1,opacity: 0.4,}}/>
           <h1 className="card-view">REWARD PAGE</h1>
           <div className={`floating-form ${showAddRewardForm ? 'visible' : ''}`} ref={formContainerRef}>
             {showAddRewardForm && (
@@ -485,7 +487,7 @@ function Reward() {
             <div className="rewards-container">
               <h2>Category & Rewards</h2>
               <div className="rewards-list">
-                {categories.map((category) => (
+              {categories.slice().reverse().map((category) => (
                   <div
                     key={category.id}
                     className="reward-item"
@@ -624,7 +626,7 @@ function Reward() {
                   <div className="category-points">
                     <h1 htmlFor="categoryPoints">{selectedCategory && `${selectedCategory}: ${categoryPoints}`}</h1>
                   </div>
-                  {rewardsList.map((reward) => (
+                    {rewardsList.slice().reverse().map((reward) => (
                     <div key={reward.id} className="reward-item" onClick={() => handleCategoryCardClick(reward)}>
                       <h3>{reward.rewardName}</h3>
                       <p>Stock: {reward.quantity}</p>
@@ -694,8 +696,7 @@ function Reward() {
             <h2>Redeem Rewards</h2>
             <div className="claim-list">
             {coupons
-              .filter((coupon) => !coupon.isClaimed)
-              .map((coupon) => (
+              .filter((coupon) => !coupon.isClaimed).slice().reverse().map((coupon) => (
                 <div key={coupon.id} className="claim-item" onClick={() => handleToggle(coupon.id)}>
                 <div className="claim-details">
                   <h3>{coupon.couponCode}</h3>
@@ -729,7 +730,7 @@ function Reward() {
                             </tr>
                           </thead>
                           <tbody>
-                            {coupon.selectedItems.map((item, index) => (
+                          {coupon.selectedItems.slice().reverse().map((item, index) => (
                               <tr key={index}>
                                 <td>{item.rewardId}</td>
                                 <td>{item.selectedQuantity}</td>
@@ -759,9 +760,7 @@ function Reward() {
           <div className="claim-container">
             <h2>Complete Redemption</h2>
             <div className="claim-list">
-            {coupons
-              .filter((coupon) => coupon.isClaimed)
-              .map((coupon) => (
+            {coupons.filter((coupon) => coupon.isClaimed).slice().reverse().map((coupon) => (
             <div key={coupon.id} className="reward-claim-item" onClick={() => handleToggle(coupon.id)}>
                   <div className="reward-claim-details">
                     <h3 className="red-highlight">{coupon.couponCode}</h3>
@@ -799,7 +798,7 @@ function Reward() {
                               </tr>
                             </thead>
                             <tbody>
-                              {coupon.selectedItems.map((item, index) => (
+                            {coupon.selectedItems.slice().reverse().map((item, index) => (
                                 <tr key={index}>
                                   <td>{item.rewardId}</td>
                                   <td>{item.selectedQuantity}</td>

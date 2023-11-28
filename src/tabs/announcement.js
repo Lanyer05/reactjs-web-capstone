@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/Home.css';
+import Logos from '../5333978.jpg';
 
 const AnnouncementForm = () => {
   const navigate = useNavigate();
@@ -125,6 +126,7 @@ const AnnouncementForm = () => {
     <AnimatedPage>
       <div className="home-container">
         <div className="content">
+        <img src={Logos} alt="Welcome"style={{position: 'fixed',bottom: 0,left: 0,width: '100%',height: 'auto',objectFit: 'cover',zIndex: -1,opacity: 0.4,}}/>
           <h1 className="card-view">WELCOME TO ANNOUNCEMENTS</h1>
           <div className="annoucement-container">
             <div className="centered-container">
@@ -156,7 +158,7 @@ const AnnouncementForm = () => {
             </button>
           </div>
             <div className="announcement-list">
-              {announcements.map((announcement) => (
+            {announcements.slice().reverse().map((announcement) => (
                 <div key={announcement.id} className="announcement-item">
                   <h3>{announcement.title}</h3>
                   <p>{announcement.description}</p>
