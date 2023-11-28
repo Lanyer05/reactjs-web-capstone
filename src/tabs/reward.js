@@ -17,7 +17,6 @@ function Reward() {
   const [emptyFieldWarning, setEmptyFieldWarning] = useState(false);
   const [category, setCategory] = useState("");  
   const [categories, setCategories] = useState([]); 
-  const [selectedCategory, setSelectedCategory] = useState(''); 
   const [rewardsList, setRewardsList] = useState([]);
   const formContainerRef = useRef(null);
   const [updatingRewardId, setUpdatingRewardId] = useState(null);
@@ -25,9 +24,7 @@ function Reward() {
   const rewardsCollectionRef = firestore.collection("rewards");
   const categoriesCollectionRef = firestore.collection("categories");
   const [showRewardModal, setShowRewardModal] = useState(false);
-  const [newRewardName, setNewRewardName] = useState("");
   const [newRewardPoints, setNewRewardPoints] = useState("");
-  const [newRewardQuantity, setNewRewardQuantity] = useState("");
   const [showAddRewardForm, setShowAddRewardForm] = useState(false);
   const [showAddRewardForms, setShowAddRewardForms] = useState(false);
   const [editRewardId, setEditRewardId] = useState(null);
@@ -42,6 +39,9 @@ function Reward() {
   const [coupons, setCoupons] = useState([]);
   const couponsCollectionRef = firestore.collection("coupons");
   const [expandedCouponId, setExpandedCouponId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [newRewardName, setNewRewardName] = useState('');
+  const [newRewardQuantity, setNewRewardQuantity] = useState('');
 
   useEffect(() => {
     const handleClickOutsideForm = (event) => {
@@ -508,7 +508,7 @@ function Reward() {
                     <h3>ADD CATEGORY</h3>
                   </div>
                 </div> 
-                <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}>
+                <div className={`floating-form ${showAddForm ? 'visible' : ''}`} ref={formContainerRef}style={{ backdropFilter: 'blur(5px)', zIndex: 999 }}>
                   {showAddForm && ( 
                     <div className="form-container">
                       <div className="form-group">

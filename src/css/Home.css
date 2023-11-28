@@ -434,6 +434,7 @@
   font-family: 'Microsoft Sans Serif';
   margin-bottom: 50px;
   align-content: center;
+  color: #063a21;
 }
 
 .rewards-list .reward-item {
@@ -830,6 +831,7 @@
 .approved-container h2 {
   font-family: 'Microsoft Sans Serif';
   z-index: 1000;
+  color: #063a21;
 }
 
 .user-approved-item {
@@ -982,6 +984,7 @@
 .claim-container h2 {
   font-family: 'Microsoft Sans Serif';
   z-index: 1000;
+  color: #063a21;
 }
 
 .add-input {
@@ -1024,6 +1027,7 @@
   margin-bottom: 20px;
   align-content: center;
   text-align: center;
+  color: #063a21;
 }
 
 .ui-item {

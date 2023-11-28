@@ -143,7 +143,6 @@ function Home() {
       try {
         const user = firebase.auth().currentUser;
         if (user) {
-          console.log('User is logged in:', user.uid);
           await user.getIdToken(true);
           const fcmToken_admin = await firebase.messaging().getToken(); 
           const userRef = firebase.firestore().collection('users').doc(user.uid);
