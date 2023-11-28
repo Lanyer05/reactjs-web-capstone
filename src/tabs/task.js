@@ -115,13 +115,20 @@ function Task() {
 
     const handleAddTask = async () => {
       if (
-        !taskName || !description || !location || !points || !maxUsers || !expirationDateTime || (parseInt(hours) === 0 && parseInt(minutes) === 0)
+        !taskName ||
+        !description ||
+        !location ||
+        !points ||
+        !maxUsers ||
+        !expirationDateTime ||
+        (parseInt(hours) === 0 && parseInt(minutes) === 0)
       ) {
         setEmptyFieldWarning(true);
         toast.error('Please fill in all fields.', { autoClose: 1500, hideProgressBar: true });
         return;
       }
       try {
+        const currentTimestamp = firebase.firestore.Timestamp.now();
         const expirationTimestamp = moment.tz(expirationDateTime, 'Asia/Manila').valueOf();
         const newTask = {
       taskId: uuidv4(),
@@ -133,6 +140,7 @@ function Task() {
       difficulty: difficulty,
       camera: selectedCamera,
       isAccepted: false,
+      createdAt: currentTimestamp,
       maxUsers: parseInt(maxUsers),
       acceptedByUsers: [],
       expirationDateTime: firebase.firestore.Timestamp.fromMillis(expirationTimestamp),
@@ -762,7 +770,14 @@ function Task() {
     <div className="tasks-container">
       <h2>Tasks List</h2>
       <div className="tasks-list">
-        {tasksList.slice().reverse().map((task, index) => (
+      {tasksList
+          .slice()
+          .sort((a, b) => {
+            const aTime = a.createdAt ? a.createdAt.toMillis() : 0;
+            const bTime = b.createdAt ? b.createdAt.toMillis() : 0;
+            return bTime - aTime;
+          })
+          .map((task, index) => (
           <div
             key={index}
             className={`task-item ${selectedTaskId === task.id ? 'selected' : ''}`}
