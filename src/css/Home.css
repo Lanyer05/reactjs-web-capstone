@@ -53,7 +53,7 @@
     content: attr(data-tooltip);
     position: absolute;
     background-color: #3f5159;
-    color: #dad7cd;
+    color: #ffffff;
     padding: 8px;
     border-radius: 5px;
     margin-left: 10px;
@@ -66,7 +66,7 @@
   
   .sidebar-position:hover {
     background-color: #3f5159;
-    border-right: 5px #dad7cd solid;
+    border-right: 5px #ffffff solid;
   }
 
   .sidebar-position span {
@@ -74,7 +74,7 @@
     height: 0;
     padding: 0 15px;
     transition: width 0.3s ease;
-    color: #c9c9c9;
+    color: #ffffff;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -88,7 +88,7 @@
   }
   
   .sidebar svg {
-    color: #dad7cd;
+    color: #ffffff;
     min-width: 25px;
   }
   
@@ -97,7 +97,7 @@
     height: 0;
     padding: 0 15px;
     transition: width 0.3s ease;
-    color: #c9c9c9;
+    color: #ffffff;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -108,6 +108,7 @@
     display: block;
     width: 100%;
     height: auto;
+    font-family: Arial;
   }
   
   .trigger {
@@ -170,6 +171,7 @@
     text-align: center;
     margin: 0;
     cursor: pointer;
+    font-family: Arial;
   } 
   
   @media (max-width: 200px) {
@@ -219,11 +221,11 @@
 
 .sidebar-logout-position:hover {
     background-color: #3f5159;
-    border-right: 5px #dad7cd solid;
+    border-right: 5px #ffffff solid;
 }
 
 .sidebar-logout-position svg {
-    color: #dad7cd;
+    color: #ffffff;
     min-width: 25px;
 }
 
@@ -232,7 +234,7 @@
     height: 0;
     padding: 0 15px;
     transition: width 0.5s ease;
-    color: #c9c9c9;
+    color: #ffffff;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -1009,7 +1011,7 @@
   font-family: 'Microsoft Sans Serif';
   align-content: center;
   text-align: center;
-  color: #00A871;
+  color: #000000;
 }
 
 .annoucement-container {
@@ -1073,7 +1075,7 @@
 .ui-item h2 {
   font-family: 'Microsoft Sans Serif';
   font-size: 17px;
-  color: #4C5656;
+  color: #000000;
   margin-top: 30px;
   z-index: 1000;
   transition: color 0.3s ease-out;
@@ -2209,13 +2211,18 @@ iframe {
 }
 
 .reward-table th, .reward-table td {
-  border: 1px solid #ccc;
+  border: 1px solid #063a21;
   padding: 8px;
   text-align: left;
+  color: #063a21;
 }
 
 .reward-table th {
   background-color: #f2f2f2;
+}
+
+.reward-table td{
+  color:#063a21;
 }
 
 .expand-indicator {

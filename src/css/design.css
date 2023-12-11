@@ -37,6 +37,7 @@ body {
     word-wrap: break-word;
     margin-bottom: 20px;
     margin-top: 20px;
+    font-family: Arial;
   }
   
   .welcome-image {
@@ -58,12 +59,13 @@ body {
   .welcome-message {
     color: rgba(0, 0, 0, 0.74);
     font-size: 20px;
-    font-family: 'Poppins';
+    font-family: Arial;
     font-weight: 400;
     line-height: 27.44px;
     letter-spacing: 1.20px;
     word-wrap: break-word;
     margin-top: 28px;
+
   }
   
   .input-container {
